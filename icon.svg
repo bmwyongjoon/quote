@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#1a1a1a"/>
+  <circle cx="96" cy="96" r="68" fill="none" stroke="white" stroke-width="4"/>
+  <circle cx="96" cy="96" r="52" fill="none" stroke="white" stroke-width="2"/>
+  <text x="96" y="78" text-anchor="middle" fill="white" font-family="Arial" font-size="13" font-weight="300" letter-spacing="3">DEUTSCHE</text>
+  <text x="96" y="100" text-anchor="middle" fill="white" font-family="Arial" font-size="22" font-weight="300" letter-spacing="2">BPS</text>
+  <text x="96" y="120" text-anchor="middle" fill="white" font-family="Arial" font-size="10" font-weight="300" letter-spacing="2">견적서</text>
+</svg>
