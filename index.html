@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="BPS 견적서">
 <meta name="theme-color" content="#1a1a1a">
 <link rel="manifest" href="manifest.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <title>BPS 견적서</title>
 <style>
 /* ── 전체 ── */
@@ -189,7 +190,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     <div id="preview-wrap">
       <div id="preview-inner"></div>
       <div class="preview-actions">
-        <button class="btn btn-white" style="flex:2;" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+        <button class="btn btn-white" style="flex:2;" onclick="saveImage('cash')">📷 이미지로 저장</button>
         <button class="btn btn-dark" onclick="hidePreview()">✕ 닫기</button>
       </div>
     </div>
@@ -289,7 +290,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     <div id="preview-wrap-lf" style="display:none;">
       <div id="preview-inner-lf"></div>
       <div class="preview-actions">
-        <button class="btn btn-white" style="flex:2;" onclick="printTab('lf')">🖨️ 인쇄 / PDF 저장</button>
+        <button class="btn btn-white" style="flex:2;" onclick="saveImage('lf')">📷 이미지로 저장</button>
         <button class="btn btn-dark" onclick="document.getElementById('preview-wrap-lf').style.display='none'">✕ 닫기</button>
       </div>
     </div>
@@ -392,7 +393,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     <div id="preview-wrap-lo" style="display:none;">
       <div id="preview-inner-lo"></div>
       <div class="preview-actions">
-        <button class="btn btn-white" style="flex:2;" onclick="printTab('lo')">🖨️ 인쇄 / PDF 저장</button>
+        <button class="btn btn-white" style="flex:2;" onclick="saveImage('lo')">📷 이미지로 저장</button>
         <button class="btn btn-dark" onclick="document.getElementById('preview-wrap-lo').style.display='none'">✕ 닫기</button>
       </div>
     </div>
@@ -471,7 +472,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     <div id="preview-wrap-inst" style="display:none;">
       <div id="preview-inner-inst"></div>
       <div class="preview-actions">
-        <button class="btn btn-white" style="flex:2;" onclick="printTab('inst')">🖨️ 인쇄 / PDF 저장</button>
+        <button class="btn btn-white" style="flex:2;" onclick="saveImage('inst')">📷 이미지로 저장</button>
         <button class="btn btn-dark" onclick="document.getElementById('preview-wrap-inst').style.display='none'">✕ 닫기</button>
       </div>
     </div>
@@ -1046,62 +1047,53 @@ function showPreview(type) {
   wrap.scrollIntoView({behavior:'smooth'});
 }
 
-// ── 인쇄 (견적서만) ──
-function printTab(tab) {
-  const id = {lf:'preview-inner-lf', lo:'preview-inner-lo', inst:'preview-inner-inst'}[tab];
-  const content = document.getElementById(id).innerHTML;
-  const win = window.open('','_blank','width=600,height=800');
-  win.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
-  <style>
-    body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;padding:24px;max-width:480px;margin:0 auto;}
-    .pv-header{text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #eee;}
-    .pv-header h1{font-size:14px;font-weight:400;letter-spacing:4px;color:#1a1a1a;margin-bottom:3px;}
-    .pv-header p{font-size:9px;color:#aaa;letter-spacing:2px;}
-    .pv-header .pv-date{font-size:10px;color:#999;margin-top:6px;}
-    .pv-section{margin-bottom:16px;}
-    .pv-section-title{font-size:9px;font-weight:700;letter-spacing:2px;border-bottom:1.5px solid #1a1a1a;padding-bottom:5px;margin-bottom:8px;}
-    .pv-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;}
-    .pv-row:last-child{border-bottom:none;}
-    .pv-key{font-size:10px;color:#999;}
-    .pv-val{font-size:10px;color:#1a1a1a;font-weight:500;text-align:right;}
-    .pv-total-row{display:flex;justify-content:space-between;padding:10px 0;border-top:1.5px solid #1a1a1a;margin-top:8px;}
-    .pv-total-key{font-size:12px;font-weight:700;}
-    .pv-total-val{font-size:16px;font-weight:300;}
-    .pv-footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;text-align:center;font-size:9px;color:#bbb;line-height:1.9;}
-    .pv-notice{margin-top:10px;padding:8px;background:#f9f9f9;border-radius:4px;font-size:9px;color:#aaa;line-height:1.7;}
-  </style></head><body>${content}</body></html>`);
-  win.document.close();
-  win.focus();
-  setTimeout(()=>{win.print();},400);
-}
+// ── 이미지로 저장 ──
+async function saveImage(tab) {
+  const idMap = {
+    cash: 'preview-inner',
+    lf:   'preview-inner-lf',
+    lo:   'preview-inner-lo',
+    inst: 'preview-inner-inst'
+  };
+  const el = document.getElementById(idMap[tab]);
+  if (!el || !el.innerHTML.trim()) {
+    alert('먼저 견적서 미리보기를 생성해주세요.');
+    return;
+  }
 
-// ── 현금 견적서 인쇄 (기존 방식 개선) ──
-document.querySelector('.btn-white[onclick="window.print()"]') && document.querySelector('.btn-white[onclick="window.print()"]').addEventListener('click', function(e) {
-  e.preventDefault();
-  const content = document.getElementById('preview-inner').innerHTML;
-  const win = window.open('','_blank','width=600,height=800');
-  win.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
-  <style>
-    body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;padding:24px;max-width:480px;margin:0 auto;}
-    .pv-header{text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #eee;}
-    .pv-header h1{font-size:14px;font-weight:400;letter-spacing:4px;color:#1a1a1a;margin-bottom:3px;}
-    .pv-header p{font-size:9px;color:#aaa;letter-spacing:2px;}
-    .pv-header .pv-date{font-size:10px;color:#999;margin-top:6px;}
-    .pv-section{margin-bottom:16px;}
-    .pv-section-title{font-size:9px;font-weight:700;letter-spacing:2px;border-bottom:1.5px solid #1a1a1a;padding-bottom:5px;margin-bottom:8px;}
-    .pv-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;}
-    .pv-key{font-size:10px;color:#999;}
-    .pv-val{font-size:10px;color:#1a1a1a;font-weight:500;text-align:right;}
-    .pv-total-row{display:flex;justify-content:space-between;padding:10px 0;border-top:1.5px solid #1a1a1a;margin-top:8px;}
-    .pv-total-key{font-size:12px;font-weight:700;}
-    .pv-total-val{font-size:16px;font-weight:300;}
-    .pv-footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;text-align:center;font-size:9px;color:#bbb;line-height:1.9;}
-    .pv-notice{margin-top:10px;padding:8px;background:#f9f9f9;border-radius:4px;font-size:9px;color:#aaa;line-height:1.7;}
-  </style></head><body>${content}</body></html>`);
-  win.document.close();
-  win.focus();
-  setTimeout(()=>{win.print();},400);
-});
+  // 버튼 텍스트 잠깐 변경
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.textContent = '저장 중...';
+  btn.disabled = true;
+
+  try {
+    const canvas = await html2canvas(el, {
+      scale: 3,           // 고해상도
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: el.scrollWidth,
+      height: el.scrollHeight,
+    });
+
+    // 파일명: BPS견적서_탭명_날짜
+    const tabName = {cash:'현금', lf:'금융리스', lo:'운용리스', inst:'할부'}[tab];
+    const d = new Date();
+    const dateStr = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const filename = `BPS견적서_${tabName}_${dateStr}.png`;
+
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(e) {
+    alert('이미지 저장 중 오류가 발생했습니다.\n' + e.message);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
 
 // ── 견적서 HTML 헬퍼 ──
 function pvHeader(branch,staff,phone,customer,date,type) {
@@ -1143,28 +1135,6 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   });
 }
-// 현금 인쇄 버튼 재바인딩
-window.addEventListener('DOMContentLoaded', ()=>{
-  const printBtn = document.querySelector('#preview-wrap .btn-white');
-  if(printBtn) printBtn.onclick = function(){
-    const content = document.getElementById('preview-inner').innerHTML;
-    const win = window.open('','_blank','width=600,height=800');
-    win.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>
-    body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;padding:24px;max-width:480px;margin:0 auto;}
-    .pv-header{text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #eee;}
-    .pv-header h1{font-size:14px;font-weight:400;letter-spacing:4px;color:#1a1a1a;margin-bottom:3px;}
-    .pv-header p{font-size:9px;color:#aaa;letter-spacing:2px;}.pv-header .pv-date{font-size:10px;color:#999;margin-top:6px;}
-    .pv-section{margin-bottom:16px;}.pv-section-title{font-size:9px;font-weight:700;letter-spacing:2px;border-bottom:1.5px solid #1a1a1a;padding-bottom:5px;margin-bottom:8px;}
-    .pv-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;}
-    .pv-key{font-size:10px;color:#999;}.pv-val{font-size:10px;color:#1a1a1a;font-weight:500;text-align:right;}
-    .pv-total-row{display:flex;justify-content:space-between;padding:10px 0;border-top:1.5px solid #1a1a1a;margin-top:8px;}
-    .pv-total-key{font-size:12px;font-weight:700;}.pv-total-val{font-size:16px;font-weight:300;}
-    .pv-footer{margin-top:16px;padding-top:12px;border-top:1px solid #eee;text-align:center;font-size:9px;color:#bbb;line-height:1.9;}
-    .pv-notice{margin-top:10px;padding:8px;background:#f9f9f9;border-radius:4px;font-size:9px;color:#aaa;line-height:1.7;}
-    </style></head><body>${content}</body></html>`);
-    win.document.close(); win.focus(); setTimeout(()=>win.print(),400);
-  };
-});
 </script>
 </body>
 </html>
