@@ -97,7 +97,15 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 .info-box strong{color:#1a1a1a;}
 .highlight-row{background:#fffbe6;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;font-weight:500;color:#7f6000;display:flex;justify-content:space-between;}
 
-/* ── 인쇄 ── */
+/* ── 차종 선택 ── */
+.vehicle-selector{background:#f9f9f9;border-radius:8px;padding:12px 14px;margin-bottom:12px;}
+.vehicle-selector .vs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.vehicle-selector .vs-row.full{grid-template-columns:1fr;}
+.vehicle-selector .vs-row:last-child{margin-bottom:0;}
+.vs-btn{width:100%;padding:9px 10px;border:1px solid #ddd;border-radius:6px;font-size:12px;background:white;color:#1a1a1a;cursor:pointer;text-align:left;}
+.vs-btn.selected{border-color:#1a1a1a;background:#1a1a1a;color:white;}
+.vs-result{background:#fffbe6;border-radius:6px;padding:8px 12px;font-size:11px;color:#7f6000;margin-top:8px;display:none;}
+.vs-result.show{display:block;}
 @media print {
   body *{visibility:hidden;}
   #preview-inner, #preview-inner *{visibility:visible;}
@@ -140,8 +148,38 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     <!-- 차량 -->
     <div class="card">
       <div class="section-title">VEHICLE INFO</div>
+      <div class="vehicle-selector">
+        <div class="section-title" style="margin-bottom:10px;">차종 선택</div>
+        <div class="vs-row">
+          <div class="field"><label>제조사</label>
+            <select id="c-vs-brand" onchange="vsUpdate('c','brand')">
+              <option value="">선택</option>
+              <option value="BMW">BMW</option>
+              <option value="MINI">MINI</option>
+            </select>
+          </div>
+          <div class="field"><label>연식</label>
+            <select id="c-vs-year" onchange="vsUpdate('c','year')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-row">
+          <div class="field"><label>시리즈</label>
+            <select id="c-vs-series" onchange="vsUpdate('c','series')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+          <div class="field"><label>트림</label>
+            <select id="c-vs-trim" onchange="vsApply('c')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-result" id="c-vs-result"></div>
+      </div>
       <div class="grid-1">
-        <div class="field"><label>차량 모델명</label><input id="c-model" placeholder="예) X6 xDrive 30d M Spt_P0-1"></div>
+        <div class="field"><label>차량 모델명 (직접입력 가능)</label><input id="c-model" placeholder="예) X6 xDrive 30d M Spt_P0-1"></div>
       </div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="c-year" placeholder="2023"></div>
@@ -311,7 +349,37 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     </div>
     <div class="card">
       <div class="section-title">VEHICLE INFO</div>
-      <div class="grid-1"><div class="field"><label>차량 모델명</label><input id="lo-model" placeholder="예) 523d M Spt_P1"></div></div>
+      <div class="vehicle-selector">
+        <div class="section-title" style="margin-bottom:10px;">차종 선택</div>
+        <div class="vs-row">
+          <div class="field"><label>제조사</label>
+            <select id="lo-vs-brand" onchange="vsUpdate('lo','brand')">
+              <option value="">선택</option>
+              <option value="BMW">BMW</option>
+              <option value="MINI">MINI</option>
+            </select>
+          </div>
+          <div class="field"><label>연식</label>
+            <select id="lo-vs-year" onchange="vsUpdate('lo','year')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-row">
+          <div class="field"><label>시리즈</label>
+            <select id="lo-vs-series" onchange="vsUpdate('lo','series')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+          <div class="field"><label>트림</label>
+            <select id="lo-vs-trim" onchange="vsApply('lo')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-result" id="lo-vs-result"></div>
+      </div>
+      <div class="grid-1"><div class="field"><label>차량 모델명 (직접입력 가능)</label><input id="lo-model" placeholder="예) 523d M Spt_P1"></div></div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="lo-year" placeholder="2025"></div>
         <div class="field"><label>최초등록일</label><input id="lo-regdate" placeholder="2025-01-10"></div>
@@ -414,7 +482,37 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     </div>
     <div class="card">
       <div class="section-title">VEHICLE INFO</div>
-      <div class="grid-1"><div class="field"><label>차량 모델명</label><input id="inst-model" placeholder="예) 320i M Spt LCI"></div></div>
+      <div class="vehicle-selector">
+        <div class="section-title" style="margin-bottom:10px;">차종 선택</div>
+        <div class="vs-row">
+          <div class="field"><label>제조사</label>
+            <select id="inst-vs-brand" onchange="vsUpdate('inst','brand')">
+              <option value="">선택</option>
+              <option value="BMW">BMW</option>
+              <option value="MINI">MINI</option>
+            </select>
+          </div>
+          <div class="field"><label>연식</label>
+            <select id="inst-vs-year" onchange="vsUpdate('inst','year')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-row">
+          <div class="field"><label>시리즈</label>
+            <select id="inst-vs-series" onchange="vsUpdate('inst','series')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+          <div class="field"><label>트림</label>
+            <select id="inst-vs-trim" onchange="vsApply('inst')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-result" id="inst-vs-result"></div>
+      </div>
+      <div class="grid-1"><div class="field"><label>차량 모델명 (직접입력 가능)</label><input id="inst-model" placeholder="예) 320i M Spt LCI"></div></div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="inst-year" placeholder="2024"></div>
         <div class="field"><label>최초등록일</label><input id="inst-regdate" placeholder="2024-03-01"></div>
@@ -1047,7 +1145,121 @@ function showPreview(type) {
   wrap.scrollIntoView({behavior:'smooth'});
 }
 
-// ── 이미지로 저장 ──
+// ── 차종 선택 ──
+let VEHICLES = [];
+
+async function loadVehicles() {
+  try {
+    const res = await fetch('vehicles.json');
+    VEHICLES = await res.json();
+  } catch(e) {
+    console.warn('vehicles.json 로드 실패:', e);
+  }
+}
+loadVehicles();
+
+function vsUpdate(prefix, changed) {
+  const brand  = document.getElementById(`${prefix}-vs-brand`).value;
+  const year   = document.getElementById(`${prefix}-vs-year`).value;
+  const series = document.getElementById(`${prefix}-vs-series`).value;
+
+  const yearEl   = document.getElementById(`${prefix}-vs-year`);
+  const seriesEl = document.getElementById(`${prefix}-vs-series`);
+  const trimEl   = document.getElementById(`${prefix}-vs-trim`);
+
+  if (changed === 'brand') {
+    // 연식 채우기
+    yearEl.innerHTML = '<option value="">선택</option>';
+    seriesEl.innerHTML = '<option value="">선택</option>';
+    trimEl.innerHTML = '<option value="">선택</option>';
+    yearEl.disabled = !brand;
+    seriesEl.disabled = true;
+    trimEl.disabled = true;
+
+    if (brand) {
+      const years = [...new Set(VEHICLES.filter(v => v.brand === brand).map(v => v.year))]
+        .filter(Boolean).sort((a,b) => b - a);
+      years.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y + '년식';
+        yearEl.appendChild(opt);
+      });
+    }
+  }
+
+  if (changed === 'year') {
+    seriesEl.innerHTML = '<option value="">선택</option>';
+    trimEl.innerHTML = '<option value="">선택</option>';
+    seriesEl.disabled = !year;
+    trimEl.disabled = true;
+
+    if (brand && year) {
+      const seriesList = [...new Set(
+        VEHICLES.filter(v => v.brand === brand && v.year == year).map(v => v.series)
+      )].sort();
+      seriesList.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        seriesEl.appendChild(opt);
+      });
+    }
+  }
+
+  if (changed === 'series') {
+    trimEl.innerHTML = '<option value="">선택</option>';
+    trimEl.disabled = !series;
+
+    if (brand && year && series) {
+      const trims = VEHICLES.filter(v => v.brand === brand && v.year == year && v.series === series);
+      trims.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify(v);
+        opt.textContent = v.trim;
+        trimEl.appendChild(opt);
+      });
+    }
+  }
+}
+
+function vsApply(prefix) {
+  const trimEl = document.getElementById(`${prefix}-vs-trim`);
+  if (!trimEl.value) return;
+
+  const v = JSON.parse(trimEl.value);
+  const resultEl = document.getElementById(`${prefix}-vs-result`);
+
+  // 모델명 자동 입력
+  const modelEl = document.getElementById(`${prefix}-model`);
+  if (modelEl) modelEl.value = `${v.brand} ${v.trim}`;
+
+  // 연식 자동 입력
+  const yearEl = document.getElementById(`${prefix}-year`);
+  if (yearEl) yearEl.value = v.year;
+
+  // 배기량 자동 입력 (금융리스, 운용리스)
+  const ccEl = document.getElementById(`${prefix}-cc`);
+  if (ccEl && v.cc) ccEl.value = v.cc;
+
+  // 전기차 여부 자동 설정 (금융리스)
+  const evEl = document.getElementById(`${prefix}-ev`);
+  if (evEl) evEl.value = v.fuel === '전기' ? 'Y' : 'N';
+
+  // 운용리스 데모 자동 설정
+  const demoEl = document.getElementById(`${prefix}-demo`);
+  if (demoEl) {
+    // 데모여부는 사용자가 선택하도록 유지
+  }
+
+  // 신차가격 표시
+  resultEl.textContent = `✓ ${v.brand} ${v.trim} (${v.year}년식) | 신차가격: ${v.msrp ? v.msrp.toLocaleString() + '원' : '—'} | ${v.fuel || '—'} ${v.cc ? v.cc + 'cc' : ''}`;
+  resultEl.classList.add('show');
+
+  // 계산 트리거
+  const calcMap = {c: calcCash, lf: calcLF, lo: calcLO, inst: calcInst};
+  if (calcMap[prefix]) calcMap[prefix]();
+}
+
+
 async function saveImage(tab) {
   const idMap = {
     cash: 'preview-inner',
