@@ -97,6 +97,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 .info-box strong{color:#1a1a1a;}
 .highlight-row{background:#fffbe6;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;font-weight:500;color:#7f6000;display:flex;justify-content:space-between;}
 
+/* ── 업데이트 알림 배너 ── */
+.update-banner{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:12px 20px;border-radius:10px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:flex;align-items:center;gap:12px;white-space:nowrap;}
+.update-banner.show{display:flex;}
+.update-banner button{background:white;color:#1a1a1a;border:none;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;}
+
 /* ── 차종 선택 ── */
 .vehicle-selector{background:#f9f9f9;border-radius:8px;padding:12px 14px;margin-bottom:12px;}
 .vehicle-selector .vs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
@@ -118,6 +123,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 </style>
 </head>
 <body>
+<div id="update-banner" class="update-banner">
+  🆕 새 버전이 있어요!
+  <button onclick="doUpdate()">업데이트</button>
+</div>
+
 <div id="app">
   <div class="header">
     <div class="header-logo">DEUTSCHE MOTORS · BPS</div>
@@ -206,7 +216,28 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         <div id="c-tax-manual" class="field" style="display:none;"><label>취득세 (직접 입력)</label><div class="amt"><input type="number" id="c-tax-input" oninput="calcCash()"><span>원</span></div></div>
       </div>
       <div class="grid-2" style="margin-top:10px;">
-        <div class="field"><label>공채구입비용</label><div class="amt"><input type="number" id="c-bond" placeholder="0" oninput="calcCash()"><span>원</span></div></div>
+        <div class="field"><label>공채 지역</label>
+          <select id="c-bond-region" onchange="calcCash()">
+            <option value="0">선택 안함</option>
+            <option value="0.12" selected>서울 (12%)</option>
+            <option value="0.04">부산 (4%)</option>
+            <option value="0.04">인천 (4%)</option>
+            <option value="0.04">대구 (4%)</option>
+            <option value="0.08">대전 (8%)</option>
+            <option value="0.08">광주 (8%)</option>
+            <option value="0.08">울산 (8%)</option>
+            <option value="0.08">경기 (8%)</option>
+            <option value="0.08">강원 (8%)</option>
+            <option value="0.08">충북 (8%)</option>
+            <option value="0.08">충남 (8%)</option>
+            <option value="0.08">전북 (8%)</option>
+            <option value="0.08">전남 (8%)</option>
+            <option value="0.08">경북 (8%)</option>
+            <option value="0.04">경남 (4%)</option>
+            <option value="0.08">제주 (8%)</option>
+          </select>
+        </div>
+        <div class="field"><label>공채구입비용 (자동계산)</label><div class="amt"><input id="c-bond" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="c-misc" value="100000" oninput="calcCash()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="c-delivery" placeholder="0" oninput="calcCash()"><span>원</span></div></div>
       </div>
@@ -437,8 +468,23 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         </div>
         <div class="field"><label>잔존가치 (자동계산)</label><div class="amt"><input id="lo-residual-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>고객공지이자율 (자동)</label><div class="amt"><input id="lo-rate-disp" readonly style="background:#f9f9f9;color:#1a1a1a;font-weight:500;"><span>%</span></div></div>
-        <div class="field"><label>SC 커미션 (자동)</label><div class="amt"><input id="lo-sc-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div class="field"><label>F&amp;I 커미션 (자동)</label><div class="amt"><input id="lo-fni-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>딜러 커미션 SC% (1~12%)</label>
+          <select id="lo-sc-pct" onchange="calcLO()">
+            <option value="1">1%</option>
+            <option value="2">2%</option>
+            <option value="3">3%</option>
+            <option value="4">4%</option>
+            <option value="5">5%</option>
+            <option value="6" selected>6%</option>
+            <option value="7">7%</option>
+            <option value="8">8%</option>
+            <option value="9">9%</option>
+            <option value="10">10%</option>
+            <option value="11">11%</option>
+            <option value="12">12%</option>
+          </select>
+        </div>
+        <div class="field"><label>SC 커미션 금액 (자동)</label><div class="amt"><input id="lo-sc-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>계약 발생 납입금 (자동)</label><div class="amt"><input id="lo-init-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
       </div>
     </div>
@@ -526,6 +572,28 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         <div class="field"><label>할인 금액</label><div class="amt"><input type="number" id="inst-discount" placeholder="0" oninput="calcInst()"><span>원</span></div></div>
         <div class="field"><label>최종 구입 가격</label><div class="amt"><input id="inst-price-final" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>취득세 (자동)</label><div class="amt"><input id="inst-tax-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>공채 지역</label>
+          <select id="inst-bond-region" onchange="calcInst()">
+            <option value="0">선택 안함</option>
+            <option value="0.12" selected>서울 (12%)</option>
+            <option value="0.04">부산 (4%)</option>
+            <option value="0.04">인천 (4%)</option>
+            <option value="0.04">대구 (4%)</option>
+            <option value="0.08">대전 (8%)</option>
+            <option value="0.08">광주 (8%)</option>
+            <option value="0.08">울산 (8%)</option>
+            <option value="0.08">경기 (8%)</option>
+            <option value="0.08">강원 (8%)</option>
+            <option value="0.08">충북 (8%)</option>
+            <option value="0.08">충남 (8%)</option>
+            <option value="0.08">전북 (8%)</option>
+            <option value="0.08">전남 (8%)</option>
+            <option value="0.08">경북 (8%)</option>
+            <option value="0.04">경남 (4%)</option>
+            <option value="0.08">제주 (8%)</option>
+          </select>
+        </div>
+        <div class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="inst-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
       </div>
     </div>
     <div class="card">
@@ -558,6 +626,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">할인 금액</span><span class="rvalue" id="instr-discount">—</span></div>
       <div class="rrow"><span class="rlabel">최종 구입 가격</span><span class="rvalue" id="instr-price">—</span></div>
       <div class="rrow"><span class="rlabel">취득세</span><span class="rvalue" id="instr-tax">—</span></div>
+      <div class="rrow"><span class="rlabel">공채구입비용</span><span class="rvalue" id="instr-bond">—</span></div>
       <div class="rrow"><span class="rlabel">선수금</span><span class="rvalue" id="instr-down">—</span></div>
       <div class="rrow"><span class="rlabel">할부 원금</span><span class="rvalue" id="instr-principal">—</span></div>
       <div class="rrow"><span class="rlabel">할부 기간 / 이자율</span><span class="rvalue" id="instr-period">—</span></div>
@@ -616,21 +685,26 @@ function calcCash() {
   } else {
     tax = parseFloat(document.getElementById('c-tax-input').value)||0;
   }
-  const bond = parseFloat(document.getElementById('c-bond').value)||0;
+  // 공채: 지역별 비율 × (차량가격/1.1), 1000원 단위 반올림
+  const bondRate = parseFloat(document.getElementById('c-bond-region').value)||0;
+  const bond = bondRate > 0 ? Math.round(price/1.1 * bondRate / 1000) * 1000 : 0;
+  document.getElementById('c-bond').value = bond > 0 ? bond.toLocaleString() : '0';
   const misc = parseFloat(document.getElementById('c-misc').value)||0;
   const delivery = parseFloat(document.getElementById('c-delivery').value)||0;
   const total = price+tax+bond+misc+delivery;
   document.getElementById('cr-price').textContent = fmt(price);
   document.getElementById('cr-tax').textContent = fmt(tax);
-  document.getElementById('cr-bond').textContent = fmt(bond);
+  document.getElementById('cr-bond').textContent = bond > 0 ? fmt(bond) : '—';
   document.getElementById('cr-misc').textContent = fmt(misc);
   document.getElementById('cr-delivery').textContent = fmt(delivery);
   document.getElementById('cr-total').textContent = fmt(total);
   return { price, tax, bond, misc, delivery, total };
 }
 function resetCash() {
-  ['c-price','c-bond','c-delivery','c-tax-input'].forEach(id => document.getElementById(id).value='');
+  ['c-price','c-delivery','c-tax-input'].forEach(id => document.getElementById(id).value='');
   document.getElementById('c-misc').value='100000';
+  document.getElementById('c-bond-region').value='0.12';
+  document.getElementById('c-bond').value='';
   document.getElementById('c-tax-disp').value='';
   document.getElementById('c-customer').value='';
   document.getElementById('c-model').value='';
@@ -644,13 +718,13 @@ function resetCash() {
 function hidePreview() { document.getElementById('preview-wrap').classList.remove('show'); }
 
 // ── 금융리스 계산 ──
-// 이율표: [Demo/Bid, 고객승계, 신규, 7시리즈, 트레이드인]
+// 이율표 (2026년 4월 BPS 엑셀 기준): [Demo/Bidding, 고객승계, 신규, 7시리즈Demo/Bid, 트레이드인(신규)]
 const LF_RATES = {
-  0: {24:0.1184, 36:0.1091, 48:0.1044, 60:0.0979},
-  1: {24:0.1184, 36:0.1091, 48:0.1044, 60:0.0949},
-  2: {24:0.1184, 36:0.1091, 48:0.1044, 60:0.0979},
-  3: {24:0.1184, 36:0.1091, 48:0.1044, 60:0.0979},
-  4: {24:0.1184, 36:0.1091, 48:0.1044, 60:0.0979},
+  0: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.1029}, // Demo/Bidding
+  1: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.0999}, // 고객승계
+  2: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 신규
+  3: {24:0.1204, 36:0.1111, 48:0.1064, 60:0.0999}, // 7시리즈 Demo/Bidding
+  4: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 트레이드인(신규)
 };
 
 function calcLF() {
@@ -783,10 +857,11 @@ function calcLO() {
   let irr, scRate;
   if (product === 'standard') {
     irr = LO_RATES_STANDARD[demo][period][depositPct] || 0;
-    scRate = LO_SC_STANDARD[demo][period] || 0.07;
+    // SC%는 사용자가 선택한 값 사용 (1~12%)
+    scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
   } else {
     irr = LO_RATES_PREPAID[demo][period] || 0;
-    scRate = LO_SC_PREPAID[demo][period] || 0.035;
+    scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
   }
 
   document.getElementById('lo-rate-disp').value = irr ? (irr * 100).toFixed(2) : '';
@@ -800,7 +875,6 @@ function calcLO() {
   const initPayment = deposit + sc + fni;
 
   document.getElementById('lo-sc-disp').value = sc.toLocaleString();
-  document.getElementById('lo-fni-disp').value = fni.toLocaleString();
   document.getElementById('lo-init-disp').value = initPayment.toLocaleString();
 
   // 월납입금: PMT(irr/12, period, -(finalPrice + fni - sc + deposit_adj), residual - sc)
@@ -838,7 +912,8 @@ function resetLO() {
   document.getElementById('lo-period').value = '60';
   document.getElementById('lo-deposit-pct').value = '40';
   document.getElementById('lo-residual-pct').value = '40';
-  ['lo-price-final','lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-fni-disp','lo-init-disp'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lo-sc-pct').value = '6';
+  ['lo-price-final','lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-init-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-lo').style.display = 'none';
   ['lor-orig','lor-discount','lor-price','lor-deposit','lor-residual','lor-period','lor-rate','lor-init','lor-monthly'].forEach(id => document.getElementById(id).textContent = '—');
 }
@@ -865,11 +940,16 @@ function calcInst() {
   const tax = finalPrice > 0 ? Math.floor(finalPrice / 1.1 * 0.07 / 10) * 10 : 0;
   document.getElementById('inst-tax-disp').value = tax > 0 ? tax.toLocaleString() : '';
 
+  // 공채: 지역별 비율 × (finalPrice/1.1), 1000원 단위 반올림
+  const bondRate = parseFloat(document.getElementById('inst-bond-region').value)||0;
+  const bond = bondRate > 0 ? Math.round(finalPrice / 1.1 * bondRate / 1000) * 1000 : 0;
+  document.getElementById('inst-bond-disp').value = bond > 0 ? bond.toLocaleString() : '0';
+
   const rate = INST_RATES[product] ? (INST_RATES[product][period] || 0) : 0;
   document.getElementById('inst-rate-disp').value = rate ? (rate * 100).toFixed(2) : '';
 
-  // 할부 원금 = 최종구입가격 + 취득세 - 선수금
-  const principal = finalPrice + tax - down;
+  // 할부 원금 = 최종구입가격 + 취득세 + 공채 - 선수금
+  const principal = finalPrice + tax + bond - down;
   document.getElementById('inst-principal-disp').value = principal > 0 ? principal.toLocaleString() : '';
 
   let monthly = 0;
@@ -883,12 +963,13 @@ function calcInst() {
   document.getElementById('instr-discount').textContent = discount > 0 ? '-' + fmt(discount) : '—';
   document.getElementById('instr-price').textContent = fmt(finalPrice);
   document.getElementById('instr-tax').textContent = fmt(tax);
+  document.getElementById('instr-bond').textContent = bond > 0 ? fmt(bond) : '—';
   document.getElementById('instr-down').textContent = down > 0 ? fmt(down) : '—';
   document.getElementById('instr-principal').textContent = fmt(principal);
   document.getElementById('instr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
   document.getElementById('instr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
 
-  return { orig, discount, finalPrice, tax, down, principal, period, rate, monthly, product };
+  return { orig, discount, finalPrice, tax, bond, down, principal, period, rate, monthly, product };
 }
 
 function resetInst() {
@@ -896,9 +977,10 @@ function resetInst() {
   ['inst-customer','inst-model','inst-year','inst-regdate','inst-mileage','inst-fni-phone'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inst-product').value = '0';
   document.getElementById('inst-period').value = '60';
-  ['inst-price-final','inst-tax-disp','inst-rate-disp','inst-principal-disp'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inst-bond-region').value = '0.12';
+  ['inst-price-final','inst-tax-disp','inst-rate-disp','inst-principal-disp','inst-bond-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-inst').style.display = 'none';
-  ['instr-orig','instr-discount','instr-price','instr-tax','instr-down','instr-principal','instr-period','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
+  ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-down','instr-principal','instr-period','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
 }
 
 // ── 견적서 미리보기 생성 ──
@@ -1113,6 +1195,7 @@ function showPreview(type) {
       ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
       <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">${fmt(d.tax)}</span></div>
+      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채구입비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
       ${d.down > 0 ? `<div class="pv-row"><span class="pv-key">선수금</span><span class="pv-val">${fmt(d.down)}</span></div>` : ''}
     </div>
     <div class="pv-section">
@@ -1344,7 +1427,36 @@ function pvFooter(branch,staff,phone) {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // 새 SW가 대기 중이면 배너 표시
+      if (reg.waiting) showUpdateBanner();
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+    }).catch(() => {});
+
+    // SW로부터 NEW_VERSION 메시지 수신
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'NEW_VERSION') showUpdateBanner();
+    });
+  });
+}
+
+function showUpdateBanner() {
+  document.getElementById('update-banner').classList.add('show');
+}
+
+function doUpdate() {
+  navigator.serviceWorker.getRegistration().then(reg => {
+    if (reg && reg.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+    window.location.reload();
   });
 }
 </script>
