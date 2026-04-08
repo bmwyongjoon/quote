@@ -272,8 +272,38 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     <!-- 차량 -->
     <div class="card">
       <div class="section-title">VEHICLE INFO</div>
+      <div class="vehicle-selector">
+        <div class="section-title" style="margin-bottom:10px;">차종 선택</div>
+        <div class="vs-row">
+          <div class="field"><label>제조사</label>
+            <select id="lf-vs-brand" onchange="vsUpdate('lf','brand')">
+              <option value="">선택</option>
+              <option value="BMW">BMW</option>
+              <option value="MINI">MINI</option>
+            </select>
+          </div>
+          <div class="field"><label>연식</label>
+            <select id="lf-vs-year" onchange="vsUpdate('lf','year')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-row">
+          <div class="field"><label>시리즈</label>
+            <select id="lf-vs-series" onchange="vsUpdate('lf','series')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+          <div class="field"><label>트림</label>
+            <select id="lf-vs-trim" onchange="vsApply('lf')" disabled>
+              <option value="">선택</option>
+            </select>
+          </div>
+        </div>
+        <div class="vs-result" id="lf-vs-result"></div>
+      </div>
       <div class="grid-1">
-        <div class="field"><label>차량 모델명</label><input id="lf-model" placeholder="예) 523d M Spt_P1"></div>
+        <div class="field"><label>차량 모델명 (직접입력 가능)</label><input id="lf-model" placeholder="예) 523d M Spt_P1"></div>
       </div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="lf-year" placeholder="2025"></div>
