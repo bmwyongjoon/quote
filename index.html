@@ -1458,11 +1458,20 @@ if ('serviceWorker' in navigator) {
 }
 
 function showUpdateBanner(worker) {
+  // 방금 업데이트한 직후면 배너 표시 안 함
+  if (sessionStorage.getItem('just_updated')) {
+    sessionStorage.removeItem('just_updated');
+    return;
+  }
   window._pendingWorker = worker;
   document.getElementById('update-banner').classList.add('show');
 }
 
 function doUpdate() {
+  // 배너 즉시 숨기기 (중복 표시 방지)
+  document.getElementById('update-banner').classList.remove('show');
+  sessionStorage.setItem('just_updated', '1');
+
   if (window._pendingWorker) {
     window._pendingWorker.postMessage({ type: 'SKIP_WAITING' });
   } else if (swReg && swReg.waiting) {
