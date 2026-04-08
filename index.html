@@ -97,11 +97,6 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 .info-box strong{color:#1a1a1a;}
 .highlight-row{background:#fffbe6;border-radius:6px;padding:8px 12px;margin-top:8px;font-size:12px;font-weight:500;color:#7f6000;display:flex;justify-content:space-between;}
 
-/* ── 업데이트 알림 배너 ── */
-.update-banner{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:12px 20px;border-radius:10px;font-size:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:flex;align-items:center;gap:12px;white-space:nowrap;}
-.update-banner.show{display:flex;}
-.update-banner button{background:white;color:#1a1a1a;border:none;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;}
-
 /* ── 차종 선택 ── */
 .vehicle-selector{background:#f9f9f9;border-radius:8px;padding:12px 14px;margin-bottom:12px;}
 .vehicle-selector .vs-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
@@ -123,11 +118,6 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 </style>
 </head>
 <body>
-<div id="update-banner" class="update-banner">
-  🆕 새 버전이 있어요!
-  <button onclick="doUpdate()">업데이트</button>
-</div>
-
 <div id="app">
   <div class="header">
     <div class="header-logo">DEUTSCHE MOTORS · BPS</div>
@@ -1425,58 +1415,24 @@ function pvFooter(branch,staff,phone) {
 
 <!-- PWA Service Worker 등록 -->
 <script>
-let swReg = null;
-
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      swReg = reg;
-
-      // 이미 대기 중인 SW 있으면 바로 배너
-      if (reg.waiting) showUpdateBanner(reg.waiting);
-
-      // 새 SW 설치 감지
+      // 새 SW 감지 시 자동 새로고침 (배너 없이 조용히 업데이트)
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateBanner(newWorker);
+          if (newWorker.state === 'activated') {
+            window.location.reload();
           }
         });
       });
 
-      // 주기적으로 업데이트 확인 (30분마다)
+      // 30분마다 업데이트 확인
       setInterval(() => reg.update(), 30 * 60 * 1000);
 
     }).catch(err => console.warn('SW 등록 실패:', err));
-
-    // SW 교체되면 자동 새로고침
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
-    });
   });
-}
-
-function showUpdateBanner(worker) {
-  // 업데이트 직후 5초 이내면 배너 표시 안 함
-  const lastUpdate = localStorage.getItem('bps_last_update');
-  if (lastUpdate && Date.now() - parseInt(lastUpdate) < 5000) return;
-
-  window._pendingWorker = worker;
-  document.getElementById('update-banner').classList.add('show');
-}
-
-function doUpdate() {
-  document.getElementById('update-banner').classList.remove('show');
-  // 업데이트 시각 기록
-  localStorage.setItem('bps_last_update', Date.now().toString());
-
-  const worker = window._pendingWorker || (swReg && swReg.waiting);
-  if (worker) {
-    worker.postMessage({ type: 'SKIP_WAITING' });
-  } else {
-    window.location.reload();
-  }
 }
 </script>
 </body>
