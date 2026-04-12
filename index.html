@@ -1633,11 +1633,13 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+</script>
 
-
+<!-- PWA Service Worker 등록 -->
+<script>
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      // 새 SW 감지 시 자동 새로고침 (배너 없이 조용히 업데이트)
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         newWorker.addEventListener('statechange', () => {
@@ -1646,18 +1648,10 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         });
       });
-
-      // 30분마다 업데이트 확인
       setInterval(() => reg.update(), 30 * 60 * 1000);
-
     }).catch(err => console.warn('SW 등록 실패:', err));
   });
 }
-</script>
-
-<!-- PWA Service Worker 등록 -->
-<script>
-
 </script>
 
 </body>
