@@ -800,8 +800,9 @@ function getMaxRV(brand, series, regDate, period) {
   if (!regDate || !brand) return null;
   const reg = new Date(regDate);
   const now = new Date();
-  const monthsDiff = (now.getFullYear() - reg.getFullYear()) * 12 + (now.getMonth() - reg.getMonth());
-  const ageGroup = monthsDiff <= 12 ? 'under12' : 'over12';
+  // 엑셀 기준: 365일 이하 = Under 1year, 초과 = Over 1year
+  const days = Math.floor((now - reg) / (1000 * 60 * 60 * 24));
+  const ageGroup = days <= 365 ? 'under12' : 'over12';
   const seg = getSegment(brand, series);
   const brandKey = brand === 'MINI' ? 'MINI' : 'BMW';
   try {
@@ -833,7 +834,9 @@ function calcLF() {
   let residualPct = parseFloat(document.getElementById('lf-residual-pct').value)||0;
 
   if (maxRVRate !== null) {
-    const maxPct = Math.round(maxRVRate * 100);
+    // 엑셀 수식: ROUNDDOWN(CH37 * 110%, 2)
+    const maxRVWithBuffer = Math.floor(maxRVRate * 1.1 * 100) / 100;
+    const maxPct = Math.round(maxRVWithBuffer * 100);
     maxLabel.textContent = `최대 ${maxPct}%`;
     // 최대값 초과 시 자동 보정
     if (residualPct > maxPct) {
@@ -1524,15 +1527,17 @@ function pvNotice(isFinance) {
 function pvFooter(branch,staff,phone) {
   return `<div class="pv-footer">도이치모터스 ${branch}<br>${staff} · ${phone}</div>`;
 }
-</script>
 
-<!-- PWA Service Worker 등록 -->
-<script>
 // ── 설정 (MY INFO) ──────────────────────────────────
 function toggleSettings() {
   const p = document.getElementById('settings-panel');
   p.style.display = p.style.display === 'none' ? 'block' : 'none';
 }
+</script>
+
+<!-- PWA Service Worker 등록 -->
+<script>
+// ── 설정/저장 함수 (SW 블록으로 이동됨 - 하단 참조) ──
 
 function saveSettings() {
   const s = {
