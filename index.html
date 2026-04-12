@@ -1533,10 +1533,8 @@ function toggleSettings() {
   const p = document.getElementById('settings-panel');
   p.style.display = p.style.display === 'none' ? 'block' : 'none';
 }
-</script>
 
-<!-- PWA Service Worker 등록 -->
-<script>
+
 // ── 설정/저장 함수 (SW 블록으로 이동됨 - 하단 참조) ──
 
 function saveSettings() {
@@ -1656,5 +1654,11 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 }
 </script>
+
+<!-- PWA Service Worker 등록 -->
+<script>
+
+</script>
+
 </body>
 </html>
