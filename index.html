@@ -22,11 +22,15 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 .header-title{font-size:17px;font-weight:300;letter-spacing:1px;}
 .header-sub{font-size:11px;color:#666;margin-top:3px;}
 
-/* ── 탭 ── */
-.tabs{display:flex;background:#111;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-.tabs::-webkit-scrollbar{display:none;}
-.tab{flex:none;padding:10px 14px;font-size:12px;color:#666;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;}
-.tab.active{color:white;border-bottom-color:white;}
+/* ── 헤더 설정 버튼 ── */
+.header{position:relative;}
+.header-setting{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;font-size:16px;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.header-setting:active{background:rgba(255,255,255,0.25);}
+
+/* ── 탭 (시안 B: 필 배지형) ── */
+.tabs{background:#1a1a1a;padding:6px 8px 8px;display:flex;gap:5px;}
+.tab{flex:1;padding:8px 4px;font-size:11px;color:#999;cursor:pointer;text-align:center;border-radius:7px;font-weight:500;letter-spacing:0.2px;transition:all .18s;background:rgba(255,255,255,0.07);}
+.tab.active{background:white;color:#1a1a1a;font-weight:700;}
 
 /* ── 카드 ── */
 .card{background:white;padding:18px 20px;border-bottom:1px solid #eee;}
@@ -123,18 +127,35 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
     <div class="header-logo">DEUTSCHE MOTORS · BPS</div>
     <div class="header-title">인증중고차 견적서</div>
     <div class="header-sub">BMW / MINI Premium Selection</div>
+    <button class="header-setting" onclick="toggleSettings()" title="설정">⚙</button>
   </div>
 
-  <!-- 탭 -->
+  <!-- 설정 패널 -->
+  <div id="settings-panel" style="display:none;background:#f9f9f9;border-bottom:1px solid #eee;padding:16px 20px;">
+    <div class="section-title">MY INFO 설정</div>
+    <div class="grid-2" style="margin-top:10px;">
+      <div class="field"><label>전시장</label><input id="s-branch" placeholder="가양BPS"></div>
+      <div class="field"><label>담당자 이름</label><input id="s-staff" placeholder="홍길동"></div>
+      <div class="field"><label>담당자 연락처</label><input id="s-phone" placeholder="010-0000-0000"></div>
+      <div class="field"><label>F&amp;I 매니저</label><input id="s-fni" placeholder="김진환"></div>
+      <div class="field"><label>F&amp;I 연락처</label><input id="s-fni-phone" placeholder="010-0000-0000"></div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn btn-white" style="flex:1;padding:10px;" onclick="saveSettings()">💾 저장</button>
+      <button class="btn btn-dark" style="flex:1;padding:10px;" onclick="toggleSettings()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 탭 (순서: 금융리스 → 운용리스 → 할부 → 현금) -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('cash')">💴 현금</div>
-    <div class="tab" onclick="switchTab('lease_fin')">📋 금융리스</div>
-    <div class="tab" onclick="switchTab('lease_op')">🔄 운용리스</div>
-    <div class="tab" onclick="switchTab('installment')">💳 할부</div>
+    <div class="tab active" onclick="switchTab('lease_fin')">금융리스</div>
+    <div class="tab" onclick="switchTab('lease_op')">운용리스</div>
+    <div class="tab" onclick="switchTab('installment')">할부</div>
+    <div class="tab" onclick="switchTab('cash')">현금</div>
   </div>
 
   <!-- ════ 현금 ════ -->
-  <div id="tab-cash">
+  <div id="tab-cash" style="display:none;">
     <!-- 담당자 -->
     <div class="card">
       <div class="section-title">DEALER INFO</div>
@@ -256,7 +277,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
   </div>
 
   <!-- ════ 금융리스 ════ -->
-  <div id="tab-lease_fin" style="display:none;">
+  <div id="tab-lease_fin" style="display:block;">
     <!-- 담당자 -->
     <div class="card">
       <div class="section-title">DEALER INFO</div>
@@ -676,8 +697,9 @@ function switchTab(name) {
     document.getElementById('tab-'+t).style.display = t===name ? 'block' : 'none';
   });
   document.querySelectorAll('.tab').forEach((el,i) => {
-    el.classList.toggle('active', ['cash','lease_fin','lease_op','installment'][i] === name);
+    el.classList.toggle('active', ['lease_fin','lease_op','installment','cash'][i] === name);
   });
+  localStorage.setItem('bps_last_tab', name);
 }
 
 // ── 유틸 ──
@@ -1506,7 +1528,110 @@ function pvFooter(branch,staff,phone) {
 
 <!-- PWA Service Worker 등록 -->
 <script>
-if ('serviceWorker' in navigator) {
+// ── 설정 (MY INFO) ──────────────────────────────────
+function toggleSettings() {
+  const p = document.getElementById('settings-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveSettings() {
+  const s = {
+    branch:   document.getElementById('s-branch').value,
+    staff:    document.getElementById('s-staff').value,
+    phone:    document.getElementById('s-phone').value,
+    fni:      document.getElementById('s-fni').value,
+    fniPhone: document.getElementById('s-fni-phone').value,
+  };
+  localStorage.setItem('bps_settings', JSON.stringify(s));
+  applySettings(s);
+  toggleSettings();
+  alert('저장됐어요! 모든 탭에 반영됐습니다.');
+}
+
+function applySettings(s) {
+  if (!s) return;
+  // 각 탭 딜러 정보에 일괄 반영
+  const map = [
+    ['c-branch','c-staff','c-phone',null,null],
+    ['lf-branch','lf-staff','lf-phone','lf-fni','lf-fni-phone'],
+    ['lo-branch','lo-staff','lo-phone','lo-fni','lo-fni-phone'],
+    ['inst-branch','inst-staff','inst-phone','inst-fni','inst-fni-phone'],
+  ];
+  map.forEach(([br,st,ph,fn,fp]) => {
+    if (br && s.branch)   { const el=document.getElementById(br); if(el) el.value=s.branch; }
+    if (st && s.staff)    { const el=document.getElementById(st); if(el) el.value=s.staff; }
+    if (ph && s.phone)    { const el=document.getElementById(ph); if(el) el.value=s.phone; }
+    if (fn && s.fni)      { const el=document.getElementById(fn); if(el) el.value=s.fni; }
+    if (fp && s.fniPhone) { const el=document.getElementById(fp); if(el) el.value=s.fniPhone; }
+  });
+  // 설정 패널 입력값도 채우기
+  ['branch','staff','phone','fni','fniPhone'].forEach(k => {
+    const el = document.getElementById('s-'+k.replace('P','p').replace('N','n'));
+    if (el && s[k]) el.value = s[k];
+  });
+}
+
+// ── 마지막 견적 저장/복원 ────────────────────────────
+const SAVE_FIELDS = {
+  cash: ['c-price','c-bond-region','c-misc','c-delivery','c-model','c-year','c-regdate','c-mileage'],
+  lf:   ['lf-price-orig','lf-discount','lf-deposit','lf-residual-pct','lf-period','lf-product','lf-delivery','lf-misc','lf-model','lf-year','lf-regdate','lf-cc','lf-ev','lf-mileage'],
+  lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-pct','lo-residual-pct','lo-sc-pct','lo-model','lo-year','lo-regdate','lo-mileage'],
+  inst: ['inst-price-orig','inst-discount','inst-down','inst-product','inst-period','inst-bond-region','inst-model','inst-year','inst-regdate','inst-mileage'],
+};
+
+function saveQuote(tab) {
+  const data = {};
+  (SAVE_FIELDS[tab]||[]).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  localStorage.setItem('bps_quote_'+tab, JSON.stringify(data));
+}
+
+function restoreQuote(tab) {
+  const raw = localStorage.getItem('bps_quote_'+tab);
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  Object.entries(data).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  // 복원 후 계산 트리거
+  const calcMap = {cash: calcCash, lf: calcLF, lo: calcLO, inst: calcInst};
+  if (calcMap[tab]) setTimeout(() => calcMap[tab](), 50);
+}
+
+// ── 앱 초기화 ────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // 설정 복원
+  const saved = localStorage.getItem('bps_settings');
+  if (saved) {
+    try { applySettings(JSON.parse(saved)); } catch(e) {}
+  }
+
+  // 마지막 탭 복원
+  const lastTab = localStorage.getItem('bps_last_tab') || 'lease_fin';
+  switchTab(lastTab);
+
+  // 각 탭 마지막 견적 복원 (고객명 제외)
+  ['cash','lf','lo','inst'].forEach(t => restoreQuote(t));
+
+  // 입력 변경 시 자동 저장 (debounce)
+  let saveTimer = {};
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('change', () => {
+      const tab = el.id.startsWith('c-') ? 'cash'
+                : el.id.startsWith('lf-') ? 'lf'
+                : el.id.startsWith('lo-') ? 'lo'
+                : el.id.startsWith('inst-') ? 'inst' : null;
+      if (!tab) return;
+      clearTimeout(saveTimer[tab]);
+      saveTimer[tab] = setTimeout(() => saveQuote(tab), 800);
+    });
+  });
+});
+
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then(reg => {
       // 새 SW 감지 시 자동 새로고침 (배너 없이 조용히 업데이트)
