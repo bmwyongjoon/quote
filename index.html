@@ -262,11 +262,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="section-title">DEALER INFO</div>
       <div class="grid-2">
         <div class="field"><label>전시장</label><input id="lf-branch" value="가양BPS"></div>
+        <div class="field"><label>고객명</label><input id="lf-customer" placeholder="고객명"></div>
         <div class="field"><label>담당자 (영업)</label><input id="lf-staff" value="장용준"></div>
         <div class="field"><label>담당자 연락처</label><input id="lf-phone" value="010-3384-3507"></div>
-        <div class="field"><label>F&amp;I 담당자</label><input id="lf-fni" value="김진환"></div>
+        <div class="field"><label>F&amp;I 매니저</label><input id="lf-fni" value="김진환"></div>
         <div class="field"><label>F&amp;I 연락처</label><input id="lf-fni-phone" placeholder="010-0000-0000"></div>
-        <div class="field"><label>고객명</label><input id="lf-customer" placeholder="고객명"></div>
       </div>
     </div>
     <!-- 차량 -->
@@ -307,7 +307,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       </div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="lf-year" placeholder="2025"></div>
-        <div class="field"><label>최초등록일</label><input id="lf-regdate" placeholder="2025-01-10"></div>
+        <div class="field"><label>최초등록일</label><input id="lf-regdate" placeholder="2025-01-10" oninput="calcLF()"></div>
         <div class="field"><label>배기량</label><div class="amt"><input id="lf-cc" placeholder="1995"><span>cc</span></div></div>
         <div class="field"><label>주행거리</label><div class="amt"><input type="number" id="lf-mileage"><span>km</span></div></div>
         <div class="field"><label>전기차 여부</label>
@@ -354,9 +354,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         </div>
         <div class="field"><label>이자율 (자동입력)</label><div class="amt"><input id="lf-rate-disp" readonly style="background:#f9f9f9;color:#1a1a1a;font-weight:500;"><span>%</span></div></div>
         <div class="field"><label>선납금</label><div class="amt"><input type="number" id="lf-deposit" placeholder="0" oninput="calcLF()"><span>원</span></div></div>
-        <div class="field"><label>유예금 (%)</label><div class="amt"><input type="number" id="lf-residual-pct" value="30" step="1" oninput="calcLF()"><span>%</span></div></div>
-        <div class="field"><label>유예금 (원, 자동계산)</label><div class="amt"><input id="lf-residual-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div class="field"><label>대출 신청 금액 (자동)</label><div class="amt"><input id="lf-loan-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>유예금 % <span id="lf-residual-max-label" style="color:#e53e3e;font-size:9px;"></span></label>
+          <div class="amt"><input type="number" id="lf-residual-pct" value="30" step="1" min="0" oninput="calcLF()"><span>%</span></div>
+        </div>
+        <div class="field"><label>유예금 (자동계산)</label><div class="amt"><input id="lf-residual-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>대출 신청 금액 (자동)</label><div class="amt"><input id="lf-loan-disp" readonly style="background:#f9f9f9;color:#1a1a1a;font-weight:500;"><span>원</span></div></div>
       </div>
     </div>
     <!-- 결과 -->
@@ -747,6 +749,44 @@ const LF_RATES = {
   4: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 트레이드인(신규)
 };
 
+// ── 금융리스 최대 유예금(RV) 테이블 ──
+// 차량 등록 후 12개월 이내 / 이상 × 세그먼트 × 기간
+// 세그먼트: UKL(1~2시리즈), KKL(3~4시리즈), MKL(5~6시리즈), GKL(7~8시리즈)
+const LF_RV = {
+  under12: { // 차령 12개월 이내
+    BMW: { UKL:{24:0.66,36:0.60,48:0.53,60:0.47}, KKL:{24:0.65,36:0.60,48:0.52,60:0.47}, MKL:{24:0.66,36:0.59,48:0.50,60:0.43}, GKL:{24:0.64,36:0.55,48:0.50,60:0.40} },
+    MINI: { MINI:{24:0.60,36:0.45,48:0.37,60:0.30} }
+  },
+  over12: { // 차령 12개월 초과
+    BMW: { UKL:{24:0.64,36:0.53,48:0.42,60:0.30}, KKL:{24:0.67,36:0.57,48:0.47,60:0.36}, MKL:{24:0.62,36:0.53,48:0.43,60:0.35}, GKL:{24:0.59,36:0.48,48:0.38,60:0.30} },
+    MINI: { MINI:{24:0.41,36:0.24,48:0.18,60:0.16} }
+  }
+};
+
+// 세그먼트 판별 (series 기준)
+function getSegment(brand, series) {
+  if (brand === 'MINI') return 'MINI';
+  const s = (series||'').toUpperCase();
+  if (s.includes('1') || s.includes('2') || s === 'Z4' || s.includes('Z시리즈')) return 'UKL';
+  if (s.includes('3') || s.includes('4') || s.includes('X1') || s.includes('X2') || s.includes('X3') || s.includes('X4')) return 'KKL';
+  if (s.includes('5') || s.includes('6') || s.includes('X5') || s.includes('X6')) return 'MKL';
+  if (s.includes('7') || s.includes('8') || s.includes('X7') || s.includes('XM') || s.includes('I')) return 'GKL';
+  return 'KKL'; // 기본값
+}
+
+function getMaxRV(brand, series, regDate, period) {
+  if (!regDate || !brand) return null;
+  const reg = new Date(regDate);
+  const now = new Date();
+  const monthsDiff = (now.getFullYear() - reg.getFullYear()) * 12 + (now.getMonth() - reg.getMonth());
+  const ageGroup = monthsDiff <= 12 ? 'under12' : 'over12';
+  const seg = getSegment(brand, series);
+  const brandKey = brand === 'MINI' ? 'MINI' : 'BMW';
+  try {
+    return LF_RV[ageGroup][brandKey][seg][period] || null;
+  } catch(e) { return null; }
+}
+
 function calcLF() {
   const orig = parseFloat(document.getElementById('lf-price-orig').value)||0;
   const discount = parseFloat(document.getElementById('lf-discount').value)||0;
@@ -754,22 +794,44 @@ function calcLF() {
   const delivery = parseFloat(document.getElementById('lf-delivery').value)||0;
   const misc = parseFloat(document.getElementById('lf-misc').value)||0;
   const deposit = parseFloat(document.getElementById('lf-deposit').value)||0;
-  const residualPct = parseFloat(document.getElementById('lf-residual-pct').value)||30;
   const period = parseInt(document.getElementById('lf-period').value)||60;
   const product = parseInt(document.getElementById('lf-product').value)||0;
   const rate = LF_RATES[product][period];
 
-  // 표시
   document.getElementById('lf-price-final').value = finalPrice > 0 ? finalPrice.toLocaleString() : '';
   document.getElementById('lf-rate-disp').value = rate ? (rate * 100).toFixed(2) : '';
 
-  const residual = Math.round(finalPrice * (residualPct / 100));
+  // 최대 유예금 계산 및 표시
+  const regDate = document.getElementById('lf-regdate').value;
+  const brand = document.getElementById('lf-vs-brand')?.value || '';
+  const series = document.getElementById('lf-vs-series')?.value || '';
+  const maxRVRate = getMaxRV(brand, series, regDate, period);
+  const maxLabel = document.getElementById('lf-residual-max-label');
+
+  let residualPct = parseFloat(document.getElementById('lf-residual-pct').value)||0;
+
+  if (maxRVRate !== null) {
+    const maxPct = Math.round(maxRVRate * 100);
+    maxLabel.textContent = `최대 ${maxPct}%`;
+    // 최대값 초과 시 자동 보정
+    if (residualPct > maxPct) {
+      residualPct = maxPct;
+      document.getElementById('lf-residual-pct').value = maxPct;
+    }
+    document.getElementById('lf-residual-pct').max = maxPct;
+  } else {
+    maxLabel.textContent = '';
+  }
+
+  const residual = Math.round(finalPrice * residualPct / 100);
   document.getElementById('lf-residual-disp').value = residual > 0 ? residual.toLocaleString() : '';
 
-  const loanAmt = finalPrice - deposit - residual;
+  // ✅ 대출 신청금액 = 최종구입가격 - 선납금 (유예금 차감 안 함!)
+  const loanAmt = finalPrice - deposit;
   document.getElementById('lf-loan-disp').value = loanAmt > 0 ? loanAmt.toLocaleString() : '';
 
-  // PMT 계산: =ROUNDDOWN(PMT(rate/12, period, -loanAmt, residual, 0), 0)
+  // ✅ PMT(rate/12, period, -loanAmt, residual, 0)
+  // 유예금은 FV로 처리 (만기 일시 상환)
   let monthly = 0;
   if (rate > 0 && loanAmt > 0) {
     const r = rate / 12;
@@ -778,17 +840,16 @@ function calcLF() {
     monthly = Math.floor(loanAmt / period);
   }
 
-  // 결과 표시
   document.getElementById('lfr-orig').textContent = fmt(orig);
   document.getElementById('lfr-discount').textContent = discount > 0 ? '-' + fmt(discount) : '—';
   document.getElementById('lfr-price').textContent = fmt(finalPrice);
-  document.getElementById('lfr-deposit').textContent = fmt(deposit);
+  document.getElementById('lfr-deposit').textContent = deposit > 0 ? fmt(deposit) : '—';
   document.getElementById('lfr-residual').textContent = residual > 0 ? fmt(residual) + ' (' + residualPct + '%)' : '—';
   document.getElementById('lfr-loan').textContent = fmt(loanAmt);
   document.getElementById('lfr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
   document.getElementById('lfr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
 
-  return { orig, discount, finalPrice, deposit, residualPct, residual, loanAmt, period, rate, monthly, delivery, misc };
+  return { orig, discount, finalPrice, deposit, residualPct, residual, loanAmt, period, rate, monthly, delivery, misc, maxRVRate };
 }
 
 function resetLF() {
