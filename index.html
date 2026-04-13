@@ -957,7 +957,8 @@ const LO_SC_FIXED = 0.06; // BD38 고정 6% (EE39 계산용)
 
 function rateCalcLO(nper, pmt, pv, fv) {
   // Excel RATE 함수 구현 (Newton-Raphson)
-  let r = 0.01;
+  // 초기 추정값: PMT/PV 기반으로 더 나은 시작점 설정
+  let r = Math.max(0.001, Math.abs(pmt / pv) * 0.8);
   for (let i = 0; i < 300; i++) {
     const pvif = Math.pow(1+r, nper);
     const f  = pv*pvif + pmt*(pvif-1)/r + fv;
@@ -1048,7 +1049,7 @@ function calcLO() {
   const brand = document.getElementById('lo-vs-brand')?.value || '';
   const series = document.getElementById('lo-vs-series')?.value || '';
   const maxRVRate = getMaxRV(brand, series, regDate, period);
-  const maxRVWithBuffer = maxRVRate ? Math.floor(maxRVRate * 1.1 * 100) / 100 : null;
+  const maxRVWithBuffer = maxRVRate ? maxRVRate : null;  // 운용리스: BO33=CI37 (×110% 없음)
   const minRVRate = maxRVRate ? (maxRVRate >= 0.20 ? 0.20 : maxRVRate) : 0;
 
   const residualRangeLabel = document.getElementById('lo-residual-range-label');
@@ -1154,7 +1155,7 @@ function calcLO() {
   document.getElementById('lor-deposit').textContent = fmt(deposit) + ' (' + depositPct + '%)';
   document.getElementById('lor-residual').textContent = fmt(residual) + ' (' + residualPct + '%)';
   document.getElementById('lor-period').textContent = period + '개월';
-  document.getElementById('lor-rate').textContent = irr ? (irr * 100).toFixed(2) + '%' : '—';
+  document.getElementById('lor-rate').textContent = ee40 ? (ee40 * 100).toFixed(2) + '%' : '—';
   document.getElementById('lor-carmtax').textContent = taxInclude === 1 ? fmtN(monthlyCarTax) + ' 원/월' : '미포함';
   document.getElementById('lor-init').textContent = fmt(initPayment);
   document.getElementById('lor-monthly').textContent = monthlyTotal > 0 ? fmtN(monthlyTotal) + ' 원/월' : '—';
