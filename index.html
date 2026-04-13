@@ -1055,8 +1055,8 @@ function calcLO() {
   const depositMaxLabel = document.getElementById('lo-deposit-max-label');
 
   if (maxRVWithBuffer !== null) {
-    const maxPct = Math.round(maxRVWithBuffer * 100);
-    const minPct = Math.round(minRVRate * 100);
+    let maxPct = Math.round(maxRVWithBuffer * 100);
+    let minPct = Math.round(minRVRate * 100);
     residualRangeLabel.textContent = `${minPct}~${maxPct}%`;
     document.getElementById('lo-residual-pct').min = minPct;
     document.getElementById('lo-residual-pct').max = maxPct;
@@ -1077,9 +1077,9 @@ function calcLO() {
   let residualPct = parseFloat(document.getElementById('lo-residual-pct').value)||0;
   depositPct = Math.min(50, Math.max(0, depositPct));
   if (maxRVWithBuffer !== null) {
-    const maxPct = Math.round(maxRVWithBuffer * 100);
-    const minPct = Math.round(minRVRate * 100);
-    residualPct = Math.min(maxPct, Math.max(minPct, residualPct));
+    const maxPctLimit = Math.round(maxRVWithBuffer * 100);
+    const minPctLimit = Math.round(minRVRate * 100);
+    residualPct = Math.min(maxPctLimit, Math.max(minPctLimit, residualPct));
   }
 
   const deposit = Math.floor(finalPrice * depositPct / 100 / 1000) * 1000;
@@ -1139,7 +1139,6 @@ function calcLO() {
   document.getElementById('lo-init-disp').value = initPayment.toLocaleString();
 
   // 자동차세
-  const cc = parseFloat(document.getElementById('lo-cc')?.value) || 0;
   const annualCarTax = calcCarTax(cc);
   const monthlyCarTax = taxInclude === 1 ? Math.floor(annualCarTax / 12) : 0;
   document.getElementById('lo-carmtax-disp').value = taxInclude === 1 ? monthlyCarTax.toLocaleString() : '미포함';
