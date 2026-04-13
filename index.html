@@ -210,7 +210,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       </div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="c-year" placeholder="2023"></div>
-        <div class="field"><label>최초등록일</label><input id="c-regdate" placeholder="2023-02-17"></div>
+        <div class="field"><label>최초등록일</label><input id="c-regdate" type="date" placeholder="0000-00-00"></div>
         <div class="field"><label>주행거리</label><div class="amt"><input type="number" id="c-mileage" placeholder="57464"><span>km</span></div></div>
       </div>
     </div>
@@ -334,7 +334,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       </div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="lf-year" placeholder="2025"></div>
-        <div class="field"><label>최초등록일</label><input id="lf-regdate" placeholder="2025-01-10" oninput="calcLF()"></div>
+        <div class="field"><label>최초등록일</label><input id="lf-regdate" type="date" placeholder="0000-00-00" oninput="calcLF()"></div>
         <div class="field"><label>배기량</label><div class="amt"><input id="lf-cc" placeholder="1995"><span>cc</span></div></div>
         <div class="field"><label>주행거리</label><div class="amt"><input type="number" id="lf-mileage"><span>km</span></div></div>
         <div class="field"><label>전기차 여부</label>
@@ -462,7 +462,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="grid-1"><div class="field"><label>차량 모델명 (직접입력 가능)</label><input id="lo-model" placeholder="예) 523d M Spt_P1"></div></div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="lo-year" placeholder="2025"></div>
-        <div class="field"><label>최초등록일</label><input id="lo-regdate" placeholder="2025-01-10" oninput="calcLO()"></div>
+        <div class="field"><label>최초등록일</label><input id="lo-regdate" type="date" placeholder="0000-00-00" oninput="calcLO()"></div>
         <div class="field"><label>배기량</label><div class="amt"><input type="number" id="lo-cc" placeholder="1995" oninput="calcLO()"><span>cc</span></div></div>
         <div class="field"><label>주행거리</label><div class="amt"><input type="number" id="lo-mileage"><span>km</span></div></div>
       </div>
@@ -473,31 +473,41 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         <div class="field"><label>차량 가격 (원가)</label><div class="amt"><input type="number" id="lo-price-orig" placeholder="55000000" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>할인 금액</label><div class="amt"><input type="number" id="lo-discount" placeholder="0" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>최종 구입 가격</label><div class="amt"><input id="lo-price-final" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div class="field"><label>취득세</label><input id="lo-tax-disp" readonly value="(면제)" style="background:#f9f9f9;color:#888;font-size:11px;"></div>
+        <div class="field">
+          <label>취득세</label>
+          <select id="lo-tax-mode" onchange="calcLO()">
+            <option value="exempt" selected>면제</option>
+            <option value="auto">자동 계산</option>
+            <option value="manual">수기 입력</option>
+          </select>
+        </div>
+        <div id="lo-tax-auto-row" class="field" style="display:none;"><label>취득세 (자동)</label><div class="amt"><input id="lo-tax-auto-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="lo-tax-manual-row" class="field" style="display:none;"><label>취득세 (직접 입력)</label><div class="amt"><input type="number" id="lo-tax-input" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>공채 지역</label>
           <select id="lo-bond-region" onchange="calcLO()">
-            <option value="0">선택 안함</option>
-            <option value="0.12" selected>서울 (12%)</option>
-            <option value="0.04">부산 (4%)</option>
-            <option value="0.04">인천 (4%)</option>
-            <option value="0.04">대구 (4%)</option>
-            <option value="0.08">대전 (8%)</option>
-            <option value="0.08">광주 (8%)</option>
-            <option value="0.08">울산 (8%)</option>
-            <option value="0.08">경기 (8%)</option>
-            <option value="0.08">강원 (8%)</option>
-            <option value="0.08">충북 (8%)</option>
-            <option value="0.08">충남 (8%)</option>
-            <option value="0.08">전북 (8%)</option>
-            <option value="0.08">전남 (8%)</option>
-            <option value="0.08">경북 (8%)</option>
-            <option value="0.04">경남 (4%)</option>
-            <option value="0.08">제주 (8%)</option>
+            <option value="none">선택 안함 (면제)</option>
+            <option value="seoul" selected>서울</option>
+            <option value="busan">부산</option>
+            <option value="incheon">인천</option>
+            <option value="daegu">대구</option>
+            <option value="daejeon">대전</option>
+            <option value="gwangju">광주</option>
+            <option value="ulsan">울산</option>
+            <option value="gyeonggi">경기</option>
+            <option value="gangwon">강원</option>
+            <option value="chungbuk">충북</option>
+            <option value="chungnam">충남</option>
+            <option value="jeonbuk">전북</option>
+            <option value="jeonnam">전남</option>
+            <option value="gyeongbuk">경북</option>
+            <option value="gyeongnam">경남</option>
+            <option value="jeju">제주</option>
           </select>
         </div>
         <div class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="lo-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="lo-misc" placeholder="0" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="lo-delivery" placeholder="0" oninput="calcLO()"><span>원</span></div></div>
+        <div class="field"><label>계약 주행거리</label><input readonly value="20,000 km" style="background:#f9f9f9;color:#888;font-size:12px;"></div>
       </div>
     </div>
     <div class="card">
@@ -635,7 +645,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="grid-1"><div class="field"><label>차량 모델명 (직접입력 가능)</label><input id="inst-model" placeholder="예) 320i M Spt LCI"></div></div>
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>연식</label><input id="inst-year" placeholder="2024"></div>
-        <div class="field"><label>최초등록일</label><input id="inst-regdate" placeholder="2024-03-01"></div>
+        <div class="field"><label>최초등록일</label><input id="inst-regdate" type="date" placeholder="0000-00-00"></div>
         <div class="field"><label>주행거리</label><div class="amt"><input type="number" id="inst-mileage"><span>km</span></div></div>
       </div>
     </div>
@@ -927,38 +937,40 @@ function resetLF() {
 // ── 운용리스 금리 테이블 (2026 BPS, Product Table 기준) ──
 // 표준형: {demo/new: {기간: {보증금비율: IRR}}}
 // 보증금비율: 0=0%, 1=10%, 2=20%, 3=30%, 4=40%, 5=50%
-const LO_RATES_STANDARD = {
-  demo: {
-    24: {0:0.1622, 10:0.1688, 20:0.1780, 30:0.1915, 40:0.2135, 50:0.2514},
-    36: {0:0.1466, 10:0.1532, 20:0.1624, 30:0.1759, 40:0.1979, 50:0.2358},
-    48: {0:0.1466, 10:0.1532, 20:0.1624, 30:0.1759, 40:0.1979, 50:0.2358},
-    60: {0:0.1466, 10:0.1532, 20:0.1624, 30:0.1759, 40:0.1979, 50:0.2358},
-  },
-  new: {
-    24: {0:0.1502, 10:0.1568, 20:0.1660, 30:0.1795, 40:0.2015, 50:0.2394},
-    36: {0:0.1346, 10:0.1412, 20:0.1504, 30:0.1639, 40:0.1859, 50:0.2238},
-    48: {0:0.1346, 10:0.1412, 20:0.1504, 30:0.1639, 40:0.1859, 50:0.2238},
-    60: {0:0.1346, 10:0.1412, 20:0.1504, 30:0.1639, 40:0.1859, 50:0.2238},
-  }
-};
-// SC 커미션율 (기간별)
-const LO_SC_STANDARD = {
-  demo: {24:0.06, 36:0.07, 48:0.07, 60:0.08},
-  new:  {24:0.06, 36:0.07, 48:0.07, 60:0.08},
-};
-// 선납형: {demo/new: {기간: IRR}}
-const LO_RATES_PREPAID = {
-  demo: {24:0.1059, 36:0.1059, 48:0.1149, 60:0.1105},
-  new:  {24:0.1059, 36:0.1059, 48:0.1149, 60:0.1105},
-};
-const LO_SC_PREPAID = {
-  demo: {24:0.015, 36:0.035, 48:0.035, 60:0.035},
-  new:  {24:0.015, 36:0.035, 48:0.035, 60:0.035},
+// ── 운용리스 내부 IRR 테이블 (AM:AN, KEY 방식) ──
+// KEY = demo(1/2) + 상품(1) + 보증금형(1) + 보증금구간(1~4)
+// 보증금구간: <20%→1, <30%→2, <40%→3, ≥40%→4
+const LO_IRR_AMAM = {
+  '1111': 0.117,  // demo, standard, dep=0~20%
+  '1112': 0.122,  // demo, standard, dep=20~30%
+  '1113': 0.127,  // demo, standard, dep=30~40%
+  '1114': 0.138,  // demo, standard, dep≥40%
+  '2111': 0.1025, // new,  standard, dep=0~20%
+  '2112': 0.108,  // new,  standard, dep=20~30%
+  '2113': 0.113,  // new,  standard, dep=30~40%
+  '2114': 0.124,  // new,  standard, dep≥40%
+  '1220': 0.09,   // demo, prepaid
+  '2220': 0.077,  // new,  prepaid
 };
 const LO_FNI_RATE = 0.0045;
+const LO_SC_FIXED = 0.06; // BD38 고정 6% (EE39 계산용)
+
+function rateCalcLO(nper, pmt, pv, fv) {
+  // Excel RATE 함수 구현 (Newton-Raphson)
+  let r = 0.01;
+  for (let i = 0; i < 300; i++) {
+    const pvif = Math.pow(1+r, nper);
+    const f  = pv*pvif + pmt*(pvif-1)/r + fv;
+    const df = nper*pv*Math.pow(1+r,nper-1) + pmt*((pvif-1)/r - nper*Math.pow(1+r,nper-1)/r);
+    if (Math.abs(df) < 1e-12) break;
+    const rn = r - f/df;
+    if (Math.abs(rn-r) < 1e-12) break;
+    r = rn;
+  }
+  return r;
+}
 
 function pmtCalc(rate, nper, pv, fv) {
-  // Excel PMT(rate, nper, pv, fv, 0) 구현
   if (rate === 0) return -(pv + fv) / nper;
   const pvif = Math.pow(1 + rate, nper);
   return rate * (pv * pvif + fv) / (pvif - 1);
@@ -982,7 +994,6 @@ function calcLO() {
   const product = document.getElementById('lo-product').value;
   const period = parseInt(document.getElementById('lo-period').value);
   const taxInclude = parseInt(document.getElementById('lo-tax-include').value);
-  const bondRate = parseFloat(document.getElementById('lo-bond-region').value)||0;
   const misc = parseFloat(document.getElementById('lo-misc').value)||0;
   const delivery = parseFloat(document.getElementById('lo-delivery').value)||0;
 
@@ -991,9 +1002,46 @@ function calcLO() {
 
   document.getElementById('lo-price-final').value = finalPrice > 0 ? finalPrice.toLocaleString() : '';
 
-  // 공채
-  const bond = bondRate > 0 ? Math.round(finalPrice / 1.1 * bondRate / 1000) * 1000 : 0;
-  document.getElementById('lo-bond-disp').value = bond > 0 ? bond.toLocaleString() : '0';
+  // ── 취득세 ──
+  const taxMode = document.getElementById('lo-tax-mode').value;
+  const taxAutoRow = document.getElementById('lo-tax-auto-row');
+  const taxManualRow = document.getElementById('lo-tax-manual-row');
+  taxAutoRow.style.display = taxMode === 'auto' ? '' : 'none';
+  taxManualRow.style.display = taxMode === 'manual' ? '' : 'none';
+
+  let loTax = 0;
+  if (taxMode === 'auto' && finalPrice > 0) {
+    loTax = Math.floor(finalPrice / 1.1 * 0.07 / 10) * 10;
+    document.getElementById('lo-tax-auto-disp').value = loTax.toLocaleString();
+  } else if (taxMode === 'manual') {
+    loTax = parseFloat(document.getElementById('lo-tax-input').value)||0;
+  }
+
+  // ── 공채 (배기량 기반 자동 계산) ──
+  const cc = parseFloat(document.getElementById('lo-cc')?.value)||0;
+  const bondRegion = document.getElementById('lo-bond-region').value;
+
+  // 지역별 공채율 (배기량 기반, Bond 시트 기준)
+  function getLoBondRate(region, cc) {
+    if (region === 'none') return 0;
+    if (cc <= 0) return 0;
+    const seoulIncheon = { // 서울: cc<1600→9%, <2000→12%, 이상→20%
+      seoul: cc < 1600 ? 0.09 : cc < 2000 ? 0.12 : 0.20,
+      incheon: cc < 2000 ? 0.04 : 0.05,
+      gyeongnam: cc < 2000 ? 0.04 : 0.05,
+      busan: cc < 2000 ? 0.04 : 0.05,
+      daegu: cc < 2000 ? 0.04 : 0.05,
+    };
+    if (seoulIncheon[region] !== undefined) return seoulIncheon[region];
+    // 나머지 지역: cc<1600→6%, <2000→8%, 이상→12%
+    return cc < 1600 ? 0.06 : cc < 2000 ? 0.08 : 0.12;
+  }
+
+  const bondRate = getLoBondRate(bondRegion, cc);
+  const bond = (bondRate > 0 && finalPrice > 0)
+    ? Math.round(finalPrice / 1.1 * bondRate / 1000) * 1000
+    : 0;
+  document.getElementById('lo-bond-disp').value = bond > 0 ? bond.toLocaleString() : bondRegion === 'none' ? '면제' : (cc <= 0 ? '배기량 입력 필요' : '0');
 
   // 최대 유예금(RV) 기반 잔존가치 범위
   const regDate = document.getElementById('lo-regdate').value;
@@ -1040,43 +1088,63 @@ function calcLO() {
   document.getElementById('lo-deposit-disp').value = deposit.toLocaleString();
   document.getElementById('lo-residual-disp').value = residual.toLocaleString();
 
-  // IRR 조회 (기존 로직 유지)
-  let irr, scRate;
+  // ── IRR 조회 (AM:AN KEY 방식) ──
+  // CI45: 보증금구간 <20%→1, <30%→2, <40%→3, ≥40%→4
+  const ci45 = depositPct < 20 ? 1 : depositPct < 30 ? 2 : depositPct < 40 ? 3 : 4;
+  const demoN = demo === 'demo' ? '1' : '2';
+  let key, dp33;
   if (product === 'standard') {
-    irr = LO_RATES_STANDARD[demo][period][depositPct] || 0;
-    scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
+    key = `${demoN}11${ci45}`;
   } else {
-    irr = LO_RATES_PREPAID[demo][period] || 0;
-    scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
+    key = `${demoN}220`;
   }
-  document.getElementById('lo-rate-disp').value = irr ? (irr * 100).toFixed(2) : '';
+  dp33 = LO_IRR_AMAM[key] || 0;
 
-  // SC 커미션
+  // ── 월납입금 계산 (엑셀 EE 수식 방식) ──
+  // dp30 = ROUND(0.06 * finalPrice) — BD38 6% 고정 (EE39 계산용, 사용자 SC와 별개)
+  // dp31 = ROUND(0.004 * (finalPrice - deposit))
+  // EE39 = ROUNDDOWN(PMT(dp33/12, period, -(finalPrice-dep+dp30+dp31), residual-dep), 0)
+  // EE40 = ROUNDUP(RATE(period, EE39, -finalPrice, residual)*12, 4)
+  // EE42 = ROUNDDOWN(PMT(EE40/12, period, -finalPrice, residual), 0)
+
+  const dp30 = Math.round(LO_SC_FIXED * finalPrice);
+  const dp31 = Math.round(LO_FNI_RATE * (finalPrice - deposit));
+  const pv_ee = (finalPrice - deposit) + dp30 + dp31;
+  const fv_ee = residual - deposit;
+
+  let monthly = 0;
+  let ee40 = 0;
+  if (dp33 > 0 && finalPrice > 0) {
+    const r = dp33 / 12;
+    const ee39 = Math.floor(r * (pv_ee - fv_ee * Math.pow(1+r, -period)) / (1 - Math.pow(1+r, -period)));
+    // EE40 = ROUNDUP(RATE(...)*12, 4)
+    const ee40_raw = rateCalcLO(period, ee39, -finalPrice, residual) * 12;
+    ee40 = Math.ceil(ee40_raw * 10000) / 10000;
+    // EE42 = ROUNDDOWN(PMT(EE40/12, period, -finalPrice, residual), 0)
+    const r40 = ee40 / 12;
+    monthly = Math.floor(r40 * (finalPrice - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
+    if (monthly < 0) monthly = 0;
+  }
+
+  document.getElementById('lo-rate-disp').value = ee40 ? (ee40 * 100).toFixed(2) : '';
+
+  // SC 커미션 (사용자 입력 SC% 기준, 표시 및 계약발생납입금 용)
+  const scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
   const sc = Math.floor(scRate * finalPrice / 1000) * 1000;
-  const fa = product === 'standard' ? finalPrice : finalPrice - deposit;
-  const fni = Math.round(LO_FNI_RATE * (fa - (product === 'standard' ? deposit : 0)));
   document.getElementById('lo-sc-disp').value = sc.toLocaleString();
 
-  // 자동차세 (배기량 기반)
+  // 계약 발생 납입금 (사용자 SC 기준)
+  const fni = Math.round(LO_FNI_RATE * (finalPrice - deposit));
+  const initPayment = deposit + sc + fni;
+  document.getElementById('lo-init-disp').value = initPayment.toLocaleString();
+
+  // 자동차세
   const cc = parseFloat(document.getElementById('lo-cc')?.value) || 0;
   const annualCarTax = calcCarTax(cc);
   const monthlyCarTax = taxInclude === 1 ? Math.floor(annualCarTax / 12) : 0;
   document.getElementById('lo-carmtax-disp').value = taxInclude === 1 ? monthlyCarTax.toLocaleString() : '미포함';
 
-  // 계약 발생 납입금
-  const initPayment = deposit + sc + fni;
-  document.getElementById('lo-init-disp').value = initPayment.toLocaleString();
-
-  // 월납입금 계산
-  let monthly = 0;
-  if (irr > 0) {
-    const r = irr / 12;
-    const principal = product === 'standard' ? finalPrice : finalPrice - deposit;
-    const fv = residual - sc;
-    monthly = Math.floor(-pmtCalc(r, period, -(principal + fni - sc), fv));
-    if (monthly < 0) monthly = 0;
-  }
-  monthly += monthlyCarTax;
+  const monthlyTotal = monthly + monthlyCarTax;
 
   // 결과 표시
   document.getElementById('lor-orig').textContent = fmt(orig);
@@ -1090,9 +1158,9 @@ function calcLO() {
   document.getElementById('lor-rate').textContent = irr ? (irr * 100).toFixed(2) + '%' : '—';
   document.getElementById('lor-carmtax').textContent = taxInclude === 1 ? fmtN(monthlyCarTax) + ' 원/월' : '미포함';
   document.getElementById('lor-init').textContent = fmt(initPayment);
-  document.getElementById('lor-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
+  document.getElementById('lor-monthly').textContent = monthlyTotal > 0 ? fmtN(monthlyTotal) + ' 원/월' : '—';
 
-  return { orig, discount, finalPrice, bond, misc, delivery, deposit, depositPct, residual, residualPct, period, irr, sc, fni, initPayment, monthly, monthlyCarTax, taxInclude, product, demo };
+  return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, residual, residualPct, period, irr: ee40, sc, fni, initPayment, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
 }
 
 function resetLO() {
@@ -1105,8 +1173,11 @@ function resetLO() {
   document.getElementById('lo-residual-pct').value = '40';
   document.getElementById('lo-sc-pct').value = '6';
   document.getElementById('lo-tax-include').value = '0';
-  document.getElementById('lo-bond-region').value = '0.12';
-  ['lo-price-final','lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-carmtax-disp','lo-init-disp','lo-bond-disp'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lo-tax-mode').value = 'exempt';
+  document.getElementById('lo-bond-region').value = 'seoul';
+  document.getElementById('lo-tax-auto-row').style.display = 'none';
+  document.getElementById('lo-tax-manual-row').style.display = 'none';
+  ['lo-price-final','lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-carmtax-disp','lo-init-disp','lo-bond-disp','lo-tax-auto-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-lo').style.display = 'none';
   ['lor-orig','lor-discount','lor-price','lor-bond','lor-misc','lor-deposit','lor-residual','lor-period','lor-rate','lor-carmtax','lor-init','lor-monthly'].forEach(id => document.getElementById(id).textContent = '—');
 }
@@ -1311,13 +1382,14 @@ function showPreview(type) {
       <div class="pv-row"><span class="pv-key">연식</span><span class="pv-val">${year}년형</span></div>
       <div class="pv-row"><span class="pv-key">차량 등록일</span><span class="pv-val">${reg}</span></div>
       <div class="pv-row"><span class="pv-key">차량 운행거리</span><span class="pv-val">${mile ? Number(mile).toLocaleString() + ' km' : '—'}</span></div>
+      <div class="pv-row"><span class="pv-key">계약 주행거리</span><span class="pv-val">20,000 km</span></div>
     </div>
     <div class="pv-section">
       <div class="pv-section-title">가격 정보</div>
       <div class="pv-row"><span class="pv-key">차량 가격</span><span class="pv-val">${fmt(d.orig)}</span></div>
       ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
-      <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">(면제)</span></div>
+      <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">${d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)}</span></div>
       ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채구입비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
       ${(d.misc + d.delivery) > 0 ? `<div class="pv-row"><span class="pv-key">기타/탁송비용</span><span class="pv-val">${fmt(d.misc + d.delivery)}</span></div>` : ''}
     </div>
@@ -1672,10 +1744,10 @@ function applySettings(s) {
 
 // ── 마지막 견적 저장/복원 ────────────────────────────
 const SAVE_FIELDS = {
-  cash: ['c-price','c-bond-region','c-misc','c-delivery','c-model','c-year','c-regdate','c-mileage'],
-  lf:   ['lf-price-orig','lf-discount','lf-deposit','lf-residual-pct','lf-period','lf-product','lf-delivery','lf-misc','lf-model','lf-year','lf-regdate','lf-cc','lf-ev','lf-mileage'],
-  lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-pct','lo-residual-pct','lo-sc-pct','lo-tax-include','lo-bond-region','lo-misc','lo-delivery','lo-model','lo-year','lo-regdate','lo-mileage'],
-  inst: ['inst-price-orig','inst-discount','inst-down','inst-product','inst-period','inst-bond-region','inst-model','inst-year','inst-regdate','inst-mileage'],
+  cash: ['c-price','c-bond-region','c-misc','c-delivery','c-model','c-year','c-regdate','c-mileage','c-vs-brand','c-vs-year','c-vs-series','c-vs-trim'],
+  lf:   ['lf-price-orig','lf-discount','lf-deposit','lf-residual-pct','lf-period','lf-product','lf-delivery','lf-misc','lf-model','lf-year','lf-regdate','lf-cc','lf-ev','lf-mileage','lf-vs-brand','lf-vs-year','lf-vs-series','lf-vs-trim'],
+  lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-pct','lo-residual-pct','lo-sc-pct','lo-tax-include','lo-tax-mode','lo-tax-input','lo-bond-region','lo-misc','lo-delivery','lo-model','lo-year','lo-regdate','lo-mileage','lo-cc','lo-vs-brand','lo-vs-year','lo-vs-series','lo-vs-trim'],
+  inst: ['inst-price-orig','inst-discount','inst-down','inst-product','inst-period','inst-bond-region','inst-model','inst-year','inst-regdate','inst-mileage','inst-vs-brand','inst-vs-year','inst-vs-series','inst-vs-trim'],
 };
 
 function saveQuote(tab) {
@@ -1691,13 +1763,83 @@ function restoreQuote(tab) {
   const raw = localStorage.getItem('bps_quote_'+tab);
   if (!raw) return;
   const data = JSON.parse(raw);
+
+  // 차종 선택 제외 일반 필드 먼저 복원
+  const vsFields = new Set([`${tab}-vs-brand`,`${tab}-vs-year`,`${tab}-vs-series`,`${tab}-vs-trim`]);
+  // tab 접두어 매핑 (inst 등 vs prefix는 tab과 동일)
+  const prefixMap = {cash:'c', lf:'lf', lo:'lo', inst:'inst'};
+  const px = prefixMap[tab];
+  const vsSet = new Set([`${px}-vs-brand`,`${px}-vs-year`,`${px}-vs-series`,`${px}-vs-trim`]);
+
   Object.entries(data).forEach(([id, val]) => {
+    if (vsSet.has(id)) return; // 차종 선택은 나중에
     const el = document.getElementById(id);
     if (el) el.value = val;
   });
-  // 복원 후 계산 트리거
-  const calcMap = {cash: calcCash, lf: calcLF, lo: calcLO, inst: calcInst};
-  if (calcMap[tab]) setTimeout(() => calcMap[tab](), 50);
+
+  // 차종 선택 단계별 복원 (VEHICLES 로드 후)
+  const restoreVs = () => {
+    const brand  = data[`${px}-vs-brand`];
+    const year   = data[`${px}-vs-year`];
+    const series = data[`${px}-vs-series`];
+    const trim   = data[`${px}-vs-trim`];
+
+    if (!brand) return;
+
+    // 1단계: 제조사
+    const brandEl = document.getElementById(`${px}-vs-brand`);
+    if (brandEl) { brandEl.value = brand; vsUpdate(px, 'brand'); }
+
+    // 2단계: 연식
+    setTimeout(() => {
+      const yearEl = document.getElementById(`${px}-vs-year`);
+      if (yearEl && year) { yearEl.value = year; vsUpdate(px, 'year'); }
+
+      // 3단계: 시리즈
+      setTimeout(() => {
+        const seriesEl = document.getElementById(`${px}-vs-series`);
+        if (seriesEl && series) { seriesEl.value = series; vsUpdate(px, 'series'); }
+
+        // 4단계: 트림 선택 및 결과 표시
+        setTimeout(() => {
+          const trimEl = document.getElementById(`${px}-vs-trim`);
+          if (trimEl && trim) {
+            // trim 옵션 중 일치하는 것 찾아서 선택
+            const opts = Array.from(trimEl.options);
+            const match = opts.find(o => {
+              try { return JSON.parse(o.value).trim === JSON.parse(trim).trim; }
+              catch(e) { return o.value === trim; }
+            });
+            if (match) {
+              trimEl.value = match.value;
+              // 결과 표시만 (vsApply는 값을 덮어쓰므로 직접 표시)
+              try {
+                const v = JSON.parse(match.value);
+                const resultEl = document.getElementById(`${px}-vs-result`);
+                if (resultEl) {
+                  resultEl.textContent = `✓ ${v.brand} ${v.trim} (${v.year}년식) | 신차가격: ${v.msrp ? v.msrp.toLocaleString()+'원' : '—'} | ${v.fuel||'—'} ${v.cc ? v.cc+'cc' : ''}`;
+                  resultEl.classList.add('show');
+                }
+              } catch(e) {}
+            }
+          }
+
+          // 최종 계산
+          const calcMap = {cash: calcCash, lf: calcLF, lo: calcLO, inst: calcInst};
+          if (calcMap[tab]) calcMap[tab]();
+        }, 50);
+      }, 50);
+    }, 50);
+  };
+
+  // VEHICLES 로드 완료 후 복원
+  if (VEHICLES.length > 0) {
+    restoreVs();
+  } else {
+    const wait = setInterval(() => {
+      if (VEHICLES.length > 0) { clearInterval(wait); restoreVs(); }
+    }, 100);
+  }
 }
 
 // ── 앱 초기화 ────────────────────────────────────────
