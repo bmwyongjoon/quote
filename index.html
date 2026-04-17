@@ -867,9 +867,9 @@ function getBondAmount(prefix, price) {
   if (mode === 'buy') {
     dispEl.value = result.buy > 0 ? result.buy.toLocaleString() : '0';
   } else if (mode === 'discount') {
-    dispEl.value = net > 0 ? net.toLocaleString() : '0';
+    dispEl.value = result.discount > 0 ? result.discount.toLocaleString() : '0';
   }
-  return net;
+  return mode === 'discount' ? result.discount : net;
 }
 
 function fmt(n) { return n > 0 ? n.toLocaleString('ko-KR') + ' 원' : '—'; }
