@@ -263,8 +263,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
             <option value="exempt">면제</option>
           </select>
         </div>
-        <div id="c-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="c-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div id="c-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="c-bond-input" oninput="calcCash()"><span>원</span></div></div>
+        <div id="c-bond-auto-row" class="field"><label>공채비용 (자동)</label><div class="amt"><input id="c-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="c-bond-manual-row" class="field" style="display:none;"><label>공채비용 (직접 입력)</label><div class="amt"><input type="number" id="c-bond-input" oninput="calcCash()"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="c-misc" value="100000" oninput="calcCash()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="c-delivery" placeholder="0" oninput="calcCash()"><span>원</span></div></div>
       </div>
@@ -274,7 +274,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="result-title">QUOTE SUMMARY</div>
       <div class="rrow"><span class="rlabel">차량 가격</span><span class="rvalue" id="cr-price">—</span></div>
       <div class="rrow"><span class="rlabel">취득세</span><span class="rvalue" id="cr-tax">—</span></div>
-      <div class="rrow"><span class="rlabel">공채구입비용</span><span class="rvalue" id="cr-bond">—</span></div>
+      <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="cr-bond">—</span></div>
       <div class="rrow"><span class="rlabel">기타 등록비용</span><span class="rvalue" id="cr-misc">—</span></div>
       <div class="rrow"><span class="rlabel">탁송료</span><span class="rvalue" id="cr-delivery">—</span></div>
       <div class="rrow total"><span class="rlabel">총 구입 비용</span><span class="rvalue" id="cr-total">—</span></div>
@@ -393,8 +393,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
             <option value="exempt">면제</option>
           </select>
         </div>
-        <div id="lf-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="lf-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div id="lf-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="lf-bond-input" oninput="calcLF()"><span>원</span></div></div>
+        <div id="lf-bond-auto-row" class="field"><label>공채비용 (자동)</label><div class="amt"><input id="lf-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="lf-bond-manual-row" class="field" style="display:none;"><label>공채비용 (직접 입력)</label><div class="amt"><input type="number" id="lf-bond-input" oninput="calcLF()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="lf-delivery" placeholder="0" oninput="calcLF()"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="lf-misc" placeholder="0" oninput="calcLF()"><span>원</span></div></div>
       </div>
@@ -555,8 +555,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
             <option value="exempt">면제</option>
           </select>
         </div>
-        <div id="lo-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="lo-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div id="lo-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="lo-bond-input" oninput="calcLO()"><span>원</span></div></div>
+        <div id="lo-bond-auto-row" class="field"><label>공채비용 (자동)</label><div class="amt"><input id="lo-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="lo-bond-manual-row" class="field" style="display:none;"><label>공채비용 (직접 입력)</label><div class="amt"><input type="number" id="lo-bond-input" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="lo-misc" placeholder="0" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="lo-delivery" placeholder="0" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>계약 주행거리</label><input readonly value="20,000 km" style="background:#f9f9f9;color:#888;font-size:12px;"></div>
@@ -626,7 +626,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">차량 가격 (원가)</span><span class="rvalue" id="lor-orig">—</span></div>
       <div class="rrow"><span class="rlabel">할인 금액</span><span class="rvalue" id="lor-discount">—</span></div>
       <div class="rrow"><span class="rlabel">최종 구입 가격</span><span class="rvalue" id="lor-price">—</span></div>
-      <div class="rrow"><span class="rlabel">공채구입비용</span><span class="rvalue" id="lor-bond">—</span></div>
+      <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="lor-bond">—</span></div>
       <div class="rrow"><span class="rlabel">기타 등록비용</span><span class="rvalue" id="lor-misc">—</span></div>
       <div class="rrow"><span class="rlabel">보증금 / 선납금</span><span class="rvalue" id="lor-deposit">—</span></div>
       <div class="rrow"><span class="rlabel">잔존가치</span><span class="rvalue" id="lor-residual">—</span></div>
@@ -738,8 +738,8 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
             <option value="exempt">면제</option>
           </select>
         </div>
-        <div id="inst-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="inst-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div id="inst-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="inst-bond-input" oninput="calcInst()"><span>원</span></div></div>
+        <div id="inst-bond-auto-row" class="field"><label>공채비용 (자동)</label><div class="amt"><input id="inst-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="inst-bond-manual-row" class="field" style="display:none;"><label>공채비용 (직접 입력)</label><div class="amt"><input type="number" id="inst-bond-input" oninput="calcInst()"><span>원</span></div></div>
       </div>
     </div>
     <div class="card">
@@ -772,7 +772,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">할인 금액</span><span class="rvalue" id="instr-discount">—</span></div>
       <div class="rrow"><span class="rlabel">최종 구입 가격</span><span class="rvalue" id="instr-price">—</span></div>
       <div class="rrow"><span class="rlabel">취득세</span><span class="rvalue" id="instr-tax">—</span></div>
-      <div class="rrow"><span class="rlabel">공채구입비용</span><span class="rvalue" id="instr-bond">—</span></div>
+      <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="instr-bond">—</span></div>
       <div class="rrow"><span class="rlabel">선수금</span><span class="rvalue" id="instr-down">—</span></div>
       <div class="rrow"><span class="rlabel">할부 원금</span><span class="rvalue" id="instr-principal">—</span></div>
       <div class="rrow"><span class="rlabel">할부 기간 / 이자율</span><span class="rvalue" id="instr-period">—</span></div>
@@ -867,9 +867,7 @@ function getBondAmount(prefix, price) {
   if (mode === 'buy') {
     dispEl.value = result.buy > 0 ? result.buy.toLocaleString() : '0';
   } else if (mode === 'discount') {
-    dispEl.value = result.buy > 0
-      ? `매입 ${result.buy.toLocaleString()} - 할인 ${result.discount.toLocaleString()} = ${net.toLocaleString()}`
-      : '0';
+    dispEl.value = net > 0 ? net.toLocaleString() : '0';
   }
   return net;
 }
@@ -1377,7 +1375,7 @@ function showPreview(type) {
     const mile = document.getElementById('c-mileage').value;
     html = pvHeader(branch,staff,phone,customer,td,'현금 구매') +
       pvSection('VEHICLE INFO', [['차량 모델',model],['연식',year+'년형'],['최초등록일',reg],['주행거리',mile?Number(mile).toLocaleString()+' km':'—']]) +
-      pvSection('PRICE INFO', [['차량 가격',fmt(d.price)],['취득세',fmt(d.tax)],['공채구입비용',d.bond?fmt(d.bond):'—'],['기타 등록비용',d.misc?fmt(d.misc):'—'],['탁송료',d.delivery?fmt(d.delivery):'—']]) +
+      pvSection('PRICE INFO', [['차량 가격',fmt(d.price)],['취득세',fmt(d.tax)],['공채비용',d.bond?fmt(d.bond):'—'],['기타 등록비용',d.misc?fmt(d.misc):'—'],['탁송료',d.delivery?fmt(d.delivery):'—']]) +
       pvTotal('총 구입 비용', fmt(d.total)) + pvNotice() + pvFooter(branch,staff,phone);
     wrapId = 'preview-wrap'; innerId = 'preview-inner';
   } else if (type === 'lease_fin') {
@@ -1428,7 +1426,7 @@ function showPreview(type) {
       ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
       <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">(포함)</span></div>
-      ${lfBond > 0 ? `<div class="pv-row"><span class="pv-key">공채구입비용</span><span class="pv-val">${fmt(lfBond)}</span></div>` : ''}
+      ${lfBond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(lfBond)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">탁송료</span><span class="pv-val">${delivery}</span></div>
       <div class="pv-row"><span class="pv-key">기타 등록비용</span><span class="pv-val">${misc}</span></div>
     </div>
@@ -1502,7 +1500,7 @@ function showPreview(type) {
       ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
       <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">${d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)}</span></div>
-      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채구입비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
+      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
       ${(d.misc + d.delivery) > 0 ? `<div class="pv-row"><span class="pv-key">기타/탁송비용</span><span class="pv-val">${fmt(d.misc + d.delivery)}</span></div>` : ''}
     </div>
     <div class="pv-section">
@@ -1575,7 +1573,7 @@ function showPreview(type) {
       ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
       <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">${fmt(d.tax)}</span></div>
-      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채구입비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
+      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
       ${d.down > 0 ? `<div class="pv-row"><span class="pv-key">선수금</span><span class="pv-val">${fmt(d.down)}</span></div>` : ''}
     </div>
     <div class="pv-section">
