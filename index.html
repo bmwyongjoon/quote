@@ -235,26 +235,36 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="grid-2" style="margin-top:10px;">
         <div class="field"><label>공채 지역</label>
           <select id="c-bond-region" onchange="calcCash()">
-            <option value="0">선택 안함</option>
-            <option value="0.12" selected>서울 (12%)</option>
-            <option value="0.04">부산 (4%)</option>
-            <option value="0.04">인천 (4%)</option>
-            <option value="0.04">대구 (4%)</option>
-            <option value="0.08">대전 (8%)</option>
-            <option value="0.08">광주 (8%)</option>
-            <option value="0.08">울산 (8%)</option>
-            <option value="0.08">경기 (8%)</option>
-            <option value="0.08">강원 (8%)</option>
-            <option value="0.08">충북 (8%)</option>
-            <option value="0.08">충남 (8%)</option>
-            <option value="0.08">전북 (8%)</option>
-            <option value="0.08">전남 (8%)</option>
-            <option value="0.08">경북 (8%)</option>
-            <option value="0.04">경남 (4%)</option>
-            <option value="0.08">제주 (8%)</option>
+            <option value="none">선택 안함 (면제)</option>
+            <option value="seoul" selected>서울 (6%)</option>
+            <option value="incheon">인천 (3%)</option>
+            <option value="daegu">대구 (4%)</option>
+            <option value="daejeon">대전 (4%)</option>
+            <option value="gwangju">광주 (4%)</option>
+            <option value="ulsan">울산 (4%)</option>
+            <option value="sejong">세종 (4%)</option>
+            <option value="gyeonggi">경기 (4%)</option>
+            <option value="gangwon">강원 (4%)</option>
+            <option value="chungbuk">충북 (4%)</option>
+            <option value="chungnam">충남 (3%)</option>
+            <option value="jeonbuk">전북 (3%)</option>
+            <option value="jeonnam">전남 (3%)</option>
+            <option value="gyeongbuk">경북 (2%)</option>
+            <option value="gyeongnam">경남 (면제)</option>
+            <option value="busan">부산 (면제)</option>
+            <option value="jeju">제주 (3%)</option>
           </select>
         </div>
-        <div class="field"><label>공채구입비용 (자동계산)</label><div class="amt"><input id="c-bond" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>공채 처리방식</label>
+          <select id="c-bond-mode" onchange="calcCash()">
+            <option value="buy">매입</option>
+            <option value="discount">할인</option>
+            <option value="manual">수기 입력</option>
+            <option value="exempt">면제</option>
+          </select>
+        </div>
+        <div id="c-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="c-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="c-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="c-bond-input" oninput="calcCash()"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="c-misc" value="100000" oninput="calcCash()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="c-delivery" placeholder="0" oninput="calcCash()"><span>원</span></div></div>
       </div>
@@ -353,6 +363,38 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         <div class="field"><label>할인 금액</label><div class="amt"><input type="number" id="lf-discount" placeholder="0" oninput="calcLF()"><span>원</span></div></div>
         <div class="field"><label>최종 구입 가격</label><div class="amt"><input id="lf-price-final" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>취득세</label><input id="lf-tax-disp" readonly value="(금융리스 포함)" style="background:#f9f9f9;color:#888;font-size:11px;"></div>
+        <div class="field"><label>공채 지역</label>
+          <select id="lf-bond-region" onchange="calcLF()">
+            <option value="none">선택 안함 (면제)</option>
+            <option value="seoul" selected>서울 (6%)</option>
+            <option value="incheon">인천 (3%)</option>
+            <option value="daegu">대구 (4%)</option>
+            <option value="daejeon">대전 (4%)</option>
+            <option value="gwangju">광주 (4%)</option>
+            <option value="ulsan">울산 (4%)</option>
+            <option value="sejong">세종 (4%)</option>
+            <option value="gyeonggi">경기 (4%)</option>
+            <option value="gangwon">강원 (4%)</option>
+            <option value="chungbuk">충북 (4%)</option>
+            <option value="chungnam">충남 (3%)</option>
+            <option value="jeonbuk">전북 (3%)</option>
+            <option value="jeonnam">전남 (3%)</option>
+            <option value="gyeongbuk">경북 (2%)</option>
+            <option value="gyeongnam">경남 (면제)</option>
+            <option value="busan">부산 (면제)</option>
+            <option value="jeju">제주 (3%)</option>
+          </select>
+        </div>
+        <div class="field"><label>공채 처리방식</label>
+          <select id="lf-bond-mode" onchange="calcLF()">
+            <option value="buy">매입</option>
+            <option value="discount">할인</option>
+            <option value="manual">수기 입력</option>
+            <option value="exempt">면제</option>
+          </select>
+        </div>
+        <div id="lf-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="lf-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="lf-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="lf-bond-input" oninput="calcLF()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="lf-delivery" placeholder="0" oninput="calcLF()"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="lf-misc" placeholder="0" oninput="calcLF()"><span>원</span></div></div>
       </div>
@@ -486,25 +528,35 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         <div class="field"><label>공채 지역</label>
           <select id="lo-bond-region" onchange="calcLO()">
             <option value="none">선택 안함 (면제)</option>
-            <option value="seoul" selected>서울</option>
-            <option value="busan">부산</option>
-            <option value="incheon">인천</option>
-            <option value="daegu">대구</option>
-            <option value="daejeon">대전</option>
-            <option value="gwangju">광주</option>
-            <option value="ulsan">울산</option>
-            <option value="gyeonggi">경기</option>
-            <option value="gangwon">강원</option>
-            <option value="chungbuk">충북</option>
-            <option value="chungnam">충남</option>
-            <option value="jeonbuk">전북</option>
-            <option value="jeonnam">전남</option>
-            <option value="gyeongbuk">경북</option>
-            <option value="gyeongnam">경남</option>
-            <option value="jeju">제주</option>
+            <option value="seoul" selected>서울 (6%)</option>
+            <option value="incheon">인천 (3%)</option>
+            <option value="daegu">대구 (4%)</option>
+            <option value="daejeon">대전 (4%)</option>
+            <option value="gwangju">광주 (4%)</option>
+            <option value="ulsan">울산 (4%)</option>
+            <option value="sejong">세종 (4%)</option>
+            <option value="gyeonggi">경기 (4%)</option>
+            <option value="gangwon">강원 (4%)</option>
+            <option value="chungbuk">충북 (4%)</option>
+            <option value="chungnam">충남 (3%)</option>
+            <option value="jeonbuk">전북 (3%)</option>
+            <option value="jeonnam">전남 (3%)</option>
+            <option value="gyeongbuk">경북 (2%)</option>
+            <option value="gyeongnam">경남 (면제)</option>
+            <option value="busan">부산 (면제)</option>
+            <option value="jeju">제주 (3%)</option>
           </select>
         </div>
-        <div class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="lo-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>공채 처리방식</label>
+          <select id="lo-bond-mode" onchange="calcLO()">
+            <option value="buy">매입</option>
+            <option value="discount">할인</option>
+            <option value="manual">수기 입력</option>
+            <option value="exempt">면제</option>
+          </select>
+        </div>
+        <div id="lo-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="lo-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="lo-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="lo-bond-input" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>기타 등록비용</label><div class="amt"><input type="number" id="lo-misc" placeholder="0" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>탁송료</label><div class="amt"><input type="number" id="lo-delivery" placeholder="0" oninput="calcLO()"><span>원</span></div></div>
         <div class="field"><label>계약 주행거리</label><input readonly value="20,000 km" style="background:#f9f9f9;color:#888;font-size:12px;"></div>
@@ -658,26 +710,36 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         <div class="field"><label>취득세 (자동)</label><div class="amt"><input id="inst-tax-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>공채 지역</label>
           <select id="inst-bond-region" onchange="calcInst()">
-            <option value="0">선택 안함</option>
-            <option value="0.12" selected>서울 (12%)</option>
-            <option value="0.04">부산 (4%)</option>
-            <option value="0.04">인천 (4%)</option>
-            <option value="0.04">대구 (4%)</option>
-            <option value="0.08">대전 (8%)</option>
-            <option value="0.08">광주 (8%)</option>
-            <option value="0.08">울산 (8%)</option>
-            <option value="0.08">경기 (8%)</option>
-            <option value="0.08">강원 (8%)</option>
-            <option value="0.08">충북 (8%)</option>
-            <option value="0.08">충남 (8%)</option>
-            <option value="0.08">전북 (8%)</option>
-            <option value="0.08">전남 (8%)</option>
-            <option value="0.08">경북 (8%)</option>
-            <option value="0.04">경남 (4%)</option>
-            <option value="0.08">제주 (8%)</option>
+            <option value="none">선택 안함 (면제)</option>
+            <option value="seoul" selected>서울 (6%)</option>
+            <option value="incheon">인천 (3%)</option>
+            <option value="daegu">대구 (4%)</option>
+            <option value="daejeon">대전 (4%)</option>
+            <option value="gwangju">광주 (4%)</option>
+            <option value="ulsan">울산 (4%)</option>
+            <option value="sejong">세종 (4%)</option>
+            <option value="gyeonggi">경기 (4%)</option>
+            <option value="gangwon">강원 (4%)</option>
+            <option value="chungbuk">충북 (4%)</option>
+            <option value="chungnam">충남 (3%)</option>
+            <option value="jeonbuk">전북 (3%)</option>
+            <option value="jeonnam">전남 (3%)</option>
+            <option value="gyeongbuk">경북 (2%)</option>
+            <option value="gyeongnam">경남 (면제)</option>
+            <option value="busan">부산 (면제)</option>
+            <option value="jeju">제주 (3%)</option>
           </select>
         </div>
-        <div class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="inst-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>공채 처리방식</label>
+          <select id="inst-bond-mode" onchange="calcInst()">
+            <option value="buy">매입</option>
+            <option value="discount">할인</option>
+            <option value="manual">수기 입력</option>
+            <option value="exempt">면제</option>
+          </select>
+        </div>
+        <div id="inst-bond-auto-row" class="field"><label>공채구입비용 (자동)</label><div class="amt"><input id="inst-bond-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="inst-bond-manual-row" class="field" style="display:none;"><label>공채구입비용 (직접 입력)</label><div class="amt"><input type="number" id="inst-bond-input" oninput="calcInst()"><span>원</span></div></div>
       </div>
     </div>
     <div class="card">
@@ -744,6 +806,74 @@ function switchTab(name) {
 }
 
 // ── 유틸 ──
+
+// ── 공채 계산 함수 (car365 기준) ──────────────────────
+// 공채매입 = FLOOR(차량가격 / 1.1 × 요율)
+// 공채할인 = FLOOR(공채매입 × 할인율)
+const BOND_RATES = {
+  seoul:    { rate: 0.06,  discount: 0.0594 },
+  incheon:  { rate: 0.03,  discount: 0.061  },
+  daegu:    { rate: 0.04,  discount: 0.061  },
+  daejeon:  { rate: 0.04,  discount: 0.061  },
+  gwangju:  { rate: 0.04,  discount: 0.061  },
+  ulsan:    { rate: 0.04,  discount: 0.061  },
+  sejong:   { rate: 0.04,  discount: 0.061  },
+  gyeonggi: { rate: 0.04,  discount: 0.061  },
+  gangwon:  { rate: 0.04,  discount: 0.061  },
+  chungbuk: { rate: 0.04,  discount: 0.061  },
+  chungnam: { rate: 0.03,  discount: 0.061  },
+  jeonbuk:  { rate: 0.03,  discount: 0.061  },
+  jeonnam:  { rate: 0.03,  discount: 0.061  },
+  gyeongbuk:{ rate: 0.02,  discount: 0.061  },
+  gyeongnam:{ rate: 0,     discount: 0      },
+  busan:    { rate: 0,     discount: 0      },
+  jeju:     { rate: 0.03,  discount: 0.061  },
+  none:     { rate: 0,     discount: 0      },
+};
+
+function calcBond(price, region, mode) {
+  // mode: 'buy'=매입, 'discount'=할인, 'exempt'=면제
+  if (!price || mode === 'exempt' || region === 'none') return { buy: 0, discount: 0, net: 0 };
+  const info = BOND_RATES[region] || { rate: 0, discount: 0 };
+  const buy = Math.floor(price / 1.1 * info.rate);
+  const disc = mode === 'discount' ? Math.floor(buy * info.discount) : 0;
+  const net = buy - disc;
+  return { buy, discount: disc, net };
+}
+
+
+function getBondAmount(prefix, price) {
+  const region = document.getElementById(`${prefix}-bond-region`).value;
+  const mode   = document.getElementById(`${prefix}-bond-mode`).value;
+  const autoRow   = document.getElementById(`${prefix}-bond-auto-row`);
+  const manualRow = document.getElementById(`${prefix}-bond-manual-row`);
+
+  // UI 전환
+  autoRow.style.display   = mode === 'manual' ? 'none' : '';
+  manualRow.style.display = mode === 'manual' ? ''     : 'none';
+
+  if (mode === 'manual') {
+    return parseFloat(document.getElementById(`${prefix}-bond-input`).value) || 0;
+  }
+  if (mode === 'exempt') {
+    document.getElementById(`${prefix}-bond-disp`).value = '면제';
+    return 0;
+  }
+
+  const result = calcBond(price, region, mode);
+  const net = result.net;
+  const dispEl = document.getElementById(`${prefix}-bond-disp`);
+
+  if (mode === 'buy') {
+    dispEl.value = result.buy > 0 ? result.buy.toLocaleString() : '0';
+  } else if (mode === 'discount') {
+    dispEl.value = result.buy > 0
+      ? `매입 ${result.buy.toLocaleString()} - 할인 ${result.discount.toLocaleString()} = ${net.toLocaleString()}`
+      : '0';
+  }
+  return net;
+}
+
 function fmt(n) { return n > 0 ? n.toLocaleString('ko-KR') + ' 원' : '—'; }
 function fmtN(n) { return n > 0 ? n.toLocaleString('ko-KR') : '—'; }
 function today() {
@@ -770,10 +900,7 @@ function calcCash() {
   } else {
     tax = parseFloat(document.getElementById('c-tax-input').value)||0;
   }
-  // 공채: 지역별 비율 × (차량가격/1.1), 1000원 단위 반올림
-  const bondRate = parseFloat(document.getElementById('c-bond-region').value)||0;
-  const bond = bondRate > 0 ? Math.round(price/1.1 * bondRate / 1000) * 1000 : 0;
-  document.getElementById('c-bond').value = bond > 0 ? bond.toLocaleString() : '0';
+  const bond = getBondAmount('c', price);
   const misc = parseFloat(document.getElementById('c-misc').value)||0;
   const delivery = parseFloat(document.getElementById('c-delivery').value)||0;
   const total = price+tax+bond+misc+delivery;
@@ -788,7 +915,10 @@ function calcCash() {
 function resetCash() {
   ['c-price','c-delivery','c-tax-input'].forEach(id => document.getElementById(id).value='');
   document.getElementById('c-misc').value='100000';
-  document.getElementById('c-bond-region').value='0.12';
+  document.getElementById('c-bond-region').value='seoul';
+  document.getElementById('c-bond-mode').value='buy';
+  document.getElementById('c-bond-auto-row').style.display='';
+  document.getElementById('c-bond-manual-row').style.display='none';
   document.getElementById('c-bond').value='';
   document.getElementById('c-tax-disp').value='';
   document.getElementById('c-customer').value='';
@@ -863,6 +993,7 @@ function calcLF() {
   const rate = LF_RATES[product][period];
 
   document.getElementById('lf-price-final').value = finalPrice > 0 ? finalPrice.toLocaleString() : '';
+  const lfBond = getBondAmount('lf', finalPrice);
   document.getElementById('lf-rate-disp').value = rate ? (rate * 100).toFixed(2) : '';
 
   // 최대 유예금 계산 및 표시
@@ -915,7 +1046,7 @@ function calcLF() {
   document.getElementById('lfr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
   document.getElementById('lfr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
 
-  return { orig, discount, finalPrice, deposit, residualPct, residual, loanAmt, period, rate, monthly, delivery, misc, maxRVRate };
+  return { bond: lfBond, orig, discount, finalPrice, deposit, residualPct, residual, loanAmt, period, rate, monthly, delivery, misc, maxRVRate };
 }
 
 function resetLF() {
@@ -1020,29 +1151,7 @@ function calcLO() {
 
   // ── 공채 (배기량 기반 자동 계산) ──
   const cc = parseFloat(document.getElementById('lo-cc')?.value)||0;
-  const bondRegion = document.getElementById('lo-bond-region').value;
-
-  // 지역별 공채율 (배기량 기반, Bond 시트 기준)
-  function getLoBondRate(region, cc) {
-    if (region === 'none') return 0;
-    if (cc <= 0) return 0;
-    const seoulIncheon = { // 서울: cc<1600→9%, <2000→12%, 이상→20%
-      seoul: cc < 1600 ? 0.09 : cc < 2000 ? 0.12 : 0.20,
-      incheon: cc < 2000 ? 0.04 : 0.05,
-      gyeongnam: cc < 2000 ? 0.04 : 0.05,
-      busan: cc < 2000 ? 0.04 : 0.05,
-      daegu: cc < 2000 ? 0.04 : 0.05,
-    };
-    if (seoulIncheon[region] !== undefined) return seoulIncheon[region];
-    // 나머지 지역: cc<1600→6%, <2000→8%, 이상→12%
-    return cc < 1600 ? 0.06 : cc < 2000 ? 0.08 : 0.12;
-  }
-
-  const bondRate = getLoBondRate(bondRegion, cc);
-  const bond = (bondRate > 0 && finalPrice > 0)
-    ? Math.round(finalPrice / 1.1 * bondRate / 1000) * 1000
-    : 0;
-  document.getElementById('lo-bond-disp').value = bond > 0 ? bond.toLocaleString() : bondRegion === 'none' ? '면제' : (cc <= 0 ? '배기량 입력 필요' : '0');
+  const bond = getBondAmount('lo', finalPrice);
 
   // 최대 유예금(RV) 기반 잔존가치 범위
   const regDate = document.getElementById('lo-regdate').value;
@@ -1175,6 +1284,9 @@ function resetLO() {
   document.getElementById('lo-tax-include').value = '0';
   document.getElementById('lo-tax-mode').value = 'exempt';
   document.getElementById('lo-bond-region').value = 'seoul';
+  document.getElementById('lo-bond-mode').value = 'buy';
+  document.getElementById('lo-bond-auto-row').style.display='';
+  document.getElementById('lo-bond-manual-row').style.display='none';
   document.getElementById('lo-tax-auto-row').style.display = 'none';
   document.getElementById('lo-tax-manual-row').style.display = 'none';
   ['lo-price-final','lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-carmtax-disp','lo-init-disp','lo-bond-disp','lo-tax-auto-disp'].forEach(id => document.getElementById(id).value = '');
@@ -1204,10 +1316,7 @@ function calcInst() {
   const tax = finalPrice > 0 ? Math.floor(finalPrice / 1.1 * 0.07 / 10) * 10 : 0;
   document.getElementById('inst-tax-disp').value = tax > 0 ? tax.toLocaleString() : '';
 
-  // 공채: 지역별 비율 × (finalPrice/1.1), 1000원 단위 반올림
-  const bondRate = parseFloat(document.getElementById('inst-bond-region').value)||0;
-  const bond = bondRate > 0 ? Math.round(finalPrice / 1.1 * bondRate / 1000) * 1000 : 0;
-  document.getElementById('inst-bond-disp').value = bond > 0 ? bond.toLocaleString() : '0';
+  const bond = getBondAmount('inst', finalPrice);
 
   const rate = INST_RATES[product] ? (INST_RATES[product][period] || 0) : 0;
   document.getElementById('inst-rate-disp').value = rate ? (rate * 100).toFixed(2) : '';
@@ -1241,7 +1350,10 @@ function resetInst() {
   ['inst-customer','inst-model','inst-year','inst-regdate','inst-mileage','inst-fni-phone'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inst-product').value = '0';
   document.getElementById('inst-period').value = '60';
-  document.getElementById('inst-bond-region').value = '0.12';
+  document.getElementById('inst-bond-region').value = 'seoul';
+  document.getElementById('inst-bond-mode').value = 'buy';
+  document.getElementById('inst-bond-auto-row').style.display='';
+  document.getElementById('inst-bond-manual-row').style.display='none';
   ['inst-price-final','inst-tax-disp','inst-rate-disp','inst-principal-disp','inst-bond-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-inst').style.display = 'none';
   ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-down','instr-principal','instr-period','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
@@ -1316,7 +1428,7 @@ function showPreview(type) {
       ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
       <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">(포함)</span></div>
-      <div class="pv-row"><span class="pv-key">공채구입비용</span><span class="pv-val">(면제)</span></div>
+      ${lfBond > 0 ? `<div class="pv-row"><span class="pv-key">공채구입비용</span><span class="pv-val">${fmt(lfBond)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">탁송료</span><span class="pv-val">${delivery}</span></div>
       <div class="pv-row"><span class="pv-key">기타 등록비용</span><span class="pv-val">${misc}</span></div>
     </div>
@@ -1744,10 +1856,10 @@ function applySettings(s) {
 
 // ── 마지막 견적 저장/복원 ────────────────────────────
 const SAVE_FIELDS = {
-  cash: ['c-price','c-bond-region','c-misc','c-delivery','c-model','c-year','c-regdate','c-mileage','c-vs-brand','c-vs-year','c-vs-series','c-vs-trim'],
-  lf:   ['lf-price-orig','lf-discount','lf-deposit','lf-residual-pct','lf-period','lf-product','lf-delivery','lf-misc','lf-model','lf-year','lf-regdate','lf-cc','lf-ev','lf-mileage','lf-vs-brand','lf-vs-year','lf-vs-series','lf-vs-trim'],
-  lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-pct','lo-residual-pct','lo-sc-pct','lo-tax-include','lo-tax-mode','lo-tax-input','lo-bond-region','lo-misc','lo-delivery','lo-model','lo-year','lo-regdate','lo-mileage','lo-cc','lo-vs-brand','lo-vs-year','lo-vs-series','lo-vs-trim'],
-  inst: ['inst-price-orig','inst-discount','inst-down','inst-product','inst-period','inst-bond-region','inst-model','inst-year','inst-regdate','inst-mileage','inst-vs-brand','inst-vs-year','inst-vs-series','inst-vs-trim'],
+  cash: ['c-price','c-bond-region','c-bond-mode','c-bond-input','c-misc','c-delivery','c-model','c-year','c-regdate','c-mileage','c-vs-brand','c-vs-year','c-vs-series','c-vs-trim'],
+  lf:   ['lf-price-orig','lf-discount','lf-deposit','lf-residual-pct','lf-period','lf-product','lf-delivery','lf-misc','lf-model','lf-year','lf-regdate','lf-cc','lf-ev','lf-mileage','lf-bond-region','lf-bond-mode','lf-bond-input','lf-vs-brand','lf-vs-year','lf-vs-series','lf-vs-trim'],
+  lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-pct','lo-residual-pct','lo-sc-pct','lo-tax-include','lo-tax-mode','lo-tax-input','lo-bond-region','lo-bond-mode','lo-bond-input','lo-misc','lo-delivery','lo-model','lo-year','lo-regdate','lo-mileage','lo-cc','lo-vs-brand','lo-vs-year','lo-vs-series','lo-vs-trim'],
+  inst: ['inst-price-orig','inst-discount','inst-down','inst-product','inst-period','inst-bond-region','inst-bond-mode','inst-bond-input','inst-model','inst-year','inst-regdate','inst-mileage','inst-vs-brand','inst-vs-year','inst-vs-series','inst-vs-trim'],
 };
 
 function saveQuote(tab) {
