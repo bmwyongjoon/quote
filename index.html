@@ -628,6 +628,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">최종 구입 가격</span><span class="rvalue" id="lor-price">—</span></div>
       <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="lor-bond">—</span></div>
       <div class="rrow"><span class="rlabel">기타 등록비용</span><span class="rvalue" id="lor-misc">—</span></div>
+      <div class="rrow total"><span class="rlabel">총 구입 비용</span><span class="rvalue" id="lor-total">—</span></div>
       <div class="rrow"><span class="rlabel">보증금 / 선납금</span><span class="rvalue" id="lor-deposit">—</span></div>
       <div class="rrow"><span class="rlabel">잔존가치</span><span class="rvalue" id="lor-residual">—</span></div>
       <div class="rrow"><span class="rlabel">계약 기간</span><span class="rvalue" id="lor-period">—</span></div>
@@ -1176,7 +1177,7 @@ function calcLO() {
 
   if (!finalPrice) {
     ['lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-carmtax-disp','lo-init-disp'].forEach(id => document.getElementById(id).value = '');
-    ['lor-orig','lor-discount','lor-price','lor-bond','lor-misc','lor-deposit','lor-residual','lor-period','lor-rate','lor-carmtax','lor-init','lor-monthly'].forEach(id => document.getElementById(id).textContent = '—');
+    ['lor-orig','lor-discount','lor-price','lor-bond','lor-misc','lor-total','lor-deposit','lor-residual','lor-period','lor-rate','lor-carmtax','lor-init','lor-monthly'].forEach(id => document.getElementById(id).textContent = '—');
     return;
   }
 
@@ -1250,14 +1251,13 @@ function calcLO() {
 
   document.getElementById('lo-rate-disp').value = ee40 ? (ee40 * 100).toFixed(2) : '';
 
-  // SC 커미션 (사용자 입력 SC% 기준, 표시 및 계약발생납입금 용)
+  // SC 커미션 (표시용, 계약 납입금에는 미포함)
   const scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
   const sc = Math.floor(scRate * finalPrice / 1000) * 1000;
   document.getElementById('lo-sc-disp').value = sc.toLocaleString();
 
-  // 계약 발생 납입금 (사용자 SC 기준)
-  const fni = Math.round(LO_FNI_RATE * (finalPrice - deposit));
-  const initPayment = deposit + sc + fni;
+  // 계약 발생 납입금 = 보증금 + 공채 + 탁송료 + 기타비용 (SC/F&I 미포함)
+  const initPayment = deposit + bond + misc + delivery;
   document.getElementById('lo-init-disp').value = initPayment.toLocaleString();
 
   // 자동차세
@@ -1273,6 +1273,8 @@ function calcLO() {
   document.getElementById('lor-price').textContent = fmt(finalPrice);
   document.getElementById('lor-bond').textContent = bond > 0 ? fmt(bond) : '—';
   document.getElementById('lor-misc').textContent = (misc + delivery) !== 0 ? fmt(misc + delivery) : '—';
+  const totalCost = finalPrice + loTax + bond + misc + delivery;
+  document.getElementById('lor-total').textContent = fmt(totalCost);
   document.getElementById('lor-deposit').textContent = fmt(deposit) + ' (' + depositPct + '%)';
   document.getElementById('lor-residual').textContent = fmt(residual) + ' (' + residualPct + '%)';
   document.getElementById('lor-period').textContent = period + '개월';
@@ -1281,7 +1283,7 @@ function calcLO() {
   document.getElementById('lor-init').textContent = fmt(initPayment);
   document.getElementById('lor-monthly').textContent = monthlyTotal > 0 ? fmtN(monthlyTotal) + ' 원/월' : '—';
 
-  return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, residual, residualPct, period, irr: ee40, sc, fni, initPayment, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
+  return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, residual, residualPct, period, irr: ee40, sc, initPayment, totalCost, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
 }
 
 function resetLO() {
@@ -1303,7 +1305,7 @@ function resetLO() {
   document.getElementById('lo-tax-manual-row').style.display = 'none';
   ['lo-price-final','lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-carmtax-disp','lo-init-disp','lo-bond-disp','lo-tax-auto-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-lo').style.display = 'none';
-  ['lor-orig','lor-discount','lor-price','lor-bond','lor-misc','lor-deposit','lor-residual','lor-period','lor-rate','lor-carmtax','lor-init','lor-monthly'].forEach(id => document.getElementById(id).textContent = '—');
+  ['lor-orig','lor-discount','lor-price','lor-bond','lor-misc','lor-total','lor-deposit','lor-residual','lor-period','lor-rate','lor-carmtax','lor-init','lor-monthly'].forEach(id => document.getElementById(id).textContent = '—');
 }
 
 // ── 할부 금리 테이블 (2026 BPS, 엑셀 기준) ──
