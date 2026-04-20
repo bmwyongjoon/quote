@@ -872,7 +872,7 @@ function getBondAmount(prefix, price) {
   return mode === 'discount' ? result.discount : net;
 }
 
-function fmt(n) { return n > 0 ? n.toLocaleString('ko-KR') + ' 원' : '—'; }
+function fmt(n) { if (!n) return '—'; return (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ko-KR') + ' 원'; }
 function fmtN(n) { return n > 0 ? n.toLocaleString('ko-KR') : '—'; }
 function today() {
   const d = new Date();
@@ -1272,7 +1272,7 @@ function calcLO() {
   document.getElementById('lor-discount').textContent = discount > 0 ? '-' + fmt(discount) : '—';
   document.getElementById('lor-price').textContent = fmt(finalPrice);
   document.getElementById('lor-bond').textContent = bond > 0 ? fmt(bond) : '—';
-  document.getElementById('lor-misc').textContent = (misc + delivery) > 0 ? fmt(misc + delivery) : '—';
+  document.getElementById('lor-misc').textContent = (misc + delivery) !== 0 ? fmt(misc + delivery) : '—';
   document.getElementById('lor-deposit').textContent = fmt(deposit) + ' (' + depositPct + '%)';
   document.getElementById('lor-residual').textContent = fmt(residual) + ' (' + residualPct + '%)';
   document.getElementById('lor-period').textContent = period + '개월';
@@ -1389,7 +1389,7 @@ function showPreview(type) {
     const mile = document.getElementById('c-mileage').value;
     html = pvHeader(branch,staff,phone,customer,td,'현금 구매') +
       pvSection('VEHICLE INFO', [['차량 모델',model],['연식',year+'년형'],['최초등록일',reg],['주행거리',mile?Number(mile).toLocaleString()+' km':'—']]) +
-      pvSection('PRICE INFO', [['차량 가격',fmt(d.price)],['취득세',fmt(d.tax)],['공채비용',d.bond?fmt(d.bond):'—'],['기타 등록비용',d.misc?fmt(d.misc):'—'],['탁송료',d.delivery?fmt(d.delivery):'—']]) +
+      pvSection('PRICE INFO', [['차량 가격',fmt(d.price)],['취득세',fmt(d.tax)],['공채비용',d.bond?fmt(d.bond):'—'],['기타 등록비용',d.misc!==0?fmt(d.misc):'—'],['탁송료',d.delivery?fmt(d.delivery):'—']]) +
       pvTotal('총 구입 비용', fmt(d.total)) + pvNotice() + pvFooter(branch,staff,phone);
     wrapId = 'preview-wrap'; innerId = 'preview-inner';
   } else if (type === 'lease_fin') {
@@ -1409,7 +1409,7 @@ function showPreview(type) {
     const ev = document.getElementById('lf-ev').value;
     const productName = document.getElementById('lf-product').options[document.getElementById('lf-product').selectedIndex].text;
     const delivery = d.delivery > 0 ? fmt(d.delivery) : '(불포함)';
-    const misc = d.misc > 0 ? fmt(d.misc) : '(불포함)';
+    const misc = d.misc !== 0 ? fmt(d.misc) : '(불포함)';
 
     html = `<div class="pv-header">
       <h1>BMW Financial Services Korea</h1>
@@ -1515,7 +1515,7 @@ function showPreview(type) {
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
       <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">${d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)}</span></div>
       ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
-      ${(d.misc + d.delivery) > 0 ? `<div class="pv-row"><span class="pv-key">기타/탁송비용</span><span class="pv-val">${fmt(d.misc + d.delivery)}</span></div>` : ''}
+      ${(d.misc + d.delivery) !== 0 ? `<div class="pv-row"><span class="pv-key">기타/탁송비용</span><span class="pv-val">${fmt(d.misc + d.delivery)}</span></div>` : ''}
     </div>
     <div class="pv-section">
       <div class="pv-section-title">금융 정보</div>
