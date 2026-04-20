@@ -1081,7 +1081,7 @@ const LO_IRR_AMAM = {
   '1220': 0.09,   // demo, prepaid
   '2220': 0.077,  // new,  prepaid
 };
-const LO_FNI_RATE = 0.0045;
+const LO_FNI_RATE = 0.004;
 const LO_SC_FIXED = 0.06; // BD38 고정 6% (EE39 계산용)
 
 function rateCalcLO(nper, pmt, pv, fv) {
@@ -1212,23 +1212,37 @@ function calcLO() {
   // dp30 = ROUND(0.06 * finalPrice) — BD38 6% 고정 (EE39 계산용, 사용자 SC와 별개)
   // dp31 = ROUND(0.004 * (finalPrice - deposit))
   // EE39 = ROUNDDOWN(PMT(dp33/12, period, -(finalPrice-dep+dp30+dp31), residual-dep), 0)
-  // EE40 = ROUNDUP(RATE(period, EE39, -finalPrice, residual)*12, 4)
-  // EE42 = ROUNDDOWN(PMT(EE40/12, period, -finalPrice, residual), 0)
+  // 엑셀 DP37→DP38→DP39→DP40 4단계 체인
+  // DP37 = PMT(IRR/12, n, -(가격-보증금+SC+F&I), 잔존-보증금)
+  // DP38 = ROUNDUP(RATE(n, DP37, -(가격-보증금), 잔존-보증금)*12, 4)
+  // DP39 = PMT(DP38/12, n, -(가격-보증금), 잔존-보증금)
+  // DP40 = ROUNDUP(RATE(n, DP39, -가격, 잔존)*12, 4)  ← 고객공지 이자율
 
   const dp30 = Math.round(LO_SC_FIXED * finalPrice);
   const dp31 = Math.round(LO_FNI_RATE * (finalPrice - deposit));
-  const pv_ee = (finalPrice - deposit) + dp30 + dp31;
-  const fv_ee = residual - deposit;
+  const pv37 = (finalPrice - deposit) + dp30 + dp31;
+  const fv37 = residual - deposit;
 
   let monthly = 0;
   let ee40 = 0;
   if (dp33 > 0 && finalPrice > 0) {
     const r = dp33 / 12;
-    const ee39 = Math.floor(r * (pv_ee - fv_ee * Math.pow(1+r, -period)) / (1 - Math.pow(1+r, -period)));
-    // EE40 = ROUNDUP(RATE(...)*12, 4)
-    const ee40_raw = rateCalcLO(period, ee39, -finalPrice, residual) * 12;
-    ee40 = Math.ceil(Math.round(ee40_raw * 1e8) / 1e4) / 1e4;
-    // EE42 = ROUNDDOWN(PMT(EE40/12, period, -finalPrice, residual), 0)
+    const pvif_r = Math.pow(1+r, -period);
+    // DP37
+    const dp37 = Math.floor(r * (pv37 - fv37 * pvif_r) / (1 - pvif_r));
+    // DP38
+    const pv38 = finalPrice - deposit;
+    const fv38 = residual - deposit;
+    const dp38_raw = rateCalcLO(period, dp37, -pv38, fv38) * 12;
+    const dp38 = Math.ceil(Math.round(dp38_raw * 1e8) / 1e4) / 1e4;
+    // DP39
+    const r38 = dp38 / 12;
+    const pvif_r38 = Math.pow(1+r38, -period);
+    const dp39 = Math.floor(r38 * (pv38 - fv38 * pvif_r38) / (1 - pvif_r38));
+    // DP40 (고객공지 이자율)
+    const dp40_raw = rateCalcLO(period, dp39, -finalPrice, residual) * 12;
+    ee40 = Math.ceil(Math.round(dp40_raw * 1e8) / 1e4) / 1e4;
+    // DP42 (월 납입료)
     const r40 = ee40 / 12;
     monthly = Math.floor(r40 * (finalPrice - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
     if (monthly < 0) monthly = 0;
