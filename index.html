@@ -167,9 +167,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="section-title">DEALER INFO</div>
       <div class="grid-2">
         <div class="field"><label>전시장</label><input id="c-branch" value="가양BPS"></div>
+        <div class="field"><label>고객명</label><input id="c-customer" placeholder="고객명"></div>
         <div class="field"><label>담당자</label><input id="c-staff" value="장용준"></div>
         <div class="field"><label>연락처</label><input id="c-phone" value="010-3384-3507"></div>
-        <div class="field"><label>고객명</label><input id="c-customer" placeholder="고객명"></div>
       </div>
     </div>
     <!-- 차량 -->
@@ -462,11 +462,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="section-title">DEALER INFO</div>
       <div class="grid-2">
         <div class="field"><label>전시장</label><input id="lo-branch" value="가양BPS"></div>
+        <div class="field"><label>고객명</label><input id="lo-customer" placeholder="고객명"></div>
         <div class="field"><label>담당자 (영업)</label><input id="lo-staff" value="장용준"></div>
         <div class="field"><label>담당자 연락처</label><input id="lo-phone" value="010-3384-3507"></div>
         <div class="field"><label>F&amp;I 담당자</label><input id="lo-fni" value="김진환"></div>
         <div class="field"><label>F&amp;I 연락처</label><input id="lo-fni-phone" placeholder="010-0000-0000"></div>
-        <div class="field"><label>고객명</label><input id="lo-customer" placeholder="고객명"></div>
       </div>
     </div>
     <div class="card">
@@ -656,11 +656,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="section-title">DEALER INFO</div>
       <div class="grid-2">
         <div class="field"><label>전시장</label><input id="inst-branch" value="가양BPS"></div>
+        <div class="field"><label>고객명</label><input id="inst-customer" placeholder="고객명"></div>
         <div class="field"><label>담당자 (영업)</label><input id="inst-staff" value="장용준"></div>
         <div class="field"><label>담당자 연락처</label><input id="inst-phone" value="010-3384-3507"></div>
         <div class="field"><label>F&amp;I 담당자</label><input id="inst-fni" value="김진환"></div>
         <div class="field"><label>F&amp;I 연락처</label><input id="inst-fni-phone" placeholder="010-0000-0000"></div>
-        <div class="field"><label>고객명</label><input id="inst-customer" placeholder="고객명"></div>
       </div>
     </div>
     <div class="card">
@@ -1496,11 +1496,11 @@ function showPreview(type) {
       <div class="pv-section-title">견적 정보</div>
       <div class="pv-row"><span class="pv-key">딜러</span><span class="pv-val">도이치모터스</span></div>
       <div class="pv-row"><span class="pv-key">전시장</span><span class="pv-val">${branch}</span></div>
+      <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
       <div class="pv-row"><span class="pv-key">담당자</span><span class="pv-val">${staff}</span></div>
       <div class="pv-row"><span class="pv-key">담당자 연락처</span><span class="pv-val">${phone}</span></div>
       <div class="pv-row"><span class="pv-key">F&I 담당자</span><span class="pv-val">${fni}</span></div>
       ${fniPhone ? `<div class="pv-row"><span class="pv-key">F&I 연락처</span><span class="pv-val">${fniPhone}</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
     </div>
     <div class="pv-section">
       <div class="pv-section-title">차량 정보</div>
@@ -1570,11 +1570,11 @@ function showPreview(type) {
       <div class="pv-section-title">견적 정보</div>
       <div class="pv-row"><span class="pv-key">딜러</span><span class="pv-val">도이치모터스</span></div>
       <div class="pv-row"><span class="pv-key">전시장</span><span class="pv-val">${branch}</span></div>
+      <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
       <div class="pv-row"><span class="pv-key">담당자</span><span class="pv-val">${staff}</span></div>
       <div class="pv-row"><span class="pv-key">담당자 연락처</span><span class="pv-val">${phone}</span></div>
       <div class="pv-row"><span class="pv-key">F&I 담당자</span><span class="pv-val">${fni}</span></div>
       ${fniPhone ? `<div class="pv-row"><span class="pv-key">F&I 연락처</span><span class="pv-val">${fniPhone}</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
     </div>
     <div class="pv-section">
       <div class="pv-section-title">차량 정보</div>
@@ -1800,9 +1800,9 @@ function pvHeader(branch,staff,phone,customer,date,type) {
   <div class="pv-section">
     <div class="pv-section-title">DEALER INFO</div>
     <div class="pv-row"><span class="pv-key">딜러</span><span class="pv-val">도이치모터스 ${branch}</span></div>
+    <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
     <div class="pv-row"><span class="pv-key">담당자</span><span class="pv-val">${staff}</span></div>
     <div class="pv-row"><span class="pv-key">연락처</span><span class="pv-val">${phone}</span></div>
-    <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
   </div>`;
 }
 function pvSection(title, rows) {
