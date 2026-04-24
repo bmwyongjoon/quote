@@ -764,6 +764,10 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         </div>
         <div class="field"><label>이자율 (자동입력)</label><div class="amt"><input id="inst-rate-disp" readonly style="background:#f9f9f9;color:#1a1a1a;font-weight:500;"><span>%</span></div></div>
         <div class="field"><label>선수금</label><div class="amt"><input type="number" id="inst-down" placeholder="0" oninput="calcInst()"><span>원</span></div></div>
+        <div class="field"><label>상환 유예금 % <span id="inst-residual-max-label" style="color:#e53e3e;font-size:9px;"></span></label>
+          <div class="amt"><input type="number" id="inst-residual-pct" value="0" step="1" min="0" oninput="calcInst()"><span>%</span></div>
+        </div>
+        <div class="field"><label>유예금 (자동계산)</label><div class="amt"><input id="inst-residual-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
         <div class="field"><label>할부 원금 (자동)</label><div class="amt"><input id="inst-principal-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
       </div>
     </div>
@@ -775,6 +779,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">취득세</span><span class="rvalue" id="instr-tax">—</span></div>
       <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="instr-bond">—</span></div>
       <div class="rrow"><span class="rlabel">선수금</span><span class="rvalue" id="instr-down">—</span></div>
+      <div class="rrow"><span class="rlabel">상환 유예금</span><span class="rvalue" id="instr-residual">—</span></div>
       <div class="rrow"><span class="rlabel">할부 원금</span><span class="rvalue" id="instr-principal">—</span></div>
       <div class="rrow"><span class="rlabel">할부 기간 / 이자율</span><span class="rvalue" id="instr-period">—</span></div>
       <div class="rrow total"><span class="rlabel">예상 월 납입금</span><span class="rvalue" id="instr-monthly">—</span></div>
@@ -1335,15 +1340,41 @@ function calcInst() {
   const rate = INST_RATES[product] ? (INST_RATES[product][period] || 0) : 0;
   document.getElementById('inst-rate-disp').value = rate ? (rate * 100).toFixed(2) : '';
 
+  // 최대 유예금 계산: ROUNDDOWN(RV율 × 110%, 2) — 금융리스와 동일 방식
+  const regDate = document.getElementById('inst-regdate').value;
+  const brand = document.getElementById('inst-vs-brand')?.value || '';
+  const series = document.getElementById('inst-vs-series')?.value || '';
+  const maxRVRate = getMaxRV(brand, series, regDate, period);
+  const maxLabel = document.getElementById('inst-residual-max-label');
+
+  let residualPct = parseFloat(document.getElementById('inst-residual-pct').value)||0;
+
+  if (maxRVRate !== null) {
+    const maxRVWithBuffer = Math.floor(maxRVRate * 1.1 * 100) / 100;
+    const maxPct = Math.round(maxRVWithBuffer * 100);
+    maxLabel.textContent = `최대 ${maxPct}%`;
+    if (residualPct > maxPct) {
+      residualPct = maxPct;
+      document.getElementById('inst-residual-pct').value = maxPct;
+    }
+    document.getElementById('inst-residual-pct').max = maxPct;
+  } else {
+    maxLabel.textContent = '';
+  }
+
+  const residual = Math.round(finalPrice * residualPct / 100);
+  document.getElementById('inst-residual-disp').value = residual > 0 ? residual.toLocaleString() : '';
+
   // 할부 원금 = 최종구입가격 + 취득세 + 공채 - 선수금
   const principal = finalPrice + tax + bond - down;
   document.getElementById('inst-principal-disp').value = principal > 0 ? principal.toLocaleString() : '';
 
   let monthly = 0;
   if (rate > 0 && principal > 0) {
-    monthly = Math.floor(-pmtCalc(rate / 12, period, -principal, 0));
+    // 유예금은 FV(미래가치)로 처리 — 만기 일시 상환
+    monthly = Math.floor(-pmtCalc(rate / 12, period, -principal, residual));
   } else if (principal > 0) {
-    monthly = Math.floor(principal / period);
+    monthly = Math.floor((principal - residual) / period);
   }
 
   document.getElementById('instr-orig').textContent = fmt(orig);
@@ -1352,11 +1383,12 @@ function calcInst() {
   document.getElementById('instr-tax').textContent = fmt(tax);
   document.getElementById('instr-bond').textContent = bond > 0 ? fmt(bond) : '—';
   document.getElementById('instr-down').textContent = down > 0 ? fmt(down) : '—';
+  document.getElementById('instr-residual').textContent = residual > 0 ? fmt(residual) + ' (' + residualPct + '%)' : '—';
   document.getElementById('instr-principal').textContent = fmt(principal);
   document.getElementById('instr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
   document.getElementById('instr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
 
-  return { orig, discount, finalPrice, tax, bond, down, principal, period, rate, monthly, product };
+  return { orig, discount, finalPrice, tax, bond, down, residualPct, residual, principal, period, rate, monthly, product };
 }
 
 function resetInst() {
@@ -1368,9 +1400,11 @@ function resetInst() {
   document.getElementById('inst-bond-mode').value = 'buy';
   document.getElementById('inst-bond-auto-row').style.display='';
   document.getElementById('inst-bond-manual-row').style.display='none';
-  ['inst-price-final','inst-tax-disp','inst-rate-disp','inst-principal-disp','inst-bond-disp'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inst-residual-pct').value = '0';
+  document.getElementById('inst-residual-max-label').textContent = '';
+  ['inst-price-final','inst-tax-disp','inst-rate-disp','inst-residual-disp','inst-principal-disp','inst-bond-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-inst').style.display = 'none';
-  ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-down','instr-principal','instr-period','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
+  ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-down','instr-residual','instr-principal','instr-period','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
 }
 
 // ── 견적서 미리보기 생성 ──
@@ -1597,6 +1631,7 @@ function showPreview(type) {
       <div class="pv-row"><span class="pv-key">금융사</span><span class="pv-val">BMW Financial Services Korea</span></div>
       <div class="pv-row"><span class="pv-key">금융 상품명</span><span class="pv-val">${productName}</span></div>
       <div class="pv-row"><span class="pv-key">대출 신청금액</span><span class="pv-val">${fmt(d.principal)}</span></div>
+      ${d.residual > 0 ? `<div class="pv-row"><span class="pv-key">상환 유예금</span><span class="pv-val">${fmt(d.residual)} (${d.residualPct}%)</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">계약 기간</span><span class="pv-val">${d.period}개월</span></div>
       <div class="pv-row"><span class="pv-key">이자율</span><span class="pv-val">${(d.rate * 100).toFixed(2)}%</span></div>
     </div>
@@ -1873,7 +1908,7 @@ const SAVE_FIELDS = {
   cash: ['c-price','c-bond-region','c-bond-mode','c-bond-input','c-misc','c-delivery','c-model','c-year','c-regdate','c-mileage','c-vs-brand','c-vs-year','c-vs-series','c-vs-trim'],
   lf:   ['lf-price-orig','lf-discount','lf-deposit','lf-residual-pct','lf-period','lf-product','lf-delivery','lf-misc','lf-model','lf-year','lf-regdate','lf-cc','lf-ev','lf-mileage','lf-bond-region','lf-bond-mode','lf-bond-input','lf-vs-brand','lf-vs-year','lf-vs-series','lf-vs-trim'],
   lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-pct','lo-residual-pct','lo-sc-pct','lo-tax-include','lo-tax-mode','lo-tax-input','lo-bond-region','lo-bond-mode','lo-bond-input','lo-misc','lo-delivery','lo-model','lo-year','lo-regdate','lo-mileage','lo-cc','lo-vs-brand','lo-vs-year','lo-vs-series','lo-vs-trim'],
-  inst: ['inst-price-orig','inst-discount','inst-down','inst-product','inst-period','inst-bond-region','inst-bond-mode','inst-bond-input','inst-model','inst-year','inst-regdate','inst-mileage','inst-vs-brand','inst-vs-year','inst-vs-series','inst-vs-trim'],
+  inst: ['inst-price-orig','inst-discount','inst-down','inst-residual-pct','inst-product','inst-period','inst-bond-region','inst-bond-mode','inst-bond-input','inst-model','inst-year','inst-regdate','inst-mileage','inst-vs-brand','inst-vs-year','inst-vs-series','inst-vs-trim'],
 };
 
 function saveQuote(tab) {
