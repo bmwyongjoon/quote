@@ -768,7 +768,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
           <div class="amt"><input type="number" id="inst-residual-pct" value="0" step="1" min="0" oninput="calcInst()"><span>%</span></div>
         </div>
         <div class="field"><label>유예금 (자동계산)</label><div class="amt"><input id="inst-residual-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div class="field"><label>할부 원금 (자동)</label><div class="amt"><input id="inst-principal-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label>대출 신청금액 (자동)</label><div class="amt"><input id="inst-principal-disp" readonly style="background:#f9f9f9;color:#1a1a1a;font-weight:500;"><span>원</span></div></div>
       </div>
     </div>
     <div class="result-card">
@@ -780,8 +780,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="instr-bond">—</span></div>
       <div class="rrow"><span class="rlabel">선수금</span><span class="rvalue" id="instr-down">—</span></div>
       <div class="rrow"><span class="rlabel">상환 유예금</span><span class="rvalue" id="instr-residual">—</span></div>
-      <div class="rrow"><span class="rlabel">할부 원금</span><span class="rvalue" id="instr-principal">—</span></div>
+      <div class="rrow"><span class="rlabel">대출 신청금액</span><span class="rvalue" id="instr-principal">—</span></div>
       <div class="rrow"><span class="rlabel">할부 기간 / 이자율</span><span class="rvalue" id="instr-period">—</span></div>
+      <div class="rrow"><span class="rlabel">계약 발생 납입금</span><span class="rvalue" id="instr-init-payment">—</span></div>
       <div class="rrow total"><span class="rlabel">예상 월 납입금</span><span class="rvalue" id="instr-monthly">—</span></div>
       <div class="btn-row">
         <button class="btn btn-white" onclick="showPreview('installment')">📄 견적서 미리보기</button>
@@ -1365,16 +1366,18 @@ function calcInst() {
   const residual = Math.round(finalPrice * residualPct / 100);
   document.getElementById('inst-residual-disp').value = residual > 0 ? residual.toLocaleString() : '';
 
-  // 할부 원금 = 최종구입가격 + 취득세 + 공채 - 선수금
-  const principal = finalPrice + tax + bond - down;
-  document.getElementById('inst-principal-disp').value = principal > 0 ? principal.toLocaleString() : '';
+  // 대출 신청금액 = 최종구입가격 - 선납금 (취득세/공채는 계약 발생 납입금에만 포함)
+  const loanAmt = Math.max(0, finalPrice - down);
+  // 계약 발생 납입금 = 선납금 + 취득세 + 공채
+  const initPayment = down + tax + bond;
+  document.getElementById('inst-principal-disp').value = loanAmt > 0 ? loanAmt.toLocaleString() : '';
 
   let monthly = 0;
-  if (rate > 0 && principal > 0) {
+  if (rate > 0 && loanAmt > 0) {
     // 유예금은 FV(미래가치)로 처리 — 만기 일시 상환
-    monthly = Math.floor(-pmtCalc(rate / 12, period, -principal, residual));
-  } else if (principal > 0) {
-    monthly = Math.floor((principal - residual) / period);
+    monthly = Math.floor(-pmtCalc(rate / 12, period, -loanAmt, residual));
+  } else if (loanAmt > 0) {
+    monthly = Math.floor((loanAmt - residual) / period);
   }
 
   document.getElementById('instr-orig').textContent = fmt(orig);
@@ -1384,11 +1387,12 @@ function calcInst() {
   document.getElementById('instr-bond').textContent = bond > 0 ? fmt(bond) : '—';
   document.getElementById('instr-down').textContent = down > 0 ? fmt(down) : '—';
   document.getElementById('instr-residual').textContent = residual > 0 ? fmt(residual) + ' (' + residualPct + '%)' : '—';
-  document.getElementById('instr-principal').textContent = fmt(principal);
+  document.getElementById('instr-principal').textContent = fmt(loanAmt);
   document.getElementById('instr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
+  document.getElementById('instr-init-payment').textContent = fmt(initPayment);
   document.getElementById('instr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
 
-  return { orig, discount, finalPrice, tax, bond, down, residualPct, residual, principal, period, rate, monthly, product };
+  return { orig, discount, finalPrice, tax, bond, down, residualPct, residual, loanAmt, initPayment, period, rate, monthly, product };
 }
 
 function resetInst() {
@@ -1404,7 +1408,7 @@ function resetInst() {
   document.getElementById('inst-residual-max-label').textContent = '';
   ['inst-price-final','inst-tax-disp','inst-rate-disp','inst-residual-disp','inst-principal-disp','inst-bond-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-inst').style.display = 'none';
-  ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-down','instr-residual','instr-principal','instr-period','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
+  ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-down','instr-residual','instr-principal','instr-period','instr-init-payment','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
 }
 
 // ── 견적서 미리보기 생성 ──
@@ -1630,10 +1634,11 @@ function showPreview(type) {
       <div class="pv-section-title">금융 정보</div>
       <div class="pv-row"><span class="pv-key">금융사</span><span class="pv-val">BMW Financial Services Korea</span></div>
       <div class="pv-row"><span class="pv-key">금융 상품명</span><span class="pv-val">${productName}</span></div>
-      <div class="pv-row"><span class="pv-key">대출 신청금액</span><span class="pv-val">${fmt(d.principal)}</span></div>
+      <div class="pv-row"><span class="pv-key">대출 신청금액</span><span class="pv-val">${fmt(d.loanAmt)}</span></div>
       ${d.residual > 0 ? `<div class="pv-row"><span class="pv-key">상환 유예금</span><span class="pv-val">${fmt(d.residual)} (${d.residualPct}%)</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">계약 기간</span><span class="pv-val">${d.period}개월</span></div>
       <div class="pv-row"><span class="pv-key">이자율</span><span class="pv-val">${(d.rate * 100).toFixed(2)}%</span></div>
+      <div class="pv-row"><span class="pv-key">계약 발생 납입금</span><span class="pv-val">${fmt(d.initPayment)}</span></div>
     </div>
     <div class="pv-total-row">
       <span class="pv-total-key">월 납입금</span>
