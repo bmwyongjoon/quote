@@ -579,121 +579,188 @@ function getVehiclePrice(brand, year, series, trim) {
 // ── 입력값 업데이트 ──
 function updateField(key, value) {
   pages[currentPage][key] = value;
-
-  if (key === 'sel_brand') {
-    pages[currentPage].sel_year = '';
-    pages[currentPage].sel_series = '';
-    pages[currentPage].sel_trim = '';
-    // 브랜드 선택 드롭다운 selected 유지를 위해 직접 DOM 업데이트
-    const brandEl = document.querySelector('.vehicle-selects select:first-child');
-    if (brandEl) brandEl.value = value;
-    updateVehicleSelectors();
-    renderPreview();
-    return;
-  }
-  if (key === 'sel_year') {
-    pages[currentPage].sel_series = '';
-    pages[currentPage].sel_trim = '';
-    updateVehicleSelectors();
-    renderPreview();
-    return;
-  }
-  if (key === 'sel_series') {
-    pages[currentPage].sel_trim = '';
-    updateVehicleSelectors();
-    renderPreview();
-    return;
-  }
-  if (key === 'sel_trim') {
-    const p = pages[currentPage];
-    const price = getVehiclePrice(p.sel_brand, p.sel_year, p.sel_series, value);
-    if (price) {
-      pages[currentPage].new_car_price = String(price);
-      const el = document.getElementById('field-new_car_price');
-      if (el) el.value = price;
-    }
-    if (!pages[currentPage].car_name) {
-      pages[currentPage].car_name = `${p.sel_series} ${value}`.trim();
-      const el = document.getElementById('field-car_name');
-      if (el) el.value = pages[currentPage].car_name;
-    }
-    updateVehicleSelectors();
-    renderPreview();
-    return;
-  }
-
   renderPreview();
   renderTabs();
 }
 
-// 차종 드롭다운 렌더링 - vs-container에 완전히 새로 그림
-function updateVehicleSelectors() {
+// 차종 드롭다운 초기 구조 생성 (최초 1회)
+function initVehicleSelectors() {
   const container = document.getElementById('vs-container');
-  if (!container) return;
+  if (!container || container.children.length > 0) return;
 
+  const brandSel = document.createElement('select');
+  brandSel.id = 'vs-brand';
+  brandSel.innerHTML = '<option value="">브랜드 선택</option>';
+  getBrands().forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b; opt.textContent = b;
+    brandSel.appendChild(opt);
+  });
+  brandSel.onchange = () => vsChange('brand', brandSel.value);
+
+  const yearSel = document.createElement('select');
+  yearSel.id = 'vs-year';
+  yearSel.innerHTML = '<option value="">연식 선택</option>';
+  yearSel.disabled = true;
+  yearSel.onchange = () => vsChange('year', yearSel.value);
+
+  const seriesSel = document.createElement('select');
+  seriesSel.id = 'vs-series';
+  seriesSel.innerHTML = '<option value="">시리즈 선택</option>';
+  seriesSel.disabled = true;
+  seriesSel.onchange = () => vsChange('series', seriesSel.value);
+
+  const trimSel = document.createElement('select');
+  trimSel.id = 'vs-trim';
+  trimSel.innerHTML = '<option value="">트림 선택</option>';
+  trimSel.disabled = true;
+  trimSel.onchange = () => vsChange('trim', trimSel.value);
+
+  container.appendChild(brandSel);
+  container.appendChild(yearSel);
+  container.appendChild(seriesSel);
+  container.appendChild(trimSel);
+}
+
+// 견적서 앱과 동일한 방식으로 차종 선택 처리
+function vsChange(changed, value) {
   const p = pages[currentPage];
-  const brands = getBrands();
-  const years = p.sel_brand ? getYears(p.sel_brand) : [];
-  const seriesList = p.sel_year ? getSeries(p.sel_brand, p.sel_year) : [];
-  const trims = p.sel_series ? getTrims(p.sel_brand, p.sel_year, p.sel_series) : [];
+  const brandEl  = document.getElementById('vs-brand');
+  const yearEl   = document.getElementById('vs-year');
+  const seriesEl = document.getElementById('vs-series');
+  const trimEl   = document.getElementById('vs-trim');
+  const brand = brandEl ? brandEl.value : '';
+  const year  = yearEl  ? yearEl.value  : '';
+  const series= seriesEl? seriesEl.value: '';
 
-  container.innerHTML = `
-    <select onchange="onBrandChange(this.value)">
-      <option value="">브랜드 선택</option>
-      ${brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('')}
-    </select>
-    <select onchange="onYearChange(this.value)" ${!p.sel_brand?'disabled':''}>
-      <option value="">연식 선택</option>
-      ${years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('')}
-    </select>
-    <select onchange="onSeriesChange(this.value)" ${!p.sel_year?'disabled':''}>
-      <option value="">시리즈 선택</option>
-      ${seriesList.map(s => `<option value="${s}" ${p.sel_series===s?'selected':''}>${s}</option>`).join('')}
-    </select>
-    <select onchange="onTrimChange(this.value)" ${!p.sel_series?'disabled':''}>
-      <option value="">트림 선택</option>
-      ${trims.map(t => `<option value="${t}" ${p.sel_trim===t?'selected':''}>${t}</option>`).join('')}
-    </select>
-  `;
+  if (changed === 'brand') {
+    p.sel_brand = value;
+    p.sel_year = ''; p.sel_series = ''; p.sel_trim = '';
+    yearEl.innerHTML = '<option value="">연식 선택</option>';
+    seriesEl.innerHTML = '<option value="">시리즈 선택</option>';
+    trimEl.innerHTML = '<option value="">트림 선택</option>';
+    yearEl.disabled = !value;
+    seriesEl.disabled = true;
+    trimEl.disabled = true;
+    if (value) {
+      const years = [...new Set(vehiclesData.filter(v => v.brand === value).map(v => v.year))]
+        .filter(Boolean).sort((a,b) => b - a);
+      years.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y + '년식';
+        yearEl.appendChild(opt);
+      });
+    }
+  }
+
+  if (changed === 'year') {
+    p.sel_year = value;
+    p.sel_series = ''; p.sel_trim = '';
+    seriesEl.innerHTML = '<option value="">시리즈 선택</option>';
+    trimEl.innerHTML = '<option value="">트림 선택</option>';
+    seriesEl.disabled = !value;
+    trimEl.disabled = true;
+    if (brand && value) {
+      const seriesList = [...new Set(
+        vehiclesData.filter(v => v.brand === brand && v.year == value).map(v => v.series)
+      )].sort();
+      seriesList.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        seriesEl.appendChild(opt);
+      });
+    }
+  }
+
+  if (changed === 'series') {
+    p.sel_series = value;
+    p.sel_trim = '';
+    trimEl.innerHTML = '<option value="">트림 선택</option>';
+    trimEl.disabled = !value;
+    if (brand && year && value) {
+      const trims = vehiclesData.filter(v => v.brand === brand && v.year == year && v.series === value);
+      trims.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify(v);
+        opt.textContent = v.trim;
+        trimEl.appendChild(opt);
+      });
+    }
+  }
+
+  if (changed === 'trim' && value) {
+    const v = JSON.parse(value);
+    p.sel_trim = v.trim;
+    if (v.msrp || v.price) {
+      p.new_car_price = String(v.msrp || v.price);
+      const el = document.getElementById('field-new_car_price');
+      if (el) el.value = p.new_car_price;
+    }
+    if (!p.car_name) {
+      p.car_name = `${v.series} ${v.trim}`.trim();
+      const el = document.getElementById('field-car_name');
+      if (el) el.value = p.car_name;
+    }
+  }
+
+  renderPreview();
 }
 
-function onBrandChange(value) {
-  pages[currentPage].sel_brand = String(value);
-  pages[currentPage].sel_year = '';
-  pages[currentPage].sel_series = '';
-  pages[currentPage].sel_trim = '';
-  updateVehicleSelectors();
-  renderPreview();
-}
-function onYearChange(value) {
-  pages[currentPage].sel_year = String(value);
-  pages[currentPage].sel_series = '';
-  pages[currentPage].sel_trim = '';
-  updateVehicleSelectors();
-  renderPreview();
-}
-function onSeriesChange(value) {
-  pages[currentPage].sel_series = String(value);
-  pages[currentPage].sel_trim = '';
-  updateVehicleSelectors();
-  renderPreview();
-}
-function onTrimChange(value) {
+// 차종 선택 드롭다운 업데이트 (페이지 전환 시 값 복원)
+function updateVehicleSelectors() {
+  initVehicleSelectors();
   const p = pages[currentPage];
-  p.sel_trim = value;
-  const price = getVehiclePrice(p.sel_brand, p.sel_year, p.sel_series, value);
-  if (price) {
-    p.new_car_price = String(price);
-    const el = document.getElementById('field-new_car_price');
-    if (el) el.value = price;
+  const brandEl  = document.getElementById('vs-brand');
+  const yearEl   = document.getElementById('vs-year');
+  const seriesEl = document.getElementById('vs-series');
+  const trimEl   = document.getElementById('vs-trim');
+  if (!brandEl) return;
+
+  // 브랜드 복원
+  brandEl.value = p.sel_brand || '';
+
+  // 연식 복원
+  yearEl.innerHTML = '<option value="">연식 선택</option>';
+  yearEl.disabled = !p.sel_brand;
+  if (p.sel_brand) {
+    const years = [...new Set(vehiclesData.filter(v => v.brand === p.sel_brand).map(v => v.year))]
+      .filter(Boolean).sort((a,b) => b - a);
+    years.forEach(y => {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y + '년식';
+      if (String(y) === String(p.sel_year)) opt.selected = true;
+      yearEl.appendChild(opt);
+    });
   }
-  if (!p.car_name) {
-    p.car_name = `${p.sel_series} ${value}`.trim();
-    const el = document.getElementById('field-car_name');
-    if (el) el.value = p.car_name;
+
+  // 시리즈 복원
+  seriesEl.innerHTML = '<option value="">시리즈 선택</option>';
+  seriesEl.disabled = !p.sel_year;
+  if (p.sel_brand && p.sel_year) {
+    const seriesList = [...new Set(
+      vehiclesData.filter(v => v.brand === p.sel_brand && v.year == p.sel_year).map(v => v.series)
+    )].sort();
+    seriesList.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      if (s === p.sel_series) opt.selected = true;
+      seriesEl.appendChild(opt);
+    });
   }
-  updateVehicleSelectors();
-  renderPreview();
+
+  // 트림 복원
+  trimEl.innerHTML = '<option value="">트림 선택</option>';
+  trimEl.disabled = !p.sel_series;
+  if (p.sel_brand && p.sel_year && p.sel_series) {
+    const trims = vehiclesData.filter(v => v.brand === p.sel_brand && v.year == p.sel_year && v.series === p.sel_series);
+    trims.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify(v);
+      opt.textContent = v.trim;
+      if (v.trim === p.sel_trim) opt.selected = true;
+      trimEl.appendChild(opt);
+    });
+  }
 }
 
 function setWarranty(val) {
