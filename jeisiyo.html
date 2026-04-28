@@ -626,38 +626,74 @@ function updateField(key, value) {
   renderTabs();
 }
 
-// 차종 드롭다운만 업데이트
+// 차종 드롭다운 렌더링 - vs-container에 완전히 새로 그림
 function updateVehicleSelectors() {
+  const container = document.getElementById('vs-container');
+  if (!container) return;
+
   const p = pages[currentPage];
   const brands = getBrands();
   const years = p.sel_brand ? getYears(p.sel_brand) : [];
   const seriesList = p.sel_year ? getSeries(p.sel_brand, p.sel_year) : [];
   const trims = p.sel_series ? getTrims(p.sel_brand, p.sel_year, p.sel_series) : [];
 
-  const brandEl = document.getElementById('vs-brand');
-  const yearEl = document.getElementById('vs-year');
-  const seriesEl = document.getElementById('vs-series');
-  const trimEl = document.getElementById('vs-trim');
+  container.innerHTML = `
+    <select onchange="onBrandChange(this.value)">
+      <option value="">브랜드 선택</option>
+      ${brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('')}
+    </select>
+    <select onchange="onYearChange(this.value)" ${!p.sel_brand?'disabled':''}>
+      <option value="">연식 선택</option>
+      ${years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('')}
+    </select>
+    <select onchange="onSeriesChange(this.value)" ${!p.sel_year?'disabled':''}>
+      <option value="">시리즈 선택</option>
+      ${seriesList.map(s => `<option value="${s}" ${p.sel_series===s?'selected':''}>${s}</option>`).join('')}
+    </select>
+    <select onchange="onTrimChange(this.value)" ${!p.sel_series?'disabled':''}>
+      <option value="">트림 선택</option>
+      ${trims.map(t => `<option value="${t}" ${p.sel_trim===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+  `;
+}
 
-  if (brandEl) {
-    brandEl.innerHTML = '<option value="">브랜드 선택</option>' +
-      brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('');
+function onBrandChange(value) {
+  pages[currentPage].sel_brand = value;
+  pages[currentPage].sel_year = '';
+  pages[currentPage].sel_series = '';
+  pages[currentPage].sel_trim = '';
+  updateVehicleSelectors();
+  renderPreview();
+}
+function onYearChange(value) {
+  pages[currentPage].sel_year = value;
+  pages[currentPage].sel_series = '';
+  pages[currentPage].sel_trim = '';
+  updateVehicleSelectors();
+  renderPreview();
+}
+function onSeriesChange(value) {
+  pages[currentPage].sel_series = value;
+  pages[currentPage].sel_trim = '';
+  updateVehicleSelectors();
+  renderPreview();
+}
+function onTrimChange(value) {
+  const p = pages[currentPage];
+  p.sel_trim = value;
+  const price = getVehiclePrice(p.sel_brand, p.sel_year, p.sel_series, value);
+  if (price) {
+    p.new_car_price = String(price);
+    const el = document.getElementById('field-new_car_price');
+    if (el) el.value = price;
   }
-  if (yearEl) {
-    yearEl.innerHTML = '<option value="">연식 선택</option>' +
-      years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('');
-    yearEl.disabled = !p.sel_brand;
+  if (!p.car_name) {
+    p.car_name = `${p.sel_series} ${value}`.trim();
+    const el = document.getElementById('field-car_name');
+    if (el) el.value = p.car_name;
   }
-  if (seriesEl) {
-    seriesEl.innerHTML = '<option value="">시리즈 선택</option>' +
-      seriesList.map(s => `<option value="${s}" ${p.sel_series===s?'selected':''}>${s}</option>`).join('');
-    seriesEl.disabled = !p.sel_year;
-  }
-  if (trimEl) {
-    trimEl.innerHTML = '<option value="">트림 선택</option>' +
-      trims.map(t => `<option value="${t}" ${p.sel_trim===t?'selected':''}>${t}</option>`).join('');
-    trimEl.disabled = !p.sel_series;
-  }
+  updateVehicleSelectors();
+  renderPreview();
 }
 
 function setWarranty(val) {
@@ -716,24 +752,7 @@ function renderInputPanel() {
 
       <div class="field-group" style="margin-bottom:10px">
         <label>차종 선택 (vehicles.json)</label>
-        <div class="vehicle-selects" id="vehicle-selects-container">
-          <select id="vs-brand" onchange="updateField('sel_brand', this.value)">
-            <option value="">브랜드 선택</option>
-            ${brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('')}
-          </select>
-          <select id="vs-year" onchange="updateField('sel_year', this.value)" ${!p.sel_brand?'disabled':''}>
-            <option value="">연식 선택</option>
-            ${years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('')}
-          </select>
-          <select id="vs-series" onchange="updateField('sel_series', this.value)" ${!p.sel_year?'disabled':''}>
-            <option value="">시리즈 선택</option>
-            ${seriesList.map(s => `<option value="${s}" ${p.sel_series===s?'selected':''}>${s}</option>`).join('')}
-          </select>
-          <select id="vs-trim" onchange="updateField('sel_trim', this.value)" ${!p.sel_series?'disabled':''}>
-            <option value="">트림 선택</option>
-            ${trims.map(t => `<option value="${t}" ${p.sel_trim===t?'selected':''}>${t}</option>`).join('')}
-          </select>
-        </div>
+        <div id="vs-container" class="vehicle-selects"></div>
       </div>
 
       <div class="field-group" style="margin-bottom:10px">
@@ -869,6 +888,8 @@ function renderInputPanel() {
     <!-- 삭제 버튼 -->
     <button class="btn btn-danger" style="width:100%" onclick="deletePage(${currentPage})">🗑 이 페이지 삭제</button>
   `;
+  // 입력 패널 렌더링 후 차종 선택 드롭다운 초기화
+  updateVehicleSelectors();
 }
 
 // ── 제시표 슬라이드 렌더링 ──
