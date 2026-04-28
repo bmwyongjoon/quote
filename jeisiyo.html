@@ -499,8 +499,11 @@ body {
 let vehiclesData = [];
 fetch('vehicles.json')
   .then(r => r.json())
-  .then(data => { vehiclesData = data; })
-  .catch(() => console.log('vehicles.json 로드 실패'));
+  .then(data => {
+    vehiclesData = data;
+    renderAll(); // 데이터 로드 후 다시 렌더링
+  })
+  .catch(e => console.log('vehicles.json 로드 실패:', e));
 
 // ── 상태 관리 ──
 let pages = [];
@@ -570,7 +573,7 @@ function getTrims(brand, year, series) {
 }
 function getVehiclePrice(brand, year, series, trim) {
   const v = vehiclesData.find(v => v.brand === brand && v.year === year && v.series === series && v.trim === trim);
-  return v ? v.price : '';
+  return v ? (v.msrp || v.price || '') : '';
 }
 
 // ── 입력값 업데이트 ──
