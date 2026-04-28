@@ -8,12 +8,12 @@
 <style>
 @font-face {
   font-family: 'BMWGlobalPro';
-  src: url('https://raw.githubusercontent.com/bmwyongjoon/quote/main/fonts/BMWGLOBAL_PRO_BOLD_subset.ttf') format('truetype');
+  src: url('fonts/BMWGLOBAL_PRO_BOLD_subset.ttf') format('truetype');
   font-weight: bold;
 }
 @font-face {
   font-family: 'BMWGlobalPro';
-  src: url('https://raw.githubusercontent.com/bmwyongjoon/quote/main/fonts/BMWGLOBAL_PRO_LIGHT_subset.ttf') format('truetype');
+  src: url('fonts/BMWGLOBAL_PRO_LIGHT_subset.ttf') format('truetype');
   font-weight: 300;
 }
 
@@ -497,7 +497,7 @@ body {
 <script>
 // ── 차종 데이터 로드 ──
 let vehiclesData = [];
-fetch('https://raw.githubusercontent.com/bmwyongjoon/quote/main/vehicles.json')
+fetch('vehicles.json')
   .then(r => r.json())
   .then(data => { vehiclesData = data; })
   .catch(() => console.log('vehicles.json 로드 실패'));
