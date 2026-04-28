@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BPS 가양 제시표 제작</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@font-face {
+  font-family: 'BMWGlobalPro';
+  src: url('https://raw.githubusercontent.com/bmwyongjoon/quote/main/fonts/BMWGLOBAL_PRO_BOLD_subset.ttf') format('truetype');
+  font-weight: bold;
+}
+@font-face {
+  font-family: 'BMWGlobalPro';
+  src: url('https://raw.githubusercontent.com/bmwyongjoon/quote/main/fonts/BMWGLOBAL_PRO_LIGHT_subset.ttf') format('truetype');
+  font-weight: 300;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #f0f0f0;
+  font-family: 'BMWGlobalPro', 'Apple SD Gothic Neo', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── 상단 헤더 ── */
+.app-header {
+  background: #1a1a1a;
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.app-header h1 {
+  font-family: 'BMWGlobalPro', sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── 버튼 스타일 ── */
+.btn {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-primary { background: #0066CC; color: white; }
+.btn-primary:hover { background: #0052a3; }
+.btn-danger { background: #cc3300; color: white; }
+.btn-danger:hover { background: #a82900; }
+.btn-secondary { background: #555; color: white; }
+.btn-secondary:hover { background: #444; }
+.btn-add { background: #2a7a2a; color: white; }
+.btn-add:hover { background: #226022; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+/* ── 탭 네비게이션 ── */
+.tabs-nav {
+  background: #2a2a2a;
+  display: flex;
+  gap: 2px;
+  padding: 0 24px;
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 20px;
+  background: transparent;
+  color: #aaa;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.tab-btn.active {
+  color: white;
+  border-bottom-color: #0066CC;
+}
+.tab-btn:hover { color: #ddd; }
+
+/* ── 메인 레이아웃 ── */
+.main-container {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── 입력 패널 ── */
+.input-panel {
+  width: 380px;
+  flex-shrink: 0;
+}
+.panel-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.panel-section h3 {
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.field-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.field-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field-group label {
+  font-size: 11px;
+  color: #888;
+  font-weight: bold;
+}
+.field-group input,
+.field-group select,
+.field-group textarea {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+  outline: none;
+  border-color: #0066CC;
+}
+.field-group textarea { resize: vertical; min-height: 56px; }
+
+/* 금융조건 선택 */
+.finance-type-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.finance-type-btn {
+  padding: 8px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.finance-type-btn.active {
+  border-color: #0066CC;
+  background: #e8f0fb;
+  color: #0066CC;
+}
+
+/* 차종 선택 */
+.vehicle-selects {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 보증기간 선택 */
+.warranty-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.warranty-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.warranty-btn.active {
+  border-color: #0066CC;
+  background: #e8f0fb;
+  color: #0066CC;
+  font-weight: bold;
+}
+
+/* ── 미리보기 패널 ── */
+.preview-panel {
+  flex: 1;
+  min-width: 0;
+}
+.preview-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+.preview-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: bold;
+}
+
+/* ── 제시표 카드 (미리보기) ── */
+.jeisiyo-card-wrapper {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.card-index {
+  font-size: 12px;
+  color: #999;
+  font-weight: bold;
+}
+
+/* ── 제시표 실제 디자인 ── */
+.jeisiyo-slide {
+  width: 900px;
+  height: 540px;
+  background: white;
+  position: relative;
+  overflow: hidden;
+  font-family: 'BMWGlobalPro', sans-serif;
+  transform-origin: top left;
+}
+
+/* 상단 영역 */
+.slide-car-number {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 13px;
+  color: #555;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+.slide-finance-label {
+  position: absolute;
+  top: 10px;
+  right: 145px;
+  font-size: 11px;
+  color: #777;
+}
+
+.slide-monthly {
+  position: absolute;
+  top: 30px;
+  left: 40px;
+  font-size: 72px;
+  font-weight: bold;
+  color: #191919;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.slide-monthly-empty {
+  height: 80px;
+}
+
+.slide-car-name {
+  position: absolute;
+  top: 120px;
+  left: 40px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #191919;
+  letter-spacing: -0.5px;
+}
+
+.slide-car-price {
+  position: absolute;
+  top: 163px;
+  left: 40px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #191919;
+}
+
+/* 리스/현금 박스 */
+.slide-finance-box {
+  position: absolute;
+  top: 30px;
+  right: 16px;
+  text-align: right;
+}
+.slide-lease-cash {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+.slide-badge {
+  font-size: 22px;
+  font-weight: bold;
+  color: #191919;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.slide-badge.selected {
+  background: rgba(255, 0, 0, 0.15);
+}
+.slide-slash {
+  font-size: 22px;
+  font-weight: bold;
+  color: #191919;
+}
+.slide-finance-detail {
+  font-size: 11px;
+  color: #191919;
+  text-align: right;
+  line-height: 1.7;
+}
+.slide-new-price {
+  font-size: 15px;
+  color: #AEB0B2;
+  font-weight: bold;
+}
+
+/* 하단 테이블 */
+.slide-table {
+  position: absolute;
+  bottom: 0;
+  left: 40px;
+  right: 40px;
+  bottom: 20px;
+}
+.slide-table-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+.slide-table-grid th {
+  background: #e8e8e8;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #191919;
+  text-align: left;
+  border-right: 1px solid white;
+}
+.slide-table-grid th:last-child { border-right: none; }
+.slide-table-grid td {
+  padding: 10px 10px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #191919;
+  border-right: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  vertical-align: top;
+  height: 60px;
+}
+.slide-table-grid td:last-child { border-right: none; }
+.slide-table-grid tr:last-child td { border-bottom: none; }
+.slide-table-grid th.icon-th {
+  text-align: center;
+  padding-top: 6px;
+}
+
+/* 아이콘 */
+.table-icon {
+  font-size: 20px;
+  display: block;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.slide-disclaimer {
+  position: absolute;
+  bottom: 4px;
+  right: 40px;
+  font-size: 10px;
+  color: #555;
+}
+
+/* 스케일 조정 래퍼 */
+.slide-scale-wrapper {
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+/* ── 페이지 추가 버튼 ── */
+.add-page-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #999;
+  font-size: 14px;
+}
+.add-page-area:hover {
+  border-color: #0066CC;
+  color: #0066CC;
+  background: #f5f8ff;
+}
+
+/* 로딩 */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  display: none;
+}
+.loading-box {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/* 반응형 슬라이드 */
+@media (max-width: 1200px) {
+  .jeisiyo-slide { transform: scale(0.75); }
+  .slide-scale-wrapper { height: 405px; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">⏳ 이미지 생성 중...</div>
+</div>
+
+<header class="app-header">
+  <h1>BPS 가양 · 제시표 제작</h1>
+  <div class="header-actions">
+    <button class="btn btn-add" onclick="addPage()">+ 페이지 추가</button>
+    <button class="btn btn-primary" onclick="downloadAll()">📥 전체 다운로드</button>
+  </div>
+</header>
+
+<div class="tabs-nav" id="tabsNav"></div>
+
+<div class="main-container">
+  <!-- 입력 패널 -->
+  <div class="input-panel" id="inputPanel"></div>
+
+  <!-- 미리보기 패널 -->
+  <div class="preview-panel" id="previewPanel">
+    <div class="preview-controls">
+      <span class="preview-label">미리보기</span>
+      <button class="btn btn-secondary btn-sm" onclick="downloadCurrent()">📥 현재 페이지 다운로드</button>
+    </div>
+    <div id="previewArea"></div>
+    <div class="add-page-area" onclick="addPage()">
+      + 페이지 추가 (다른 차량)
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 차종 데이터 로드 ──
+let vehiclesData = [];
+fetch('https://raw.githubusercontent.com/bmwyongjoon/quote/main/vehicles.json')
+  .then(r => r.json())
+  .then(data => { vehiclesData = data; })
+  .catch(() => console.log('vehicles.json 로드 실패'));
+
+// ── 상태 관리 ──
+let pages = [];
+let currentPage = 0;
+
+function defaultPageData() {
+  return {
+    car_number: '',
+    car_name: '',
+    mileage: '',
+    year: '',
+    reg_date: '',
+    repair: '없음',
+    accident: '무사고',
+    warranty: '신차보증',
+    warranty_custom: '',
+    output_torque: '',
+    fuel_efficiency: '',
+    fuel_type: '휘발유',
+    displacement: '',
+    tuning: '순정',
+    car_price: '',
+    new_car_price: '',
+    finance_type: '금융리스',
+    monthly_payment: '',
+    months: '60',
+    down_payment: '0',
+    deferred: '',
+    // 차종 선택
+    sel_brand: '',
+    sel_year: '',
+    sel_series: '',
+    sel_trim: '',
+  };
+}
+
+function addPage() {
+  pages.push(defaultPageData());
+  currentPage = pages.length - 1;
+  renderAll();
+}
+
+function deletePage(idx) {
+  if (pages.length === 1) { alert('최소 1페이지는 있어야 합니다.'); return; }
+  pages.splice(idx, 1);
+  if (currentPage >= pages.length) currentPage = pages.length - 1;
+  renderAll();
+}
+
+function switchPage(idx) {
+  currentPage = idx;
+  renderAll();
+}
+
+// ── 차종 선택 옵션 ──
+function getBrands() {
+  return [...new Set(vehiclesData.map(v => v.brand))].sort();
+}
+function getYears(brand) {
+  return [...new Set(vehiclesData.filter(v => v.brand === brand).map(v => v.year))].sort().reverse();
+}
+function getSeries(brand, year) {
+  return [...new Set(vehiclesData.filter(v => v.brand === brand && v.year === year).map(v => v.series))].sort();
+}
+function getTrims(brand, year, series) {
+  return vehiclesData.filter(v => v.brand === brand && v.year === year && v.series === series).map(v => v.trim);
+}
+function getVehiclePrice(brand, year, series, trim) {
+  const v = vehiclesData.find(v => v.brand === brand && v.year === year && v.series === series && v.trim === trim);
+  return v ? v.price : '';
+}
+
+// ── 입력값 업데이트 ──
+function updateField(key, value) {
+  pages[currentPage][key] = value;
+  // 차종 선택 연동
+  if (key === 'sel_brand') {
+    pages[currentPage].sel_year = '';
+    pages[currentPage].sel_series = '';
+    pages[currentPage].sel_trim = '';
+  }
+  if (key === 'sel_year') {
+    pages[currentPage].sel_series = '';
+    pages[currentPage].sel_trim = '';
+  }
+  if (key === 'sel_series') {
+    pages[currentPage].sel_trim = '';
+  }
+  if (key === 'sel_trim') {
+    const p = pages[currentPage];
+    const price = getVehiclePrice(p.sel_brand, p.sel_year, p.sel_series, value);
+    if (price) pages[currentPage].new_car_price = String(price);
+    // 차종명 자동 완성
+    if (!pages[currentPage].car_name) {
+      pages[currentPage].car_name = `${p.sel_series} ${value}`.trim();
+    }
+  }
+  renderAll();
+}
+
+function setWarranty(val) {
+  pages[currentPage].warranty = val;
+  renderAll();
+}
+
+function setFinanceType(val) {
+  pages[currentPage].finance_type = val;
+  renderAll();
+}
+
+// ── 금액 포맷 ──
+function formatMoney(val) {
+  if (!val) return '';
+  const num = parseInt(String(val).replace(/[^0-9]/g, ''));
+  if (isNaN(num)) return val;
+  return num.toLocaleString('ko-KR');
+}
+
+// ── 탭 렌더링 ──
+function renderTabs() {
+  const nav = document.getElementById('tabsNav');
+  nav.innerHTML = pages.map((p, i) => `
+    <button class="tab-btn ${i === currentPage ? 'active' : ''}" onclick="switchPage(${i})">
+      ${p.car_number || p.car_name || `페이지 ${i+1}`}
+    </button>
+  `).join('');
+}
+
+// ── 입력 패널 렌더링 ──
+function renderInputPanel() {
+  const p = pages[currentPage];
+  const brands = vehiclesData.length ? getBrands() : [];
+  const years = p.sel_brand ? getYears(p.sel_brand) : [];
+  const seriesList = p.sel_year ? getSeries(p.sel_brand, p.sel_year) : [];
+  const trims = p.sel_series ? getTrims(p.sel_brand, p.sel_year, p.sel_series) : [];
+
+  const isLease = ['금융리스', '운용리스'].includes(p.finance_type);
+  const isOperating = p.finance_type === '운용리스';
+
+  document.getElementById('inputPanel').innerHTML = `
+    <!-- 차량 기본 정보 -->
+    <div class="panel-section">
+      <h3>차량 정보</h3>
+      <div class="field-row">
+        <div class="field-group">
+          <label>차량번호</label>
+          <input type="text" value="${p.car_number}" oninput="updateField('car_number', this.value)" placeholder="예) 295어1443">
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom:10px">
+        <label>차종 선택 (vehicles.json)</label>
+        <div class="vehicle-selects">
+          <select onchange="updateField('sel_brand', this.value)">
+            <option value="">브랜드 선택</option>
+            ${brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('')}
+          </select>
+          <select onchange="updateField('sel_year', this.value)" ${!p.sel_brand?'disabled':''}>
+            <option value="">연식 선택</option>
+            ${years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('')}
+          </select>
+          <select onchange="updateField('sel_series', this.value)" ${!p.sel_year?'disabled':''}>
+            <option value="">시리즈 선택</option>
+            ${seriesList.map(s => `<option value="${s}" ${p.sel_series===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <select onchange="updateField('sel_trim', this.value)" ${!p.sel_series?'disabled':''}>
+            <option value="">트림 선택</option>
+            ${trims.map(t => `<option value="${t}" ${p.sel_trim===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom:10px">
+        <label>차종명 (직접 입력 가능)</label>
+        <input type="text" value="${p.car_name}" oninput="updateField('car_name', this.value)" placeholder="예) BMW 530i M Sport">
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>주행거리</label>
+          <input type="text" value="${p.mileage}" oninput="updateField('mileage', this.value)" placeholder="예) 6,971">
+        </div>
+        <div class="field-group">
+          <label>연식</label>
+          <input type="text" value="${p.year}" oninput="updateField('year', this.value)" placeholder="예) 25">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>등록일</label>
+          <input type="text" value="${p.reg_date}" oninput="updateField('reg_date', this.value)" placeholder="예) 2025.06.27">
+        </div>
+      </div>
+    </div>
+
+    <!-- 차량 상태 -->
+    <div class="panel-section">
+      <h3>차량 상태</h3>
+      <div class="field-row">
+        <div class="field-group">
+          <label>사고내역</label>
+          <input type="text" value="${p.accident}" oninput="updateField('accident', this.value)" placeholder="예) 무사고">
+        </div>
+        <div class="field-group">
+          <label>수리내역</label>
+          <input type="text" value="${p.repair}" oninput="updateField('repair', this.value)" placeholder="예) 없음">
+        </div>
+      </div>
+      <div class="field-group" style="margin-bottom:8px">
+        <label>보증기간</label>
+        <div class="warranty-group">
+          ${['신차보증','EW보증','직접입력'].map(w => `
+            <button class="warranty-btn ${p.warranty===w||(!['신차보증','EW보증'].includes(p.warranty)&&w==='직접입력')?'active':''}"
+              onclick="setWarranty('${w}')">${w}</button>
+          `).join('')}
+        </div>
+        ${!['신차보증','EW보증'].includes(p.warranty) || p.warranty==='직접입력' ? `
+          <input type="text" value="${!['신차보증','EW보증'].includes(p.warranty)?p.warranty:''}" 
+            oninput="updateField('warranty', this.value)" placeholder="보증기간 직접 입력">
+        ` : ''}
+      </div>
+      <div class="field-group">
+        <label>튜닝내역</label>
+        <input type="text" value="${p.tuning}" oninput="updateField('tuning', this.value)" placeholder="예) 순정">
+      </div>
+    </div>
+
+    <!-- 차량 제원 -->
+    <div class="panel-section">
+      <h3>차량 제원</h3>
+      <div class="field-row">
+        <div class="field-group">
+          <label>최고출력 / 최대토크</label>
+          <input type="text" value="${p.output_torque}" oninput="updateField('output_torque', this.value)" placeholder="예) 317 hp / 40.8 kg.m">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>표준연비</label>
+          <input type="text" value="${p.fuel_efficiency}" oninput="updateField('fuel_efficiency', this.value)" placeholder="예) 10.3">
+        </div>
+        <div class="field-group">
+          <label>연료타입</label>
+          <select onchange="updateField('fuel_type', this.value)">
+            ${['휘발유','경유','전기','하이브리드','플러그인하이브리드'].map(f =>
+              `<option value="${f}" ${p.fuel_type===f?'selected':''}>${f}</option>`
+            ).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>배기량</label>
+          <input type="text" value="${p.displacement}" oninput="updateField('displacement', this.value)" placeholder="예) 1,998 cc">
+        </div>
+      </div>
+    </div>
+
+    <!-- 금융 조건 -->
+    <div class="panel-section">
+      <h3>금융 조건</h3>
+      <div class="finance-type-group">
+        ${['현금','할부','금융리스','운용리스'].map(t => `
+          <button class="finance-type-btn ${p.finance_type===t?'active':''}" onclick="setFinanceType('${t}')">${t}</button>
+        `).join('')}
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>차량가격</label>
+          <input type="text" value="${p.car_price}" oninput="updateField('car_price', this.value)" placeholder="예) 47900000">
+        </div>
+        <div class="field-group">
+          <label>신차가격</label>
+          <input type="text" value="${p.new_car_price}" oninput="updateField('new_car_price', this.value)" placeholder="예) 67100000">
+        </div>
+      </div>
+
+      ${p.finance_type !== '현금' ? `
+        <div class="field-row">
+          <div class="field-group">
+            <label>월납입료</label>
+            <input type="text" value="${p.monthly_payment}" oninput="updateField('monthly_payment', this.value)" placeholder="예) 822014">
+          </div>
+          <div class="field-group">
+            <label>개월수</label>
+            <input type="text" value="${p.months}" oninput="updateField('months', this.value)" placeholder="예) 60">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>${isOperating ? '선납금 (보증금)' : '선납금'}</label>
+            <input type="text" value="${p.down_payment}" oninput="updateField('down_payment', this.value)" placeholder="예) 0">
+          </div>
+          <div class="field-group">
+            <label>${isOperating ? '잔존가치' : '유예금'}</label>
+            <input type="text" value="${p.deferred}" oninput="updateField('deferred', this.value)" placeholder="예) 15807000">
+          </div>
+        </div>
+      ` : ''}
+    </div>
+
+    <!-- 삭제 버튼 -->
+    <button class="btn btn-danger" style="width:100%" onclick="deletePage(${currentPage})">🗑 이 페이지 삭제</button>
+  `;
+}
+
+// ── 제시표 슬라이드 렌더링 ──
+function renderSlide(p) {
+  const isLease = ['금융리스', '운용리스'].includes(p.finance_type);
+  const isOperating = p.finance_type === '운용리스';
+  const isCash = p.finance_type === '현금';
+
+  const monthly = p.monthly_payment ? `월 ${formatMoney(p.monthly_payment)} 원` : '';
+  const carPrice = p.car_price ? `차량가격 ${formatMoney(p.car_price)} 원` : '차량가격';
+  const newPrice = p.new_car_price ? `신차가격 ${formatMoney(p.new_car_price)} 원` : '';
+  const deferredLabel = isOperating ? '잔존가치' : '유예';
+  const downLabel = isOperating ? '선납(보증금)' : '선납';
+
+  const warrantyDisplay = p.warranty === '직접입력' ? p.warranty_custom : p.warranty;
+
+  return `
+    <div class="jeisiyo-slide" id="slide-${currentPage}">
+
+      <!-- 차량번호 -->
+      <div class="slide-car-number">${p.car_number || ''}</div>
+      <div class="slide-finance-label">금융조건</div>
+
+      <!-- 월납입료 -->
+      ${!isCash && p.monthly_payment ? `
+        <div class="slide-monthly">${monthly}</div>
+      ` : '<div style="height:80px"></div>'}
+
+      <!-- 차종명 -->
+      <div class="slide-car-name">${p.car_name || ''}</div>
+
+      <!-- 차량가격 -->
+      <div class="slide-car-price">${carPrice}</div>
+
+      <!-- 리스/현금 박스 -->
+      <div class="slide-finance-box">
+        <div class="slide-lease-cash">
+          <span class="slide-badge ${isLease ? 'selected' : ''}">리스</span>
+          <span class="slide-slash">/</span>
+          <span class="slide-badge ${!isLease ? 'selected' : ''}">현금</span>
+        </div>
+        <div class="slide-finance-detail">
+          ${p.finance_type !== '현금' ? `
+            <div style="font-size:12px;color:#333;margin-bottom:2px">${p.finance_type}/${p.months || ''}개월</div>
+            <div>${downLabel} ${formatMoney(p.down_payment) || '0'} 원</div>
+            <div>${deferredLabel} ${formatMoney(p.deferred) || ''} 원</div>
+          ` : ''}
+        </div>
+        <div class="slide-new-price" style="margin-top:4px">${newPrice}</div>
+      </div>
+
+      <!-- 하단 테이블 -->
+      <div class="slide-table">
+        <table class="slide-table-grid">
+          <tr>
+            <th class="icon-th">🚗<br>주행거리</th>
+            <th class="icon-th">📅<br>차량연식</th>
+            <th class="icon-th">🔧<br>수리내역</th>
+            <th class="icon-th">💥<br>사고내역</th>
+            <th class="icon-th">✅<br>보증기간</th>
+          </tr>
+          <tr>
+            <td>${p.mileage ? p.mileage + ' km' : ''}</td>
+            <td>${p.year ? p.year + '년식' : ''}<br>${p.reg_date ? p.reg_date + ' 등록' : ''}</td>
+            <td>- ${p.repair || ''}</td>
+            <td>- ${p.accident || ''}</td>
+            <td>- ${p.warranty !== '직접입력' ? (p.warranty || '') : (p.warranty_custom || '')}</td>
+          </tr>
+          <tr>
+            <th>최고출력/최대토크</th>
+            <th>표준연비</th>
+            <th>연료타입</th>
+            <th>배기량</th>
+            <th>튜닝내역</th>
+          </tr>
+          <tr>
+            <td>${p.output_torque || ''}</td>
+            <td>${p.fuel_efficiency ? p.fuel_efficiency + ' km/ℓ' : ''}</td>
+            <td>${p.fuel_type || ''}</td>
+            <td>${p.displacement || ''}</td>
+            <td>${p.tuning || ''}</td>
+          </tr>
+        </table>
+        <div class="slide-disclaimer">* 사양 및 제원은 실제 차량과 차이가 있을 수 있습니다.</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── 미리보기 패널 렌더링 ──
+function renderPreview() {
+  const p = pages[currentPage];
+  const slideHtml = renderSlide(p);
+
+  // 슬라이드 스케일 계산
+  const availWidth = document.getElementById('previewPanel')?.offsetWidth || 800;
+  const scale = Math.min(1, (availWidth - 40) / 900);
+
+  document.getElementById('previewArea').innerHTML = `
+    <div class="jeisiyo-card-wrapper">
+      <div class="card-header-row">
+        <span class="card-index">페이지 ${currentPage + 1} / ${pages.length}</span>
+      </div>
+      <div class="slide-scale-wrapper" style="height:${Math.round(540 * scale)}px">
+        <div style="transform: scale(${scale}); transform-origin: top left;">
+          ${slideHtml}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── 전체 렌더링 ──
+function renderAll() {
+  renderTabs();
+  renderInputPanel();
+  renderPreview();
+}
+
+// ── 다운로드 ──
+async function downloadSingle(pageIdx) {
+  const p = pages[pageIdx];
+
+  // 임시 슬라이드를 실제 크기로 렌더링
+  const temp = document.createElement('div');
+  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:900px;height:540px;';
+  temp.innerHTML = renderSlide(p);
+  document.body.appendChild(temp);
+
+  // 폰트 로딩 대기
+  await document.fonts.ready;
+  await new Promise(r => setTimeout(r, 300));
+
+  const slide = temp.querySelector('.jeisiyo-slide');
+  const canvas = await html2canvas(slide, {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+    width: 900,
+    height: 540,
+  });
+
+  document.body.removeChild(temp);
+
+  const link = document.createElement('a');
+  const filename = p.car_number || p.car_name || `제시표_${pageIdx + 1}`;
+  link.download = `${filename}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+async function downloadCurrent() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.style.display = 'flex';
+  try {
+    await downloadSingle(currentPage);
+  } finally {
+    overlay.style.display = 'none';
+  }
+}
+
+async function downloadAll() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.style.display = 'flex';
+  try {
+    for (let i = 0; i < pages.length; i++) {
+      await downloadSingle(i);
+      await new Promise(r => setTimeout(r, 500));
+    }
+  } finally {
+    overlay.style.display = 'none';
+  }
+}
+
+// ── 초기화 ──
+addPage();
+</script>
+</body>
+</html>
