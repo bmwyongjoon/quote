@@ -579,29 +579,77 @@ function getVehiclePrice(brand, year, series, trim) {
 // ── 입력값 업데이트 ──
 function updateField(key, value) {
   pages[currentPage][key] = value;
-  // 차종 선택 연동
+
   if (key === 'sel_brand') {
     pages[currentPage].sel_year = '';
     pages[currentPage].sel_series = '';
     pages[currentPage].sel_trim = '';
+    updateVehicleSelectors();
+    renderPreview();
+    renderTabs();
+    return;
   }
   if (key === 'sel_year') {
     pages[currentPage].sel_series = '';
     pages[currentPage].sel_trim = '';
+    updateVehicleSelectors();
+    renderPreview();
+    return;
   }
   if (key === 'sel_series') {
     pages[currentPage].sel_trim = '';
+    updateVehicleSelectors();
+    renderPreview();
+    return;
   }
   if (key === 'sel_trim') {
     const p = pages[currentPage];
     const price = getVehiclePrice(p.sel_brand, p.sel_year, p.sel_series, value);
-    if (price) pages[currentPage].new_car_price = String(price);
-    // 차종명 자동 완성
+    if (price) {
+      pages[currentPage].new_car_price = String(price);
+      const el = document.getElementById('field-new_car_price');
+      if (el) el.value = price;
+    }
     if (!pages[currentPage].car_name) {
       pages[currentPage].car_name = `${p.sel_series} ${value}`.trim();
+      const el = document.getElementById('field-car_name');
+      if (el) el.value = pages[currentPage].car_name;
     }
+    updateVehicleSelectors();
+    renderPreview();
+    return;
   }
-  renderAll();
+
+  renderPreview();
+  renderTabs();
+}
+
+// 차종 드롭다운만 업데이트
+function updateVehicleSelectors() {
+  const p = pages[currentPage];
+  const years = p.sel_brand ? getYears(p.sel_brand) : [];
+  const seriesList = p.sel_year ? getSeries(p.sel_brand, p.sel_year) : [];
+  const trims = p.sel_series ? getTrims(p.sel_brand, p.sel_year, p.sel_series) : [];
+
+  const yearEl = document.getElementById('vs-year');
+  const seriesEl = document.getElementById('vs-series');
+  const trimEl = document.getElementById('vs-trim');
+
+  if (yearEl) {
+    yearEl.innerHTML = '<option value="">연식 선택</option>' +
+      years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('');
+    yearEl.disabled = !p.sel_brand;
+  }
+  if (seriesEl) {
+    seriesEl.innerHTML = '<option value="">시리즈 선택</option>' +
+      seriesList.map(s => `<option value="${s}" ${p.sel_series===s?'selected':''}>${s}</option>`).join('');
+    seriesEl.disabled = !p.sel_year;
+  }
+  if (trimEl) {
+    trimEl.innerHTML = '<option value="">트림 선택</option>' +
+      trims.map(t => `<option value="${t}" ${p.sel_trim===t?'selected':''}>${t}</option>`).join('');
+    trimEl.disabled = !p.sel_series;
+  }
 }
 
 function setWarranty(val) {
@@ -661,15 +709,15 @@ function renderInputPanel() {
             <option value="">브랜드 선택</option>
             ${brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('')}
           </select>
-          <select onchange="updateField('sel_year', this.value)" ${!p.sel_brand?'disabled':''}>
+          <select id="vs-year" onchange="updateField('sel_year', this.value)" ${!p.sel_brand?'disabled':''}>
             <option value="">연식 선택</option>
             ${years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('')}
           </select>
-          <select onchange="updateField('sel_series', this.value)" ${!p.sel_year?'disabled':''}>
+          <select id="vs-series" onchange="updateField('sel_series', this.value)" ${!p.sel_year?'disabled':''}>
             <option value="">시리즈 선택</option>
             ${seriesList.map(s => `<option value="${s}" ${p.sel_series===s?'selected':''}>${s}</option>`).join('')}
           </select>
-          <select onchange="updateField('sel_trim', this.value)" ${!p.sel_series?'disabled':''}>
+          <select id="vs-trim" onchange="updateField('sel_trim', this.value)" ${!p.sel_series?'disabled':''}>
             <option value="">트림 선택</option>
             ${trims.map(t => `<option value="${t}" ${p.sel_trim===t?'selected':''}>${t}</option>`).join('')}
           </select>
@@ -678,7 +726,7 @@ function renderInputPanel() {
 
       <div class="field-group" style="margin-bottom:10px">
         <label>차종명 (직접 입력 가능)</label>
-        <input type="text" value="${p.car_name}" oninput="updateField('car_name', this.value)" placeholder="예) BMW 530i M Sport">
+        <input id="field-car_name" type="text" value="${p.car_name}" oninput="updateField('car_name', this.value)" placeholder="예) BMW 530i M Sport">
       </div>
 
       <div class="field-row">
@@ -778,7 +826,7 @@ function renderInputPanel() {
         </div>
         <div class="field-group">
           <label>신차가격</label>
-          <input type="text" value="${p.new_car_price}" oninput="updateField('new_car_price', this.value)" placeholder="예) 67100000">
+          <input id="field-new_car_price" type="text" value="${p.new_car_price}" oninput="updateField('new_car_price', this.value)" placeholder="예) 67100000">
         </div>
       </div>
 
