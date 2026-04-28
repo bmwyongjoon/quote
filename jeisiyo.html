@@ -584,9 +584,11 @@ function updateField(key, value) {
     pages[currentPage].sel_year = '';
     pages[currentPage].sel_series = '';
     pages[currentPage].sel_trim = '';
+    // 브랜드 선택 드롭다운 selected 유지를 위해 직접 DOM 업데이트
+    const brandEl = document.querySelector('.vehicle-selects select:first-child');
+    if (brandEl) brandEl.value = value;
     updateVehicleSelectors();
     renderPreview();
-    renderTabs();
     return;
   }
   if (key === 'sel_year') {
@@ -627,14 +629,20 @@ function updateField(key, value) {
 // 차종 드롭다운만 업데이트
 function updateVehicleSelectors() {
   const p = pages[currentPage];
+  const brands = getBrands();
   const years = p.sel_brand ? getYears(p.sel_brand) : [];
   const seriesList = p.sel_year ? getSeries(p.sel_brand, p.sel_year) : [];
   const trims = p.sel_series ? getTrims(p.sel_brand, p.sel_year, p.sel_series) : [];
 
+  const brandEl = document.getElementById('vs-brand');
   const yearEl = document.getElementById('vs-year');
   const seriesEl = document.getElementById('vs-series');
   const trimEl = document.getElementById('vs-trim');
 
+  if (brandEl) {
+    brandEl.innerHTML = '<option value="">브랜드 선택</option>' +
+      brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('');
+  }
   if (yearEl) {
     yearEl.innerHTML = '<option value="">연식 선택</option>' +
       years.map(y => `<option value="${y}" ${p.sel_year===y?'selected':''}>${y}년식</option>`).join('');
@@ -654,12 +662,16 @@ function updateVehicleSelectors() {
 
 function setWarranty(val) {
   pages[currentPage].warranty = val;
-  renderAll();
+  // 직접입력 선택 시 입력 필드 표시를 위해 패널 일부만 업데이트
+  renderInputPanel();
+  renderPreview();
 }
 
 function setFinanceType(val) {
   pages[currentPage].finance_type = val;
-  renderAll();
+  // 금융조건 변경 시 입력 필드 구성이 바뀌므로 패널 재렌더링
+  renderInputPanel();
+  renderPreview();
 }
 
 // ── 금액 포맷 ──
@@ -704,8 +716,8 @@ function renderInputPanel() {
 
       <div class="field-group" style="margin-bottom:10px">
         <label>차종 선택 (vehicles.json)</label>
-        <div class="vehicle-selects">
-          <select onchange="updateField('sel_brand', this.value)">
+        <div class="vehicle-selects" id="vehicle-selects-container">
+          <select id="vs-brand" onchange="updateField('sel_brand', this.value)">
             <option value="">브랜드 선택</option>
             ${brands.map(b => `<option value="${b}" ${p.sel_brand===b?'selected':''}>${b}</option>`).join('')}
           </select>
