@@ -563,13 +563,13 @@ function getBrands() {
   return [...new Set(vehiclesData.map(v => v.brand))].sort();
 }
 function getYears(brand) {
-  return [...new Set(vehiclesData.filter(v => v.brand === brand).map(v => v.year))].sort().reverse();
+  return [...new Set(vehiclesData.filter(v => String(v.brand) === String(brand)).map(v => String(v.year)))].sort().reverse();
 }
 function getSeries(brand, year) {
-  return [...new Set(vehiclesData.filter(v => v.brand === brand && v.year === year).map(v => v.series))].sort();
+  return [...new Set(vehiclesData.filter(v => String(v.brand) === String(brand) && String(v.year) === String(year)).map(v => v.series))].sort();
 }
 function getTrims(brand, year, series) {
-  return vehiclesData.filter(v => v.brand === brand && v.year === year && v.series === series).map(v => v.trim);
+  return vehiclesData.filter(v => String(v.brand) === String(brand) && String(v.year) === String(year) && v.series === series).map(v => v.trim);
 }
 function getVehiclePrice(brand, year, series, trim) {
   const v = vehiclesData.find(v => v.brand === brand && v.year === year && v.series === series && v.trim === trim);
@@ -658,7 +658,7 @@ function updateVehicleSelectors() {
 }
 
 function onBrandChange(value) {
-  pages[currentPage].sel_brand = value;
+  pages[currentPage].sel_brand = String(value);
   pages[currentPage].sel_year = '';
   pages[currentPage].sel_series = '';
   pages[currentPage].sel_trim = '';
@@ -666,14 +666,14 @@ function onBrandChange(value) {
   renderPreview();
 }
 function onYearChange(value) {
-  pages[currentPage].sel_year = value;
+  pages[currentPage].sel_year = String(value);
   pages[currentPage].sel_series = '';
   pages[currentPage].sel_trim = '';
   updateVehicleSelectors();
   renderPreview();
 }
 function onSeriesChange(value) {
-  pages[currentPage].sel_series = value;
+  pages[currentPage].sel_series = String(value);
   pages[currentPage].sel_trim = '';
   updateVehicleSelectors();
   renderPreview();
