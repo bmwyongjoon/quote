@@ -255,7 +255,7 @@ body {
 /* ── 제시표 실제 디자인 ── */
 .jeisiyo-slide {
   width: 960px;
-  height: 520px;
+  height: 679px;
   background: white;
   position: relative;
   overflow: hidden;
@@ -369,7 +369,7 @@ body {
   position: absolute;
   left: 32px;
   right: 32px;
-  bottom: 16px;
+  bottom: 20px;
 }
 .slide-table-grid {
   width: 100%;
@@ -459,8 +459,8 @@ body {
 
 /* 반응형 슬라이드 */
 @media (max-width: 1200px) {
-  .jeisiyo-slide { transform: scale(0.72); }
-  .slide-scale-wrapper { height: 375px; }
+  .jeisiyo-slide { transform: scale(0.6); }
+  .slide-scale-wrapper { height: 408px; }
 }
 </style>
 </head>
@@ -955,6 +955,54 @@ function renderInputPanel() {
       ` : ''}
     </div>
 
+
+    <!-- 계산기 패널 (할부/금융리스) -->
+    ${(p.finance_type === '금융리스' || p.finance_type === '할부') ? `
+    <div class="panel-section" id="calc-panel">
+      <h3>💰 월납입료 자동 계산</h3>
+      ${p.finance_type === '금융리스' ? `
+      <div class="field-row">
+        <div class="field-group">
+          <label>상품 선택</label>
+          <select id="calc-lf-product" onchange="updateCalc()">
+            <option value="0">Demo/Bidding</option>
+            <option value="1">고객승계</option>
+            <option value="2" selected>신규</option>
+            <option value="3">7시리즈 Demo</option>
+            <option value="4">트레이드인(신규)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>최초등록일 (RV 계산용)</label>
+          <input type="date" id="calc-regdate" oninput="updateCalc()">
+        </div>
+      </div>
+      ` : ''}
+      <div class="field-row">
+        <div class="field-group">
+          <label>유예금 비율 (%) <span id="calc-max-rv" style="color:#888;font-size:11px;"></span></label>
+          <input type="number" id="calc-residual-pct" value="30" min="0" max="70" oninput="updateCalc()">
+        </div>
+      </div>
+      <div style="background:#f5f8ff;border-radius:6px;padding:12px;margin-top:8px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;">
+          <span style="color:#666">적용 이율</span>
+          <span id="calc-rate-disp" style="font-weight:bold;color:#0066CC">-</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;">
+          <span style="color:#666">${p.finance_type === '운용리스' ? '잔존가치' : '유예금'}</span>
+          <span id="calc-residual-disp" style="font-weight:bold">-</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;border-top:1px solid #ddd;padding-top:8px;margin-top:4px;">
+          <span style="color:#333;font-weight:bold">월납입료</span>
+          <span id="calc-monthly-disp" style="font-weight:bold;color:#cc3300;font-size:16px">-</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="updateCalc()">🔄 계산하기</button>
+    </div>
+    ` : ''}
     <!-- 삭제 버튼 -->
     <button class="btn btn-danger" style="width:100%" onclick="deletePage(${currentPage})">🗑 이 페이지 삭제</button>
   `;
@@ -1063,7 +1111,7 @@ function renderPreview() {
       <div class="card-header-row">
         <span class="card-index">페이지 ${currentPage + 1} / ${pages.length}</span>
       </div>
-      <div class="slide-scale-wrapper" style="height:${Math.round(520 * scale)}px">
+      <div class="slide-scale-wrapper" style="height:${Math.round(679 * scale)}px">
         <div style="transform: scale(${scale}); transform-origin: top left;">
           ${slideHtml}
         </div>
@@ -1085,7 +1133,7 @@ async function downloadSingle(pageIdx) {
 
   // 임시 슬라이드를 실제 크기로 렌더링
   const temp = document.createElement('div');
-  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:960px;height:520px;';
+  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:960px;height:679px;';
   temp.innerHTML = renderSlide(p);
   document.body.appendChild(temp);
 
@@ -1100,7 +1148,7 @@ async function downloadSingle(pageIdx) {
     allowTaint: true,
     backgroundColor: '#ffffff',
     width: 960,
-    height: 520,
+    height: 679,
   });
 
   document.body.removeChild(temp);
@@ -1132,6 +1180,159 @@ async function downloadAll() {
     }
   } finally {
     overlay.style.display = 'none';
+  }
+}
+
+
+// ══════════════════════════════════════════
+// 할부 / 금융리스 계산 로직 (견적서 앱 동일)
+// ══════════════════════════════════════════
+
+// 금융리스 이율표
+const LF_RATES = {
+  0: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.1029}, // Demo/Bidding
+  1: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.0999}, // 고객승계
+  2: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 신규
+  3: {24:0.1204, 36:0.1111, 48:0.1064, 60:0.0999}, // 7시리즈 Demo/Bidding
+  4: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 트레이드인(신규)
+};
+
+// 할부 이율표
+const INST_RATES = {
+  0: {24:0.117,  36:0.122,  48:0.127,  60:0.138},  // Demo/Bidding
+  1: {24:0.1025, 36:0.108,  48:0.113,  60:0.124},  // 고객승계
+  2: {24:0.0919, 36:0.0819, 48:0.0769, 60:0.0749}, // 신규
+};
+
+// 최대 유예금(RV) 테이블
+const LF_RV = {
+  under12: {
+    BMW: { UKL:{24:0.66,36:0.60,48:0.53,60:0.47}, KKL:{24:0.65,36:0.60,48:0.52,60:0.47}, MKL:{24:0.66,36:0.59,48:0.50,60:0.43}, GKL:{24:0.64,36:0.55,48:0.50,60:0.40} },
+    MINI: { MINI:{24:0.60,36:0.45,48:0.37,60:0.30} }
+  },
+  over12: {
+    BMW: { UKL:{24:0.64,36:0.53,48:0.42,60:0.30}, KKL:{24:0.67,36:0.57,48:0.47,60:0.36}, MKL:{24:0.62,36:0.53,48:0.43,60:0.35}, GKL:{24:0.59,36:0.48,48:0.38,60:0.30} },
+    MINI: { MINI:{24:0.41,36:0.24,48:0.18,60:0.16} }
+  }
+};
+
+function getSegment(brand, series) {
+  if (brand === 'MINI') return 'MINI';
+  const s = (series||'').toUpperCase();
+  if (s.includes('1') || s.includes('2') || s.includes('Z4')) return 'UKL';
+  if (s.includes('3') || s.includes('4') || s.includes('X1') || s.includes('X2') || s.includes('X3') || s.includes('X4')) return 'KKL';
+  if (s.includes('5') || s.includes('6') || s.includes('X5') || s.includes('X6')) return 'MKL';
+  if (s.includes('7') || s.includes('8') || s.includes('X7') || s.includes('XM')) return 'GKL';
+  return 'KKL';
+}
+
+function getMaxRV(brand, series, regDate, period) {
+  if (!regDate || !brand) return null;
+  const reg = new Date(regDate);
+  const now = new Date();
+  const days = Math.floor((now - reg) / (1000 * 60 * 60 * 24));
+  const ageGroup = days <= 365 ? 'under12' : 'over12';
+  const seg = getSegment(brand, series);
+  const brandKey = brand === 'MINI' ? 'MINI' : 'BMW';
+  try { return LF_RV[ageGroup][brandKey][seg][period] || null; } catch(e) { return null; }
+}
+
+function pmtCalc(rate, nper, pv, fv) {
+  if (rate === 0) return -(pv + fv) / nper;
+  const pvif = Math.pow(1 + rate, nper);
+  return rate * (pv * pvif + fv) / (pvif - 1);
+}
+
+// 금융리스 월납입료 계산
+function calcLFMonthly(orig, discount, deposit, residualPct, period, product) {
+  const finalPrice = orig - discount;
+  const rate = LF_RATES[product] ? (LF_RATES[product][period] || 0) : 0;
+  const residual = Math.round(finalPrice * residualPct / 100);
+  const loanAmt = finalPrice - deposit;
+  let monthly = 0;
+  if (rate > 0 && loanAmt > 0) {
+    const r = rate / 12;
+    monthly = Math.floor(r * (loanAmt - residual * Math.pow(1+r, -period)) / (1 - Math.pow(1+r, -period)));
+  } else if (loanAmt > 0) {
+    monthly = Math.floor(loanAmt / period);
+  }
+  return { monthly, rate, residual, finalPrice, loanAmt };
+}
+
+// 할부 월납입료 계산
+function calcInstMonthly(orig, discount, down, residualPct, period) {
+  const finalPrice = orig - discount;
+  const product = 2; // 신규 고정
+  const rate = INST_RATES[product] ? (INST_RATES[product][period] || 0) : 0;
+  const residual = Math.round(finalPrice * residualPct / 100);
+  const loanAmt = Math.max(0, finalPrice - down);
+  let monthly = 0;
+  if (rate > 0 && loanAmt > 0) {
+    monthly = Math.floor(-pmtCalc(rate / 12, period, -loanAmt, residual));
+  } else if (loanAmt > 0) {
+    monthly = Math.floor((loanAmt - residual) / period);
+  }
+  return { monthly, rate, residual, finalPrice, loanAmt };
+}
+
+// 계산기 UI 표시/숨기기
+function toggleCalc(show) {
+  const panel = document.getElementById('calc-panel');
+  if (panel) panel.style.display = show ? 'block' : 'none';
+}
+
+// 계산기 업데이트
+function updateCalc() {
+  const p = pages[currentPage];
+  const ft = p.finance_type;
+  if (ft !== '금융리스' && ft !== '할부') return;
+
+  const orig = parseFloat(String(p.car_price).replace(/,/g,'')) || 0;
+  const period = parseInt(p.months) || 60;
+
+  if (ft === '금융리스') {
+    const product = parseInt(document.getElementById('calc-lf-product')?.value || '2');
+    const deposit = parseFloat(String(p.down_payment).replace(/,/g,'')) || 0;
+    const residualPct = parseFloat(document.getElementById('calc-residual-pct')?.value || '0');
+    const result = calcLFMonthly(orig, 0, deposit, residualPct, period, product);
+    
+    // 최대 유예금 표시
+    const brand = p.sel_brand || '';
+    const series = p.sel_series || '';
+    const regDate = document.getElementById('calc-regdate')?.value || '';
+    const maxRV = getMaxRV(brand, series, regDate, period);
+    const maxLabel = document.getElementById('calc-max-rv');
+    if (maxLabel) maxLabel.textContent = maxRV ? `최대 ${Math.round(maxRV * 110)}%` : '';
+
+    const rateEl = document.getElementById('calc-rate-disp');
+    if (rateEl) rateEl.textContent = result.rate ? (result.rate * 100).toFixed(2) + '%' : '-';
+    const residualEl = document.getElementById('calc-residual-disp');
+    if (residualEl) residualEl.textContent = result.residual > 0 ? result.residual.toLocaleString() + '원' : '-';
+    const monthlyEl = document.getElementById('calc-monthly-disp');
+    if (monthlyEl) monthlyEl.textContent = result.monthly > 0 ? result.monthly.toLocaleString() + '원' : '-';
+
+    if (result.monthly > 0) {
+      pages[currentPage].monthly_payment = String(result.monthly);
+      pages[currentPage].deferred = String(result.residual);
+      renderPreview();
+    }
+  } else if (ft === '할부') {
+    const down = parseFloat(String(p.down_payment).replace(/,/g,'')) || 0;
+    const residualPct = parseFloat(document.getElementById('calc-residual-pct')?.value || '0');
+    const result = calcInstMonthly(orig, 0, down, residualPct, period);
+
+    const rateEl = document.getElementById('calc-rate-disp');
+    if (rateEl) rateEl.textContent = result.rate ? (result.rate * 100).toFixed(2) + '%' : '-';
+    const residualEl = document.getElementById('calc-residual-disp');
+    if (residualEl) residualEl.textContent = result.residual > 0 ? result.residual.toLocaleString() + '원' : '-';
+    const monthlyEl = document.getElementById('calc-monthly-disp');
+    if (monthlyEl) monthlyEl.textContent = result.monthly > 0 ? result.monthly.toLocaleString() + '원' : '-';
+
+    if (result.monthly > 0) {
+      pages[currentPage].monthly_payment = String(result.monthly);
+      pages[currentPage].deferred = String(result.residual);
+      renderPreview();
+    }
   }
 }
 
