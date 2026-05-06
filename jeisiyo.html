@@ -714,6 +714,13 @@ function vsChange(changed, value) {
       const el = document.getElementById('field-car_name');
       if (el) el.value = p.car_name;
     }
+
+    // 제원 자동완성 시도
+    const spec = matchSpec(p.sel_brand, p.sel_series, v.trim, p.sel_year);
+    if (spec) {
+      applySpec(spec);
+      return; // applySpec이 renderPreview 호출함
+    }
   }
 
   renderPreview();
@@ -1207,6 +1214,141 @@ async function downloadAll() {
 }
 
 
+
+// ══════════════════════════════════════════
+// 차량 제원 DB - 구글 시트에서 로드
+// ══════════════════════════════════════════
+const SPEC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1aTZgN-TAScc5xJjyCFD9HkUYOC-YqTt39fMZdrHVcAY/export?format=csv&gid=0';
+let SPEC_DB = [];
+
+async function loadSpecDB() {
+  try {
+    const res = await fetch(SPEC_SHEET_URL);
+    const csv = await res.text();
+    const lines = csv.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    SPEC_DB = lines.slice(1).map(line => {
+      // CSV 파싱 (쉼표 분리)
+      const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = vals[i] || '');
+      return obj;
+    });
+    console.log(`제원 DB 로드 완료: ${SPEC_DB.length}개`);
+  } catch(e) {
+    console.warn('제원 DB 로드 실패:', e);
+  }
+}
+
+// 차종 선택 → 제원 자동 매칭
+function matchSpec(brand, series, trim, year) {
+  if (!SPEC_DB.length || !trim) return null;
+
+  // 연식 숫자 추출 (예: "24" → 2024, "2024" → 2024)
+  let yearNum = parseInt(year);
+  if (yearNum < 100) yearNum += 2000;
+
+  // 시리즈명 정규화
+  const seriesNorm = (series || '').replace('시리즈', ' Series').trim();
+
+  // trim에서 엔진코드 추출 (예: "520i M Sport" → "520i")
+  const engineMatch = trim.match(/([A-Z]?\d+[eid][\w]*|[A-Z]\d+[PHEV]*|JCW|Cooper\s*[SE]*|eDrive\d+|xDrive\d+[ei]?|sDrive\d+[ei]?)/i);
+  const engineCode = engineMatch ? engineMatch[0].toLowerCase() : '';
+
+  // SPEC_DB에서 매칭 찾기
+  let best = null;
+  let bestScore = 0;
+
+  for (const spec of SPEC_DB) {
+    let score = 0;
+    const keyword = (spec['트림키워드'] || '').toLowerCase();
+    const specSeries = (spec['시리즈'] || '').toLowerCase();
+    const yearRange = spec['연식범위'] || '';
+
+    // 시리즈 매칭
+    const brandSeries = (series || '').toLowerCase();
+    if (brandSeries.includes(specSeries) || specSeries.includes(brandSeries.replace('시리즈',''))) {
+      score += 2;
+    }
+
+    // 트림 키워드 매칭
+    if (engineCode && engineCode.includes(keyword.replace(/\s/g,''))) {
+      score += 3;
+    } else if (keyword && trim.toLowerCase().includes(keyword.toLowerCase())) {
+      score += 3;
+    }
+
+    // 연식범위 매칭
+    if (yearRange && yearNum) {
+      const rangeParts = yearRange.split('-');
+      const startYear = parseInt(rangeParts[0]);
+      const endYear = rangeParts[1] === '현재' ? 9999 : parseInt(rangeParts[1]);
+      if (yearNum >= startYear && yearNum <= endYear) {
+        score += 2;
+      } else {
+        score -= 1; // 연식 범위 밖이면 감점
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = spec;
+    }
+  }
+
+  return bestScore >= 3 ? best : null;
+}
+
+// 제원 자동완성 적용
+function applySpec(spec) {
+  if (!spec) return;
+  const p = pages[currentPage];
+
+  // 배기량
+  if (spec['배기량(cc)'] && spec['배기량(cc)'] !== '0') {
+    p.displacement = spec['배기량(cc)'] + ' cc';
+    const el = document.getElementById('field-displacement');
+    if (el) el.value = p.displacement;
+  }
+
+  // 최고출력
+  if (spec['최고출력(hp)'] && spec['최고출력(hp)'] !== '0') {
+    p.output = spec['최고출력(hp)'];
+    const el = document.getElementById('field-output');
+    if (el) el.value = p.output;
+  }
+
+  // 최대토크
+  if (spec['최대토크(kg.m)'] && spec['최대토크(kg.m)'] !== '0') {
+    p.torque = spec['최대토크(kg.m)'];
+    const el = document.getElementById('field-torque');
+    if (el) el.value = p.torque;
+  }
+
+  // output_torque 조합
+  if (p.output && p.torque) {
+    p.output_torque = `${p.output} hp / ${p.torque} kg.m`;
+  }
+
+  // 연료타입
+  if (spec['연료타입']) {
+    p.fuel_type = spec['연료타입'];
+  }
+
+  // 표준연비
+  if (spec['복합연비(km/L)'] && spec['복합연비(km/L)'] !== '0') {
+    p.fuel_efficiency = spec['복합연비(km/L)'];
+    const el = document.getElementById('field-efficiency');
+    if (el) el.value = p.fuel_efficiency;
+  }
+
+  // 연비 단위 업데이트
+  updateFuelUnit();
+  renderInputPanel();
+  renderPreview();
+
+  console.log('제원 자동완성:', spec['트림키워드'], spec['연식범위']);
+}
 // ══════════════════════════════════════════
 // 이율표 - rates.json에서 동적 로드
 // ══════════════════════════════════════════
@@ -1406,7 +1548,10 @@ function updateCalc() {
 
 // ── 초기화 ──
 (async () => {
-  await loadRates(); // rates.json 먼저 로드
+  await Promise.all([
+    loadRates(),    // rates.json 로드
+    loadSpecDB(),   // 제원 DB 로드
+  ]);
   addPage();
 })();
 </script>
