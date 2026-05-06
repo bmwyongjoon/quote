@@ -500,11 +500,12 @@ body {
 <script>
 // ── 차종 데이터 로드 ──
 let vehiclesData = [];
+// vehicles.json은 백그라운드 로드 (초기화와 별개)
 fetch('vehicles.json')
   .then(r => r.json())
   .then(data => {
     vehiclesData = data;
-    renderAll(); // 데이터 로드 후 다시 렌더링
+    renderAll();
   })
   .catch(e => console.log('vehicles.json 로드 실패:', e));
 
@@ -524,6 +525,8 @@ function defaultPageData() {
     warranty: '신차보증',
     warranty_custom: '',
     output_torque: '',
+    output: '',      // 최고출력 (숫자만)
+    torque: '',      // 최대토크 (숫자만)
     fuel_efficiency: '',
     fuel_type: '휘발유',
     displacement: '',
@@ -659,6 +662,13 @@ function vsChange(changed, value) {
   if (changed === 'year') {
     p.sel_year = value;
     p.sel_series = ''; p.sel_trim = '';
+    // 연식 필드 자동 적용 ("2024" → "24")
+    if (value) {
+      const shortYear = String(value).slice(2);
+      p.year = shortYear;
+      const yearInputEl = document.getElementById('field-year');
+      if (yearInputEl) yearInputEl.value = shortYear;
+    }
     seriesEl.innerHTML = '<option value="">시리즈 선택</option>';
     trimEl.innerHTML = '<option value="">트림 선택</option>';
     seriesEl.disabled = !value;
@@ -837,7 +847,7 @@ function renderInputPanel() {
         </div>
         <div class="field-group">
           <label>연식</label>
-          <input type="text" value="${p.year}" oninput="updateField('year', this.value)" placeholder="예) 25">
+          <input id="field-year" type="text" value="${p.year}" oninput="updateField('year', this.value)" placeholder="예) 25">
         </div>
       </div>
       <div class="field-row">
@@ -851,15 +861,13 @@ function renderInputPanel() {
     <!-- 차량 상태 -->
     <div class="panel-section">
       <h3>차량 상태</h3>
-      <div class="field-row">
-        <div class="field-group">
-          <label>사고내역</label>
-          <input type="text" value="${p.accident}" oninput="updateField('accident', this.value)" placeholder="예) 무사고">
-        </div>
-        <div class="field-group">
-          <label>수리내역</label>
-          <input type="text" value="${p.repair}" oninput="updateField('repair', this.value)" placeholder="예) 없음">
-        </div>
+      <div class="field-group" style="margin-bottom:10px">
+        <label>사고내역</label>
+        <input type="text" value="${p.accident}" oninput="updateField('accident', this.value)" placeholder="예) 무사고">
+      </div>
+      <div class="field-group" style="margin-bottom:10px">
+        <label>수리내역 (줄바꿈 가능)</label>
+        <textarea oninput="updateField('repair', this.value)" placeholder="예) 없음&#10;여러 줄 입력 가능" rows="3">${p.repair}</textarea>
       </div>
       <div class="field-group" style="margin-bottom:8px">
         <label>보증기간</label>
@@ -875,8 +883,8 @@ function renderInputPanel() {
         ` : ''}
       </div>
       <div class="field-group">
-        <label>튜닝내역</label>
-        <input type="text" value="${p.tuning}" oninput="updateField('tuning', this.value)" placeholder="예) 순정">
+        <label>튜닝내역 (줄바꿈 가능)</label>
+        <textarea oninput="updateField('tuning', this.value)" placeholder="예) 순정" rows="2">${p.tuning}</textarea>
       </div>
     </div>
 
@@ -885,22 +893,37 @@ function renderInputPanel() {
       <h3>차량 제원</h3>
       <div class="field-row">
         <div class="field-group">
-          <label>최고출력 / 최대토크</label>
-          <input type="text" value="${p.output_torque}" oninput="updateField('output_torque', this.value)" placeholder="예) 317 hp / 40.8 kg.m">
+          <label>최고출력</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="field-output" value="${p.output}" oninput="updateOutputTorque()" placeholder="예) 184" style="flex:1">
+            <span style="font-size:13px;color:#555;white-space:nowrap;font-weight:bold">hp</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>최대토크</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="field-torque" step="0.1" value="${p.torque}" oninput="updateOutputTorque()" placeholder="예) 29.6" style="flex:1">
+            <span style="font-size:13px;color:#555;white-space:nowrap;font-weight:bold">kg.m</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>연료타입</label>
+          <select onchange="updateField('fuel_type', this.value); updateFuelUnit()">
+            ${['휘발유','경유','전기','하이브리드','플러그인하이브리드'].map(f =>
+              `<option value="${f}" ${p.fuel_type===f?'selected':''}>${f}</option>`
+            ).join('')}
+          </select>
         </div>
       </div>
       <div class="field-row">
         <div class="field-group">
           <label>표준연비</label>
-          <input type="text" value="${p.fuel_efficiency}" oninput="updateField('fuel_efficiency', this.value)" placeholder="예) 10.3">
-        </div>
-        <div class="field-group">
-          <label>연료타입</label>
-          <select onchange="updateField('fuel_type', this.value)">
-            ${['휘발유','경유','전기','하이브리드','플러그인하이브리드'].map(f =>
-              `<option value="${f}" ${p.fuel_type===f?'selected':''}>${f}</option>`
-            ).join('')}
-          </select>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="field-efficiency" step="0.1" value="${p.fuel_efficiency}" oninput="updateField('fuel_efficiency', this.value)" placeholder="${p.fuel_type==='전기'?'예) 6.2':'예) 13.4'}" style="flex:1">
+            <span id="fuel-unit-label" style="font-size:13px;color:#555;white-space:nowrap;font-weight:bold">${p.fuel_type==='전기'?'km/kWh':'km/ℓ'}</span>
+          </div>
         </div>
       </div>
       <div class="field-row">
@@ -1085,7 +1108,7 @@ function renderSlide(p) {
           </tr>
           <tr>
             <td>${p.output_torque || ''}</td>
-            <td>${p.fuel_efficiency ? p.fuel_efficiency + ' km/ℓ' : ''}</td>
+            <td>${p.fuel_efficiency ? p.fuel_efficiency + (p.fuel_type === '전기' ? ' km/kWh' : ' km/ℓ') : ''}</td>
             <td>${p.fuel_type || ''}</td>
             <td>${p.displacement || ''}</td>
             <td>${p.tuning || ''}</td>
@@ -1185,36 +1208,73 @@ async function downloadAll() {
 
 
 // ══════════════════════════════════════════
-// 할부 / 금융리스 계산 로직 (견적서 앱 동일)
+// 이율표 - rates.json에서 동적 로드
 // ══════════════════════════════════════════
+let RATES = null; // rates.json 로드 후 채워짐
 
-// 금융리스 이율표
-const LF_RATES = {
-  0: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.1029}, // Demo/Bidding
-  1: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.0999}, // 고객승계
-  2: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 신규
-  3: {24:0.1204, 36:0.1111, 48:0.1064, 60:0.0999}, // 7시리즈 Demo/Bidding
-  4: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 트레이드인(신규)
-};
 
-// 할부 이율표
-const INST_RATES = {
-  0: {24:0.117,  36:0.122,  48:0.127,  60:0.138},  // Demo/Bidding
-  1: {24:0.1025, 36:0.108,  48:0.113,  60:0.124},  // 고객승계
-  2: {24:0.0919, 36:0.0819, 48:0.0769, 60:0.0749}, // 신규
-};
-
-// 최대 유예금(RV) 테이블
-const LF_RV = {
-  under12: {
-    BMW: { UKL:{24:0.66,36:0.60,48:0.53,60:0.47}, KKL:{24:0.65,36:0.60,48:0.52,60:0.47}, MKL:{24:0.66,36:0.59,48:0.50,60:0.43}, GKL:{24:0.64,36:0.55,48:0.50,60:0.40} },
-    MINI: { MINI:{24:0.60,36:0.45,48:0.37,60:0.30} }
-  },
-  over12: {
-    BMW: { UKL:{24:0.64,36:0.53,48:0.42,60:0.30}, KKL:{24:0.67,36:0.57,48:0.47,60:0.36}, MKL:{24:0.62,36:0.53,48:0.43,60:0.35}, GKL:{24:0.59,36:0.48,48:0.38,60:0.30} },
-    MINI: { MINI:{24:0.41,36:0.24,48:0.18,60:0.16} }
+// 출력/토크 분리 입력 → output_torque 조합
+function updateOutputTorque() {
+  const p = pages[currentPage];
+  const output = document.getElementById('field-output')?.value || '';
+  const torque = document.getElementById('field-torque')?.value || '';
+  p.output = output;
+  p.torque = torque;
+  if (output && torque) {
+    p.output_torque = `${output} hp / ${torque} kg.m`;
+  } else if (output) {
+    p.output_torque = `${output} hp`;
+  } else {
+    p.output_torque = '';
   }
-};
+  renderPreview();
+}
+
+// 연료타입 변경 시 단위 라벨 업데이트
+function updateFuelUnit() {
+  const p = pages[currentPage];
+  const label = document.getElementById('fuel-unit-label');
+  const input = document.getElementById('field-efficiency');
+  if (!label) return;
+  const isElectric = p.fuel_type === '전기';
+  label.textContent = isElectric ? 'km/kWh' : 'km/ℓ';
+  if (input) input.placeholder = isElectric ? '예) 6.2' : '예) 13.4';
+}
+
+async function loadRates() {
+  try {
+    const res = await fetch('rates.json');
+    RATES = await res.json();
+    console.log('rates.json 로드 완료:', RATES.version);
+  } catch(e) {
+    console.warn('rates.json 로드 실패, 기본값 사용:', e);
+    // 폴백: 하드코딩 기본값
+    RATES = {
+      lf_rates: {
+        0:{24:0.1254,36:0.1161,48:0.1114,60:0.1049},
+        1:{24:0.1254,36:0.1161,48:0.1114,60:0.1019},
+        2:{24:0.0899,36:0.0799,48:0.0749,60:0.0729},
+        3:{24:0.1224,36:0.1131,48:0.1084,60:0.1019},
+        4:{24:0.0899,36:0.0799,48:0.0749,60:0.0729}
+      },
+      inst_rates: {
+        0:{24:0.117, 36:0.122, 48:0.127, 60:0.138},
+        1:{24:0.1025,36:0.108, 48:0.113, 60:0.124},
+        2:{24:0.0919,36:0.0819,48:0.0769,60:0.0749}
+      },
+      rv_table: {
+        under1: {
+          BMW: { UKL:{24:0.66,36:0.60,48:0.53,60:0.47}, KKL:{24:0.65,36:0.60,48:0.52,60:0.47}, MKL:{24:0.66,36:0.59,48:0.50,60:0.43}, GKL:{24:0.64,36:0.55,48:0.50,60:0.40} },
+          MINI: {24:0.60,36:0.45,48:0.37,60:0.30}
+        },
+        over1: {
+          BMW: { UKL:{24:0.64,36:0.53,48:0.42,60:0.30}, KKL:{24:0.67,36:0.57,48:0.47,60:0.36}, MKL:{24:0.62,36:0.53,48:0.43,60:0.35}, GKL:{24:0.59,36:0.48,48:0.38,60:0.30} },
+          MINI: {24:0.41,36:0.24,48:0.18,60:0.16}
+        }
+      }
+    };
+  }
+}
 
 function getSegment(brand, series) {
   if (brand === 'MINI') return 'MINI';
@@ -1227,14 +1287,18 @@ function getSegment(brand, series) {
 }
 
 function getMaxRV(brand, series, regDate, period) {
-  if (!regDate || !brand) return null;
+  if (!regDate || !brand || !RATES) return null;
   const reg = new Date(regDate);
   const now = new Date();
   const days = Math.floor((now - reg) / (1000 * 60 * 60 * 24));
-  const ageGroup = days <= 365 ? 'under12' : 'over12';
+  const ageGroup = days <= 365 ? 'under1' : 'over1';
   const seg = getSegment(brand, series);
   const brandKey = brand === 'MINI' ? 'MINI' : 'BMW';
-  try { return LF_RV[ageGroup][brandKey][seg][period] || null; } catch(e) { return null; }
+  try {
+    const rv = RATES.rv_table[ageGroup];
+    if (brandKey === 'MINI') return rv.MINI[String(period)] || null;
+    return rv.BMW[seg][String(period)] || null;
+  } catch(e) { return null; }
 }
 
 function pmtCalc(rate, nper, pv, fv) {
@@ -1243,10 +1307,12 @@ function pmtCalc(rate, nper, pv, fv) {
   return rate * (pv * pvif + fv) / (pvif - 1);
 }
 
-// 금융리스 월납입료 계산
+// 금융리스 월납입료 계산 (rates.json 사용)
 function calcLFMonthly(orig, discount, deposit, residualPct, period, product) {
+  if (!RATES) return { monthly:0, rate:0, residual:0, finalPrice:orig-discount, loanAmt:0 };
   const finalPrice = orig - discount;
-  const rate = LF_RATES[product] ? (LF_RATES[product][period] || 0) : 0;
+  const rateTable = RATES.lf_rates[String(product)];
+  const rate = rateTable ? (rateTable[String(period)] || 0) : 0;
   const residual = Math.round(finalPrice * residualPct / 100);
   const loanAmt = finalPrice - deposit;
   let monthly = 0;
@@ -1259,11 +1325,13 @@ function calcLFMonthly(orig, discount, deposit, residualPct, period, product) {
   return { monthly, rate, residual, finalPrice, loanAmt };
 }
 
-// 할부 월납입료 계산
+// 할부 월납입료 계산 (rates.json 사용)
 function calcInstMonthly(orig, discount, down, residualPct, period) {
+  if (!RATES) return { monthly:0, rate:0, residual:0, finalPrice:orig-discount, loanAmt:0 };
   const finalPrice = orig - discount;
   const product = 2; // 신규 고정
-  const rate = INST_RATES[product] ? (INST_RATES[product][period] || 0) : 0;
+  const rateTable = RATES.inst_rates[String(product)];
+  const rate = rateTable ? (rateTable[String(period)] || 0) : 0;
   const residual = Math.round(finalPrice * residualPct / 100);
   const loanAmt = Math.max(0, finalPrice - down);
   let monthly = 0;
@@ -1337,7 +1405,10 @@ function updateCalc() {
 }
 
 // ── 초기화 ──
-addPage();
+(async () => {
+  await loadRates(); // rates.json 먼저 로드
+  addPage();
+})();
 </script>
 </body>
 </html>
