@@ -254,8 +254,8 @@ body {
 
 /* ── 제시표 실제 디자인 ── */
 .jeisiyo-slide {
-  width: 960px;
-  height: 679px;
+  width: 1122px;
+  height: 794px;
   background: white;
   position: relative;
   overflow: hidden;
@@ -264,153 +264,178 @@ body {
 }
 
 /* ── 상단 차량번호 / 금융조건 라벨 ── */
+/* ── PPT 픽셀 좌표 기반 정확 재현 (슬라이드 1122x794px) ── */
+
+/* 차량번호 id=24: x=916 y=65 w=140 h=48 */
 .slide-car-number {
   position: absolute;
-  top: 12px;
-  right: 18px;
-  font-size: 12px;
-  color: #444;
-  font-weight: 300;
+  left: 916px; top: 65px;
+  width: 140px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #555;
   letter-spacing: 1px;
+  white-space: nowrap;
 }
+
+/* 금융조건 라벨 + 리스/현금 id=25: x=766 y=91 w=223 h=98 */
 .slide-finance-label {
   position: absolute;
-  top: 30px;
-  right: 18px;
+  left: 766px; top: 91px;
+  width: 223px;
+  text-align: right;
+}
+.slide-finance-label .label-text {
   font-size: 11px;
   color: #666;
-  text-align: right;
-}
-
-/* ── 월납입료 ── */
-.slide-monthly {
-  position: absolute;
-  top: 16px;
-  left: 32px;
-  font-size: 76px;
-  font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
-  color: #191919;
-  line-height: 1;
-  letter-spacing: -3px;
-  white-space: nowrap;
-}
-
-/* ── 차종명 ── */
-.slide-car-name {
-  position: absolute;
-  top: 110px;
-  left: 32px;
-  font-size: 30px;
-  font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
-  color: #191919;
-  letter-spacing: -0.5px;
-  white-space: nowrap;
-}
-
-/* ── 차량가격 ── */
-.slide-car-price {
-  position: absolute;
-  top: 152px;
-  left: 32px;
-  font-size: 30px;
-  font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
-  color: #191919;
-  white-space: nowrap;
-}
-
-/* ── 리스/현금 박스 ── */
-.slide-finance-box {
-  position: absolute;
-  top: 44px;
-  right: 18px;
-  text-align: right;
+  display: block;
+  margin-bottom: 3px;
 }
 .slide-lease-cash {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0px;
   justify-content: flex-end;
-  margin-bottom: 6px;
 }
 .slide-badge {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
   color: #191919;
-  padding: 2px 10px;
+  padding: 3px 8px;
   border-radius: 4px;
+  line-height: 1.1;
 }
 .slide-badge.selected {
-  background: rgba(220, 80, 80, 0.18);
+  background: rgba(255, 0, 0, 0.20);
 }
 .slide-slash {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: bold;
   color: #191919;
-}
-.slide-finance-detail {
-  font-size: 12px;
-  color: #191919;
-  text-align: right;
-  line-height: 1.8;
-}
-.slide-new-price {
-  font-size: 14px;
-  color: #AEB0B2;
-  font-weight: bold;
-  margin-top: 4px;
+  line-height: 1.1;
 }
 
-/* ── 하단 테이블 ── */
+/* 월납입료 id=22: x=51 y=94 w=913 h=123 → 122pt ≈ 163px */
+.slide-monthly {
+  position: absolute;
+  left: 51px; top: 94px;
+  width: 700px;
+  font-size: 163px;
+  font-weight: bold;
+  color: #191919;
+  line-height: 1;
+  letter-spacing: -2px;
+  white-space: nowrap;
+}
+
+/* 차종명 id=27: x=59 y=203 w=798 h=86 → 65pt ≈ 87px */
+.slide-car-name {
+  position: absolute;
+  left: 59px; top: 203px;
+  width: 798px;
+  font-size: 65px;
+  font-weight: bold;
+  color: #191919;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* 차량가격 id=21: x=58 y=270 w=716 h=86 → 60pt ≈ 80px */
+.slide-car-price {
+  position: absolute;
+  left: 58px; top: 270px;
+  width: 716px;
+  font-size: 60px;
+  font-weight: bold;
+  color: #191919;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 금융상세 id=26: x=660 y=188 w=393 h=100 */
+.slide-finance-detail {
+  position: absolute;
+  left: 660px; top: 188px;
+  width: 393px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #191919;
+  text-align: right;
+  line-height: 2.0;
+}
+
+/* 신차가격 id=28: x=766 y=295 → 29pt ≈ 39px */
+.slide-new-price {
+  position: absolute;
+  left: 580px; top: 295px;
+  width: 500px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #AEB0B2;
+  text-align: right;
+}
+
+/* EMF 이미지 테이블: x=68 y=333 w=985 h=369 */
 .slide-table {
   position: absolute;
-  left: 32px;
-  right: 32px;
-  bottom: 20px;
+  left: 68px; top: 333px;
+  width: 985px; height: 369px;
 }
 .slide-table-grid {
   width: 100%;
+  height: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 .slide-table-grid th {
   background: #e0e0e0;
-  padding: 6px 8px 6px;
-  font-size: 11.5px;
+  padding: 6px 10px 4px;
+  font-size: 13px;
   font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
   color: #191919;
   text-align: left;
   border-right: 2px solid white;
+  vertical-align: bottom;
 }
 .slide-table-grid th:last-child { border-right: none; }
 .slide-table-grid th.icon-th {
   text-align: left;
-  padding: 8px 10px 4px;
-  font-size: 11.5px;
+  padding: 8px 10px 6px;
+  height: 110px;
+  vertical-align: bottom;
 }
 .slide-table-grid td {
-  padding: 8px 8px;
-  font-size: 12.5px;
+  padding: 10px 10px;
+  font-size: 13px;
   font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
   color: #191919;
-  border-right: 1px solid #d8d8d8;
-  border-bottom: 1px solid #d8d8d8;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   vertical-align: top;
-  height: 58px;
+  height: 100px;
 }
 .slide-table-grid td:last-child { border-right: none; }
 .slide-table-grid tr:last-child td { border-bottom: none; }
+.slide-table-grid th.spec-th {
+  background: #e0e0e0;
+  height: 38px;
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+.slide-table-grid td.spec-td {
+  height: 60px;
+  vertical-align: top;
+}
 
+/* 면책문구 id=20: x=580 y=711 */
 .slide-disclaimer {
-  font-size: 10px;
+  position: absolute;
+  left: 580px; top: 711px;
+  width: 490px;
+  font-size: 11px;
   color: #555;
   text-align: right;
-  padding-top: 3px;
 }
 
 /* 스케일 조정 래퍼 */
@@ -458,9 +483,9 @@ body {
 }
 
 /* 반응형 슬라이드 */
-@media (max-width: 1200px) {
-  .jeisiyo-slide { transform: scale(0.6); }
-  .slide-scale-wrapper { height: 408px; }
+@media (max-width: 1400px) {
+  .jeisiyo-slide { transform: scale(0.55); }
+  .slide-scale-wrapper { height: 437px; }
 }
 </style>
 </head>
@@ -1057,37 +1082,41 @@ function renderSlide(p) {
   return `
     <div class="jeisiyo-slide" id="slide-${currentPage}">
 
-      <!-- 차량번호 -->
+      <!-- 차량번호 id=24: x=916 y=65 -->
       <div class="slide-car-number">${p.car_number || ''}</div>
-      <div class="slide-finance-label">금융조건</div>
 
-      <!-- 월납입료 -->
-      ${!isCash && p.monthly_payment ? `
-        <div class="slide-monthly">${monthly}</div>
-      ` : '<div style="height:80px"></div>'}
-
-      <!-- 차종명 -->
-      <div class="slide-car-name">${p.car_name || ''}</div>
-
-      <!-- 차량가격 -->
-      <div class="slide-car-price">${carPrice}</div>
-
-      <!-- 리스/현금 박스 -->
-      <div class="slide-finance-box">
+      <!-- 금융조건 + 리스/현금 id=25: x=766 y=91 -->
+      <div class="slide-finance-label">
+        <span class="label-text">금융조건</span>
         <div class="slide-lease-cash">
           <span class="slide-badge ${isLease ? 'selected' : ''}">리스</span>
-          <span class="slide-slash">/</span>
+          <span class="slide-slash"> / </span>
           <span class="slide-badge ${!isLease ? 'selected' : ''}">현금</span>
         </div>
-        <div class="slide-finance-detail">
-          ${p.finance_type !== '현금' ? `
-            <div style="font-size:12px;color:#333;margin-bottom:2px">${p.finance_type}/${p.months || ''}개월</div>
-            <div>${downLabel} ${formatMoney(p.down_payment) || '0'} 원</div>
-            <div>${deferredLabel} ${formatMoney(p.deferred) || ''} 원</div>
-          ` : ''}
-        </div>
-        <div class="slide-new-price" style="margin-top:4px">${newPrice}</div>
       </div>
+
+      <!-- 월납입료 id=22: x=51 y=94 -->
+      ${!isCash && p.monthly_payment ? `
+        <div class="slide-monthly">${monthly}</div>
+      ` : ''}
+
+      <!-- 차종명 id=27: x=59 y=203 -->
+      <div class="slide-car-name">${p.car_name || ''}</div>
+
+      <!-- 차량가격 id=21: x=58 y=270 -->
+      <div class="slide-car-price">${carPrice}</div>
+
+      <!-- 금융상세 id=26: x=660 y=188 -->
+      ${p.finance_type !== '현금' ? `
+        <div class="slide-finance-detail">
+          <div>${p.finance_type}/${p.months || ''}개월</div>
+          <div>${downLabel} ${formatMoney(p.down_payment) || '0'} 원</div>
+          <div>${deferredLabel} ${formatMoney(p.deferred) || ''} 원</div>
+        </div>
+      ` : ''}
+
+      <!-- 신차가격 id=28: x=766 y=295 -->
+      <div class="slide-new-price">${newPrice}</div>
 
       <!-- 하단 테이블 -->
       <div class="slide-table">
@@ -1134,14 +1163,14 @@ function renderPreview() {
 
   // 슬라이드 스케일 계산
   const availWidth = document.getElementById('previewPanel')?.offsetWidth || 800;
-  const scale = Math.min(1, (availWidth - 40) / 960);
+  const scale = Math.min(1, (availWidth - 40) / 1122);
 
   document.getElementById('previewArea').innerHTML = `
     <div class="jeisiyo-card-wrapper">
       <div class="card-header-row">
         <span class="card-index">페이지 ${currentPage + 1} / ${pages.length}</span>
       </div>
-      <div class="slide-scale-wrapper" style="height:${Math.round(679 * scale)}px">
+      <div class="slide-scale-wrapper" style="height:${Math.round(794 * scale)}px">
         <div style="transform: scale(${scale}); transform-origin: top left;">
           ${slideHtml}
         </div>
@@ -1163,7 +1192,7 @@ async function downloadSingle(pageIdx) {
 
   // 임시 슬라이드를 실제 크기로 렌더링
   const temp = document.createElement('div');
-  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:960px;height:679px;';
+  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:1122px;height:794px;';
   temp.innerHTML = renderSlide(p);
   document.body.appendChild(temp);
 
@@ -1177,8 +1206,8 @@ async function downloadSingle(pageIdx) {
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
-    width: 960,
-    height: 679,
+    width: 1122,
+    height: 794,
   });
 
   document.body.removeChild(temp);
