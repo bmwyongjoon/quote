@@ -16,6 +16,12 @@
 body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0f0f0;min-height:100vh;}
 #app{max-width:560px;margin:0 auto;padding:16px 12px 40px;}
 
+/* ── 업데이트 배너 ── */
+#update-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a1a1a;color:white;padding:10px 16px;align-items:center;justify-content:center;gap:12px;font-size:13px;}
+#update-banner button{padding:5px 12px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;}
+#update-banner .btn-now{background:white;color:#1a1a1a;}
+#update-banner .btn-later{background:transparent;color:#aaa;border:1px solid #555;}
+
 /* ── 헤더 ── */
 .header{background:#1a1a1a;color:white;padding:18px 20px 14px;border-radius:12px 12px 0 0;}
 .header-logo{font-size:10px;letter-spacing:3px;color:#777;margin-bottom:4px;}
@@ -128,6 +134,11 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 </style>
 </head>
 <body>
+<div id="update-banner">
+  <span>🔄 새 버전이 업데이트됐어요!</span>
+  <button class="btn-now" onclick="window.location.reload()">지금 업데이트</button>
+  <button class="btn-later" onclick="document.getElementById('update-banner').style.display='none'">나중에</button>
+</div>
 <div id="app">
   <div class="header">
     <div class="header-logo">DEUTSCHE MOTORS · BPS</div>
@@ -934,19 +945,19 @@ function resetCash() {
 function hidePreview() { document.getElementById('preview-wrap').classList.remove('show'); }
 
 // ── 금융리스 계산 ──
-// 이율표 (2026년 4월 BPS 엑셀 기준): [Demo/Bidding, 고객승계, 신규, 7시리즈Demo/Bid, 트레이드인(신규)]
-const LF_RATES = {
-  0: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.1029}, // Demo/Bidding
-  1: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.0999}, // 고객승계
+// 이율표 (2026년 5월 BPS 엑셀 기준): [Demo/Bidding, 고객승계, 신규, 7시리즈Demo/Bid, 트레이드인(신규)]
+let LF_RATES = {
+  0: {24:0.1254, 36:0.1161, 48:0.1114, 60:0.1049}, // Demo/Bidding
+  1: {24:0.1254, 36:0.1161, 48:0.1114, 60:0.1019}, // 고객승계
   2: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 신규
-  3: {24:0.1204, 36:0.1111, 48:0.1064, 60:0.0999}, // 7시리즈 Demo/Bidding
+  3: {24:0.1224, 36:0.1131, 48:0.1084, 60:0.1019}, // 7시리즈 Demo/Bidding
   4: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 트레이드인(신규)
 };
 
 // ── 금융리스 최대 유예금(RV) 테이블 ──
 // 차량 등록 후 12개월 이내 / 이상 × 세그먼트 × 기간
 // 세그먼트: UKL(1~2시리즈), KKL(3~4시리즈), MKL(5~6시리즈), GKL(7~8시리즈)
-const LF_RV = {
+let LF_RV = {
   under12: { // 차령 12개월 이내
     BMW: { UKL:{24:0.66,36:0.60,48:0.53,60:0.47}, KKL:{24:0.65,36:0.60,48:0.52,60:0.47}, MKL:{24:0.66,36:0.59,48:0.50,60:0.43}, GKL:{24:0.64,36:0.55,48:0.50,60:0.40} },
     MINI: { MINI:{24:0.60,36:0.45,48:0.37,60:0.30} }
@@ -1072,16 +1083,16 @@ function resetLF() {
 // ── 운용리스 내부 IRR 테이블 (AM:AN, KEY 방식) ──
 // KEY = demo(1/2) + 상품(1) + 보증금형(1) + 보증금구간(1~4)
 // 보증금구간: <20%→1, <30%→2, <40%→3, ≥40%→4
-const LO_IRR_AMAM = {
-  '1111': 0.117,  // demo, standard, dep=0~20%
-  '1112': 0.122,  // demo, standard, dep=20~30%
-  '1113': 0.127,  // demo, standard, dep=30~40%
-  '1114': 0.138,  // demo, standard, dep≥40%
+let LO_IRR_AMAM = {
+  '1111': 0.119,  // demo, standard, dep=0~20%
+  '1112': 0.124,  // demo, standard, dep=20~30%
+  '1113': 0.129,  // demo, standard, dep=30~40%
+  '1114': 0.14,   // demo, standard, dep≥40%
   '2111': 0.1025, // new,  standard, dep=0~20%
   '2112': 0.108,  // new,  standard, dep=20~30%
   '2113': 0.113,  // new,  standard, dep=30~40%
   '2114': 0.124,  // new,  standard, dep≥40%
-  '1220': 0.09,   // demo, prepaid
+  '1220': 0.092,  // demo, prepaid
   '2220': 0.077,  // new,  prepaid
 };
 const LO_FNI_RATE = 0.004;
@@ -1308,7 +1319,7 @@ function resetLO() {
 
 // ── 할부 금리 테이블 (2026 BPS, 엑셀 기준) ──
 // [Demo/Bid, 고객승계, 신규]
-const INST_RATES = {
+let INST_RATES = {
   0: {24:0.117,  36:0.122,  48:0.127,  60:0.138},  // Demo/Bidding
   1: {24:0.1025, 36:0.108,  48:0.113,  60:0.124},  // 고객승계
   2: {24:0.0919, 36:0.0819, 48:0.0769, 60:0.0749}, // 신규
@@ -1999,6 +2010,18 @@ function restoreQuote(tab) {
   }
 }
 
+// ── rates.json 로드 ──────────────────────────────────
+fetch('rates.json').then(r => r.json()).then(rates => {
+  const toNumKey = obj => Object.fromEntries(Object.entries(obj).map(([k,v]) => [+k, Object.fromEntries(Object.entries(v).map(([p,r]) => [+p, r]))]));
+  LF_RATES   = toNumKey(rates.lf_rates);
+  INST_RATES = toNumKey(rates.inst_rates);
+  LO_IRR_AMAM = rates.lo_irr;
+  LF_RV = {
+    under12: { BMW: rates.rv_table.under1.BMW, MINI: { MINI: rates.rv_table.under1.MINI } },
+    over12:  { BMW: rates.rv_table.over1.BMW,  MINI: { MINI: rates.rv_table.over1.MINI } },
+  };
+}).catch(() => {});
+
 // ── 앱 초기화 ────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   // 설정 복원
@@ -2033,16 +2056,14 @@ window.addEventListener('DOMContentLoaded', () => {
 <!-- PWA Service Worker 등록 -->
 <script>
 if ('serviceWorker' in navigator) {
+  const wasControlled = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'SW_UPDATED' && wasControlled) {
+      document.getElementById('update-banner').style.display = 'flex';
+    }
+  });
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'activated') {
-            window.location.reload();
-          }
-        });
-      });
       setInterval(() => reg.update(), 30 * 60 * 1000);
     }).catch(err => console.warn('SW 등록 실패:', err));
   });

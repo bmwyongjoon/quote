@@ -1,11 +1,12 @@
 // ─── 버전 관리 ───────────────────────────────────────
-const VERSION = 'bps-quote-v16';
+const VERSION = 'bps-quote-v17';
 // ─────────────────────────────────────────────────────
 
 const FILES = [
   '/quote/index.html',
   '/quote/manifest.json',
   '/quote/vehicles.json',
+  '/quote/rates.json',
   '/quote/icon-192.png',
   '/quote/icon-512.png',
 ];
@@ -23,7 +24,11 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    ).then(async () => {
+      await self.clients.claim();
+      const clients = await self.clients.matchAll({ type: 'window' });
+      clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }));
+    })
   );
 });
 
