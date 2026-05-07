@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1113,8 +1113,7 @@ function renderSlide(p) {
       </div>
 
       <!-- 수리내역: left=40.55% top=55.92% -->
-      <div style="position:absolute;left:40.55%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.repair ? '- '+p.repair.replace(/
-/g,'<br>- ') : ''}</div>
+      <div style="position:absolute;left:40.55%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.repair ? '- '+p.repair.replace(/\n/g,'<br>- ') : ''}</div>
 
       <!-- 사고내역: left=58.82% top=55.92% -->
       <div style="position:absolute;left:58.82%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.accident ? '- '+p.accident : ''}</div>
