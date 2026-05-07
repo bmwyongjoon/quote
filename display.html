@@ -1056,9 +1056,9 @@ function renderSlide(p) {
   const isOperating = p.finance_type === '운용리스';
   const isCash = p.finance_type === '현금';
 
-  const monthly = p.monthly_payment ? `월 ${formatMoney(p.monthly_payment)} 원` : '';
-  const carPrice = p.car_price ? `차량가격 ${formatMoney(p.car_price)} 원` : '차량가격';
-  const newPrice = p.new_car_price ? `신차가격 ${formatMoney(p.new_car_price)} 원` : '';
+  const monthly = p.monthly_payment ? `${formatMoney(p.monthly_payment)}원` : '';
+  const carPrice = p.car_price ? `${formatMoney(p.car_price)}` : '';
+  const newPrice = p.new_car_price ? `${formatMoney(p.new_car_price)}` : '';
   const deferredLabel = isOperating ? '잔존가치' : '유예';
   const downLabel = isOperating ? '선납(보증금)' : '선납';
 
@@ -1078,63 +1078,63 @@ function renderSlide(p) {
       `}
 
       <!-- 차량번호: left=81.64% top=8.19% -->
-      <div style="position:absolute;left:81.64%;top:6.5%;width:17%;z-index:2;font-size:1.5em;font-weight:bold;color:#555;text-align:left;">${p.car_number || ''}</div>
+      <div style="position:absolute;left:81.64%;top:6.5%;width:17%;z-index:2;font-size:20px;font-weight:bold;color:#555;">${p.car_number || ''}</div>
 
       <!-- 월납입료: left=4.55% top=11.84% -->
       ${!isCash && p.monthly_payment ? `
-        <div style="position:absolute;left:12%;top:8%;z-index:2;font-size:7.8em;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;">${monthly}</div>
+        <div style="position:absolute;left:13%;top:11.84%;z-index:2;font-size:104px;font-weight:bold;color:#191919;line-height:1;letter-spacing:-2px;white-space:nowrap;">${monthly}</div>
       ` : ''}
 
       <!-- 차종명: left=5.26% top=25.57% -->
-      <div style="position:absolute;left:5.26%;top:23%;width:62%;z-index:2;font-size:4.8em;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;overflow:hidden;">${p.car_name || ''}</div>
+      <div style="position:absolute;left:5.26%;top:25.57%;width:71%;z-index:2;font-size:56px;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;overflow:hidden;">${p.car_name || ''}</div>
 
       <!-- 차량가격: left=5.17% top=34.01% -->
-      <div style="position:absolute;left:5.17%;top:31.5%;width:62%;z-index:2;font-size:4.5em;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;">${carPrice}</div>
+      <div style="position:absolute;left:28%;top:34%;width:24%;z-index:2;font-size:51px;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;text-align:right;">${carPrice}</div>
 
       <!-- 금융상세: left=58.82% top=23.68% -->
       ${p.finance_type !== '현금' ? `
-        <div style="position:absolute;left:58.82%;top:22%;width:37%;z-index:2;font-size:1.2em;font-weight:bold;color:#191919;text-align:right;line-height:2.2;">
+        <div style="position:absolute;left:58.82%;top:23.68%;width:37%;z-index:2;font-size:15px;font-weight:bold;color:#191919;text-align:right;line-height:2.0;">
           <div>${p.finance_type}/${p.months || ''}개월</div>
-          <div>${downLabel} ${formatMoney(p.down_payment) || '0'} 원</div>
-          <div>${deferredLabel} ${formatMoney(p.deferred) || ''} 원</div>
+          <div>${formatMoney(p.down_payment) || '0'}</div>
+          <div>${formatMoney(p.deferred) || ''}</div>
         </div>
       ` : ''}
 
       <!-- 신차가격: left=51.69% top=37.15% -->
-      <div style="position:absolute;left:51.69%;top:35.5%;width:44%;z-index:2;font-size:1.8em;font-weight:bold;color:#AEB0B2;text-align:right;">${newPrice}</div>
+      <div style="position:absolute;left:51.69%;top:37.15%;width:44%;z-index:2;font-size:25px;font-weight:bold;color:#AEB0B2;text-align:right;">${newPrice}</div>
 
       <!-- 표 데이터 -->
       <!-- 주행거리: left=6.24% top=56.05% -->
-      <div style="position:absolute;left:6.24%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;">${p.mileage ? p.mileage+' km' : ''}</div>
+      <div style="position:absolute;left:6.24%;top:56%;width:17%;height:18%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;">${p.mileage ? p.mileage+' km' : ''}</div>
 
       <!-- 연식/등록일: left=23.71% top=56.05% -->
-      <div style="position:absolute;left:23.71%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;">
+      <div style="position:absolute;left:23.71%;top:56%;width:17%;height:18%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;">
         ${p.year ? p.year+'년식' : ''}<br>${p.reg_date ? p.reg_date.replace(/-/g,'.')+' 등록' : ''}
       </div>
 
       <!-- 수리내역: left=40.55% top=55.92% -->
-      <div style="position:absolute;left:40.55%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.repair ? '- '+p.repair.replace(/\n/g,'<br>- ') : ''}</div>
+      <div style="position:absolute;left:40.55%;top:56%;width:17%;height:18%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.repair ? '- '+p.repair.replace(/\n/g,'<br>- ') : ''}</div>
 
       <!-- 사고내역: left=58.82% top=55.92% -->
-      <div style="position:absolute;left:58.82%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.accident ? '- '+p.accident : ''}</div>
+      <div style="position:absolute;left:58.82%;top:56%;width:17%;height:18%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.accident ? '- '+p.accident : ''}</div>
 
       <!-- 보증기간: left=76.47% top=56.05% -->
-      <div style="position:absolute;left:76.47%;top:56%;width:17%;height:18%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;">${p.warranty ? p.warranty : '-'}</div>
+      <div style="position:absolute;left:76.47%;top:56%;width:17%;height:18%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;">${p.warranty ? p.warranty : '-'}</div>
 
       <!-- 출력/토크: left=6.33% top=81.49% -->
-      <div style="position:absolute;left:6.33%;top:81.5%;width:17%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;">${p.output_torque || ''}</div>
+      <div style="position:absolute;left:6.33%;top:81.5%;width:17%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;">${p.output_torque || ''}</div>
 
       <!-- 표준연비: left=23.71% top=81.49% -->
-      <div style="position:absolute;left:23.71%;top:81.5%;width:17%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;">${p.fuel_efficiency ? p.fuel_efficiency+(p.fuel_type==='전기'?' km/kWh':' km/ℓ') : ''}</div>
+      <div style="position:absolute;left:23.71%;top:81.5%;width:17%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;">${p.fuel_efficiency ? p.fuel_efficiency+(p.fuel_type==='전기'?' km/kWh':' km/ℓ') : ''}</div>
 
       <!-- 연료타입: left=41.27% top=81.49% -->
-      <div style="position:absolute;left:41.27%;top:81.5%;width:17%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;">${p.fuel_type || ''}</div>
+      <div style="position:absolute;left:41.27%;top:81.5%;width:17%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;">${p.fuel_type || ''}</div>
 
       <!-- 배기량: left=58.82% top=81.49% -->
-      <div style="position:absolute;left:58.82%;top:81.5%;width:17%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;">${p.displacement || ''}</div>
+      <div style="position:absolute;left:58.82%;top:81.5%;width:17%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;">${p.displacement || ''}</div>
 
       <!-- 튜닝내역: left=76.47% top=81.49% -->
-      <div style="position:absolute;left:76.47%;top:81.5%;width:17%;z-index:2;font-size:1.15em;font-weight:bold;color:#191919;padding:4px 6px;overflow:hidden;white-space:pre-wrap;">${p.tuning || ''}</div>
+      <div style="position:absolute;left:76.47%;top:81.5%;width:17%;z-index:2;font-size:13px;font-weight:bold;color:#191919;padding:4px 6px;overflow:hidden;white-space:pre-wrap;">${p.tuning || ''}</div>
 
       <!-- 하단 테이블 -->
       <div class="slide-table">
