@@ -720,7 +720,7 @@ function vsChange(changed, value) {
       if (el) el.value = p.new_car_price;
     }
     if (!p.car_name) {
-      p.car_name = `${v.series} ${v.trim}`.trim();
+      p.car_name = `${v.brand} ${v.trim}`.trim();
       const el = document.getElementById('field-car_name');
       if (el) el.value = p.car_name;
     }
@@ -1072,70 +1072,75 @@ function renderSlide(p) {
 
       <!-- 빨간 박스 오버레이 (리스 또는 현금) -->
       ${isLease ? `
-        <div style="position:absolute;left:60%;top:11.2%;width:7.5%;height:5%;background:rgba(255,0,0,0.20);border-radius:4px;z-index:1;"></div>
+        <div style="position:absolute;left:70.35%;top:15.11%;width:7.05%;height:7.36%;background:rgba(255,0,0,0.20);border-radius:4px;z-index:1;"></div>
       ` : `
-        <div style="position:absolute;left:79.5%;top:11.2%;width:7.5%;height:5%;background:rgba(255,0,0,0.20);border-radius:4px;z-index:1;"></div>
+        <div style="position:absolute;left:79.02%;top:15.11%;width:7.05%;height:7.36%;background:rgba(255,0,0,0.20);border-radius:4px;z-index:1;"></div>
       `}
 
       <!-- 차량번호: left=81.64% top=8.19% -->
-      <div style="position:absolute;left:81.64%;top:6.5%;width:17%;z-index:2;font-size:20px;font-weight:bold;color:#555;">${p.car_number || ''}</div>
+      <div style="position:absolute;left:81.61%;top:8.24%;width:12.49%;z-index:2;font-size:24px;font-weight:bold;color:#BFBFBF;">${p.car_number || ''}</div>
 
-      <!-- 월납입료: left=4.55% top=11.84% -->
+      <!-- 월납입료: PPT TextBox21 위치, 수직 center 정렬로 배경 "월"과 정렬 -->
       ${!isCash && p.monthly_payment ? `
-        <div style="position:absolute;left:17%;top:11.84%;z-index:2;font-size:104px;font-weight:bold;color:#191919;line-height:1;letter-spacing:-2px;white-space:nowrap;">${monthly}</div>
+        <div style="position:absolute;left:4.56%;top:11.84%;width:81.38%;height:15.45%;z-index:2;background:white;display:flex;align-items:center;line-height:1;">
+          <span style="font-size:104px;font-weight:bold;color:#191919;letter-spacing:-2px;white-space:nowrap;">월 ${monthly}</span>
+        </div>
       ` : ''}
 
       <!-- 차종명: left=5.26% top=25.57% -->
       <div style="position:absolute;left:5.26%;top:25.57%;width:71%;z-index:2;font-size:56px;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;overflow:hidden;">${p.car_name || ''}</div>
 
-      <!-- 차량가격: left=5.17% top=34.01% -->
-      <div style="position:absolute;left:28%;top:34%;width:24%;z-index:2;font-size:51px;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;text-align:right;">${carPrice}</div>
-
-      <!-- 금융상세: left=58.82% top=23.68% -->
-      ${p.finance_type !== '현금' ? `
-        <!-- 할부/개월 -->
-        <div style="position:absolute;left:58.82%;top:23.68%;width:37%;z-index:2;font-size:15px;font-weight:bold;color:#191919;text-align:right;">${p.finance_type}/${p.months || ''}개월</div>
-        <!-- 선납 값: 배경 '선납' 레이블과 '원' 사이 -->
-        <div style="position:absolute;left:68%;top:27%;width:10%;z-index:2;font-size:15px;font-weight:bold;color:#191919;text-align:right;">${formatMoney(p.down_payment) || '0'}</div>
-        <!-- 유예 값: 배경 '유예' 레이블과 '원' 사이 -->
-        <div style="position:absolute;left:68%;top:29.5%;width:10%;z-index:2;font-size:15px;font-weight:bold;color:#191919;text-align:right;">${formatMoney(p.deferred) || ''}</div>
+      <!-- 차량가격: PPT TextBox20 위치, 라벨+값 통합 -->
+      ${p.car_price ? `
+        <div style="position:absolute;left:5.16%;top:33.95%;width:63.8%;height:10.86%;z-index:2;background:white;display:flex;align-items:center;line-height:1;">
+          <span style="font-size:51px;font-weight:bold;color:#191919;white-space:nowrap;">차량가격 ${formatMoney(p.car_price)}원</span>
+        </div>
       ` : ''}
 
-      <!-- 신차가격: left=51.69% top=37.15% -->
-      <div style="position:absolute;left:51.69%;top:37.15%;width:44%;z-index:2;font-size:25px;font-weight:bold;color:#AEB0B2;text-align:right;">${newPrice}</div>
+      <!-- 금융상세: PPT Rectangle26 위치, 통합 오버레이로 오른쪽 정렬 -->
+      ${p.finance_type !== '현금' ? `
+        <div style="position:absolute;left:58.85%;top:23.68%;width:35.02%;height:12.62%;z-index:2;background:white;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding-right:2.5%;box-sizing:border-box;font-size:15px;font-weight:bold;color:#191919;line-height:1.8;">
+          <div>${p.finance_type}/${p.months || ''}개월</div>
+          <div>선납 ${formatMoney(p.down_payment) || '0'}원</div>
+          <div>유예 ${formatMoney(p.deferred) || '0'}원</div>
+        </div>
+      ` : ''}
+
+      <!-- 신차가격: PPT Rectangle27 위치 (left=68.27%) -->
+      <div style="position:absolute;left:68.27%;top:37.14%;width:26.57%;height:5.16%;z-index:2;font-size:29px;font-weight:bold;color:#AEB0B2;display:flex;align-items:flex-end;justify-content:flex-end;padding-right:1%;">${newPrice}</div>
 
       <!-- 표 데이터 -->
       <!-- 주행거리: left=6.24% top=56.05% -->
-      <div style="position:absolute;left:6.24%;top:56%;width:17%;height:18%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;">${p.mileage ? p.mileage+' km' : ''}</div>
+      <div style="position:absolute;left:6.24%;top:56%;width:17%;height:18%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;">${p.mileage ? p.mileage+' km' : ''}</div>
 
       <!-- 연식/등록일: left=23.71% top=56.05% -->
-      <div style="position:absolute;left:23.71%;top:56%;width:17%;height:18%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;">
+      <div style="position:absolute;left:23.71%;top:56%;width:17%;height:18%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;line-height:1.6;">
         ${p.year ? p.year+'년식' : ''}<br>${p.reg_date ? p.reg_date.replace(/-/g,'.')+' 등록' : ''}
       </div>
 
       <!-- 수리내역: left=40.55% top=55.92% -->
-      <div style="position:absolute;left:40.55%;top:56%;width:17%;height:18%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.repair ? '- '+p.repair.replace(/\n/g,'<br>- ') : ''}</div>
+      <div style="position:absolute;left:40.55%;top:56%;width:17%;height:18%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.repair ? '- '+p.repair.replace(/\n/g,'<br>- ') : ''}</div>
 
       <!-- 사고내역: left=58.82% top=55.92% -->
-      <div style="position:absolute;left:58.82%;top:56%;width:17%;height:18%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.accident ? '- '+p.accident : ''}</div>
+      <div style="position:absolute;left:58.82%;top:56%;width:17%;height:18%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;line-height:1.6;overflow:hidden;white-space:pre-wrap;">${p.accident ? '- '+p.accident : ''}</div>
 
       <!-- 보증기간: left=76.47% top=56.05% -->
-      <div style="position:absolute;left:76.47%;top:56%;width:17%;height:18%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;">${p.warranty ? p.warranty : '-'}</div>
+      <div style="position:absolute;left:76.47%;top:56%;width:17%;height:18%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;">${p.warranty ? p.warranty : '-'}</div>
 
       <!-- 출력/토크: left=6.33% top=81.49% -->
-      <div style="position:absolute;left:6.33%;top:81.5%;width:17%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;">${p.output_torque || ''}</div>
+      <div style="position:absolute;left:6.33%;top:81.5%;width:17%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;">${p.output_torque || ''}</div>
 
       <!-- 표준연비: left=23.71% top=81.49% -->
-      <div style="position:absolute;left:23.71%;top:81.5%;width:17%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;">${p.fuel_efficiency ? p.fuel_efficiency+(p.fuel_type==='전기'?' km/kWh':' km/ℓ') : ''}</div>
+      <div style="position:absolute;left:23.71%;top:81.5%;width:17%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;">${p.fuel_efficiency ? p.fuel_efficiency+(p.fuel_type==='전기'?' km/kWh':' km/ℓ') : ''}</div>
 
       <!-- 연료타입: left=41.27% top=81.49% -->
-      <div style="position:absolute;left:41.27%;top:81.5%;width:17%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;">${p.fuel_type || ''}</div>
+      <div style="position:absolute;left:41.27%;top:81.5%;width:17%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;">${p.fuel_type || ''}</div>
 
       <!-- 배기량: left=58.82% top=81.49% -->
-      <div style="position:absolute;left:58.82%;top:81.5%;width:17%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;">${p.displacement || ''}</div>
+      <div style="position:absolute;left:58.82%;top:81.5%;width:17%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;">${p.displacement || ''}</div>
 
       <!-- 튜닝내역: left=76.47% top=81.49% -->
-      <div style="position:absolute;left:76.47%;top:81.5%;width:17%;z-index:2;font-size:14px;font-weight:bold;color:#191919;padding:4px 6px;overflow:hidden;white-space:pre-wrap;">${p.tuning || ''}</div>
+      <div style="position:absolute;left:76.47%;top:81.5%;width:17%;z-index:2;font-size:15px;font-weight:bold;color:#191919;display:flex;align-items:center;padding-left:6px;overflow:hidden;white-space:pre-wrap;">${p.tuning || ''}</div>
 
       <!-- 하단 테이블 -->
       <div class="slide-table">
