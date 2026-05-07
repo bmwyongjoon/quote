@@ -1078,35 +1078,33 @@ function renderSlide(p) {
       <!-- 차량번호: left=81.64% top=8.19% -->
       <div style="position:absolute;left:81.61%;top:8.24%;width:12.49%;z-index:2;font-size:24px;font-weight:bold;color:#BFBFBF;">${p.car_number || ''}</div>
 
-      <!-- 월납입료: 배경 "월" 전체 커버(top:9%), 금융조건 박스 침범 방지(width:62%) -->
+      <!-- 월납입료: 배경 "월" 옆 빈 공간에 금액만 삽입 (배경 덮지 않음) -->
       ${!isCash && p.monthly_payment ? `
-        <div style="position:absolute;left:4.56%;top:9%;width:62%;height:22%;z-index:2;background:white;display:flex;align-items:center;line-height:1;overflow:hidden;">
-          <span style="font-size:104px;font-weight:bold;color:#191919;letter-spacing:-2px;white-space:nowrap;">월 ${monthly}</span>
+        <div style="position:absolute;left:17%;top:13%;z-index:2;line-height:1;white-space:nowrap;">
+          <span style="font-size:104px;font-weight:bold;color:#191919;letter-spacing:-2px;">${monthly}</span>
         </div>
       ` : ''}
 
-      <!-- 차종명: left=5.26% top=25.57% -->
+      <!-- 차종명: 배경에 없는 요소 → 직접 표시 -->
       <div style="position:absolute;left:5.26%;top:25.57%;width:71%;z-index:2;font-size:56px;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;overflow:hidden;">${p.car_name || ''}</div>
 
-      <!-- 차량가격: PPT TextBox20 위치, 라벨+값 통합 -->
+      <!-- 차량가격: 배경 "차량가격 ___원" 중 빈 공간에 숫자만 삽입 -->
       ${p.car_price ? `
-        <div style="position:absolute;left:5.16%;top:33.95%;width:52%;height:10.86%;z-index:2;background:white;display:flex;align-items:center;line-height:1;overflow:hidden;">
-          <span style="font-size:51px;font-weight:bold;color:#191919;white-space:nowrap;">차량가격 ${formatMoney(p.car_price)}원</span>
+        <div style="position:absolute;left:24%;top:36%;z-index:2;line-height:1;white-space:nowrap;">
+          <span style="font-size:51px;font-weight:bold;color:#191919;">${formatMoney(p.car_price)}</span>
         </div>
       ` : ''}
 
-      <!-- 금융상세: PPT Rectangle26 위치, 통합 오버레이로 오른쪽 정렬 -->
+      <!-- 금융상세: 배경 "선납 ___원 / 유예 ___원" 빈 공간에 값만 삽입, 배경 덮지 않음 -->
       ${p.finance_type !== '현금' ? `
-        <div style="position:absolute;left:58.85%;top:23.68%;width:35.02%;height:12.62%;z-index:2;background:white;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding-right:2.5%;box-sizing:border-box;font-size:15px;font-weight:bold;color:#191919;line-height:1.8;">
-          <div>${p.finance_type}/${p.months || ''}개월</div>
-          <div>선납 ${formatMoney(p.down_payment) || '0'}원</div>
-          <div>유예 ${formatMoney(p.deferred) || '0'}원</div>
-        </div>
+        <div style="position:absolute;left:59%;right:7%;top:27%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${p.finance_type}/${p.months || ''}개월</div>
+        <div style="position:absolute;left:59%;right:7%;top:30%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${formatMoney(p.down_payment) || '0'}</div>
+        <div style="position:absolute;left:59%;right:7%;top:33%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${formatMoney(p.deferred) || '0'}</div>
       ` : ''}
 
-      <!-- 신차가격: 배경 "신차가격" 라벨 유지, 금액만 오버레이 -->
-      <div style="position:absolute;left:68.27%;top:37.14%;width:26.57%;height:5.16%;z-index:2;display:flex;align-items:flex-end;justify-content:flex-end;padding-right:1%;">
-        <span style="font-size:20px;font-weight:bold;color:#AEB0B2;white-space:nowrap;">${newPrice}</span>
+      <!-- 신차가격: 배경 "신차가격 ___원" 중 빈 공간에 숫자만 삽입 -->
+      <div style="position:absolute;left:76%;right:8%;top:40%;z-index:2;text-align:right;font-size:20px;font-weight:bold;color:#AEB0B2;white-space:nowrap;">
+        ${p.new_car_price ? formatMoney(p.new_car_price) : ''}
       </div>
 
       <!-- 표 데이터 -->
@@ -1577,7 +1575,12 @@ function updateCalc() {
     if (result.monthly > 0) {
       pages[currentPage].monthly_payment = String(result.monthly);
       pages[currentPage].deferred = String(result.residual);
-      renderInputPanel();
+      // 입력 필드만 직접 업데이트 (renderInputPanel 호출 시 스크롤 초기화 방지)
+      document.querySelectorAll('input').forEach(el => {
+        const oi = el.getAttribute('oninput') || '';
+        if (oi.includes("'monthly_payment'")) el.value = String(result.monthly);
+        if (oi.includes("'deferred'")) el.value = String(result.residual);
+      });
       renderPreview();
     }
   } else if (ft === '할부') {
@@ -1595,7 +1598,11 @@ function updateCalc() {
     if (result.monthly > 0) {
       pages[currentPage].monthly_payment = String(result.monthly);
       pages[currentPage].deferred = String(result.residual);
-      renderInputPanel();
+      document.querySelectorAll('input').forEach(el => {
+        const oi = el.getAttribute('oninput') || '';
+        if (oi.includes("'monthly_payment'")) el.value = String(result.monthly);
+        if (oi.includes("'deferred'")) el.value = String(result.residual);
+      });
       renderPreview();
     }
   }
