@@ -1222,10 +1222,10 @@ function calcLO() {
   }
   dp33 = LO_IRR_AMAM[key] || 0;
 
-  // ── 월납입금 계산 (엑셀 DP37→DP42 체인) ──
-  // SC커미션: 사용자 선택 SC율 사용 (BD38 = 딜러 SC%)
-  // 표준형: dp9=price, dp16=deposit, fv=잔존-보증금, DP42 PV=-price
-  // 선납형: dp9=price-선납금, dp16=0, fv=잔존(감소없음), DP42 PV=-(price-선납금)
+  // ── 월납입금 계산 ──
+  // SC커미션: 사용자 선택 SC율 사용 (사용자SC%)
+  // 표준형: EE38=price+취득세, EE39=CEIL(PMT), EE40=ROUNDUP(RATE), EE42=FLOOR(PMT)
+  // 선납형: EE38=price+취득세, EE39=CEIL(PMT), EE40=ROUNDUP(RATE), EE42=FLOOR(PMT)
   const scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
 
   let monthly = 0;
@@ -1249,20 +1249,14 @@ function calcLO() {
       const r40 = ee40 / 12;
       monthly = Math.floor(r40 * (ee38 - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
     } else {
-      // 표준형: DP37→DP38→DP39→DP40→DP42 체인
-      const dp30 = Math.round(scRate * finalPrice);
-      const dp31 = Math.round(LO_FNI_RATE * (finalPrice - deposit));
-      const pv37 = (finalPrice - deposit) + dp30 + dp31;
-      const fv37 = residual - deposit;
-      const dp37 = Math.floor(r * (pv37 - fv37 * pvif_r) / (1 - pvif_r));
-      const pv38 = finalPrice - deposit;
-      const fv38 = residual - deposit;
-      const dp38_raw = rateCalcLO(period, dp37, -pv38, fv38) * 12;
-      const dp38 = Math.ceil(Math.round(dp38_raw * 1e8) / 1e4) / 1e4;
-      const r38 = dp38 / 12;
-      const pvif_r38 = Math.pow(1+r38, -period);
-      const dp39 = Math.floor(r38 * (pv38 - fv38 * pvif_r38) / (1 - pvif_r38));
-      const dp40_raw = rateCalcLO(period, dp39, -finalPrice, residual) * 12;
+      // 표준형: EE38→EE39→EE40→EE42
+      const ee38 = finalPrice + loTax;
+      const dp31 = Math.round(scRate * ee38);
+      const dp32 = Math.round(LO_FNI_RATE * (ee38 - deposit));
+      const pvEE39 = ee38 - deposit + dp31 + dp32;
+      const fvEE39 = residual - deposit;
+      const ee39 = Math.ceil(r * (pvEE39 - fvEE39 * pvif_r) / (1 - pvif_r));
+      const dp40_raw = rateCalcLO(period, ee39, -finalPrice, residual) * 12;
       ee40 = Math.ceil(Math.round(dp40_raw * 1e8) / 1e4) / 1e4;
       const r40 = ee40 / 12;
       monthly = Math.floor(r40 * (finalPrice - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
