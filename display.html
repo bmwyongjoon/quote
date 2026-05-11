@@ -1086,7 +1086,7 @@ function renderSlide(p) {
       ` : ''}
 
       <!-- 차종명: 배경에 없는 요소 → 직접 표시 -->
-      <div style="position:absolute;left:5.26%;top:25.57%;width:71%;z-index:2;font-size:56px;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;overflow:hidden;">${p.car_name || ''}</div>
+      <div style="position:absolute;left:6%;top:23.5%;width:71%;z-index:2;font-size:57px;font-weight:bold;color:#191919;line-height:1;white-space:nowrap;overflow:hidden;">${p.car_name || ''}</div>
 
       <!-- 차량가격: 배경 "차량가격 ___원" 중 빈 공간에 숫자만 삽입 -->
       ${p.car_price ? `
@@ -1097,13 +1097,13 @@ function renderSlide(p) {
 
       <!-- 금융상세: 배경 "선납 ___원 / 유예 ___원" 빈 공간에 값만 삽입, 배경 덮지 않음 -->
       ${p.finance_type !== '현금' ? `
-        <div style="position:absolute;left:59%;right:7%;top:27%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${p.finance_type}/${p.months || ''}개월</div>
-        <div style="position:absolute;left:59%;right:7%;top:30%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${formatMoney(p.down_payment) || '0'}</div>
-        <div style="position:absolute;left:59%;right:7%;top:33%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${formatMoney(p.deferred) || '0'}</div>
+        <div style="position:absolute;left:59%;right:7%;top:26%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${p.finance_type}/${p.months || ''}개월</div>
+        <div style="position:absolute;left:59%;right:9%;top:29.2%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${formatMoney(p.down_payment) || '0'}</div>
+        <div style="position:absolute;left:55%;right:9%;top:32%;z-index:2;text-align:right;font-size:15px;font-weight:bold;color:#191919;white-space:nowrap;">${formatMoney(p.deferred) || '0'}</div>
       ` : ''}
 
       <!-- 신차가격: 배경 "신차가격 ___원" 중 빈 공간에 숫자만 삽입 -->
-      <div style="position:absolute;left:76%;right:8%;top:36%;z-index:2;text-align:right;font-size:23px;font-weight:bold;color:#AEB0B2;white-space:nowrap;">
+      <div style="position:absolute;left:76%;right:9%;top:36.4%;z-index:2;text-align:right;font-size:23px;font-weight:bold;color:#AEB0B2;white-space:nowrap;">
         ${p.new_car_price ? formatMoney(p.new_car_price) : ''}
       </div>
 
