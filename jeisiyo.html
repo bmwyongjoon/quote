@@ -254,8 +254,8 @@ body {
 
 /* ── 제시표 실제 디자인 ── */
 .jeisiyo-slide {
-  width: 960px;
-  height: 679px;
+  width: 1122px;
+  height: 794px;
   background: white;
   position: relative;
   overflow: hidden;
@@ -264,153 +264,178 @@ body {
 }
 
 /* ── 상단 차량번호 / 금융조건 라벨 ── */
+/* ── PPT 픽셀 좌표 기반 정확 재현 (슬라이드 1122x794px) ── */
+
+/* 차량번호 id=24: x=916 y=65 w=140 h=48 */
 .slide-car-number {
   position: absolute;
-  top: 12px;
-  right: 18px;
-  font-size: 12px;
-  color: #444;
-  font-weight: 300;
+  left: 916px; top: 65px;
+  width: 140px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #555;
   letter-spacing: 1px;
+  white-space: nowrap;
 }
+
+/* 금융조건 라벨 + 리스/현금 id=25: x=766 y=91 w=223 h=98 */
 .slide-finance-label {
   position: absolute;
-  top: 30px;
-  right: 18px;
+  left: 766px; top: 91px;
+  width: 223px;
+  text-align: right;
+}
+.slide-finance-label .label-text {
   font-size: 11px;
   color: #666;
-  text-align: right;
-}
-
-/* ── 월납입료 ── */
-.slide-monthly {
-  position: absolute;
-  top: 16px;
-  left: 32px;
-  font-size: 76px;
-  font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
-  color: #191919;
-  line-height: 1;
-  letter-spacing: -3px;
-  white-space: nowrap;
-}
-
-/* ── 차종명 ── */
-.slide-car-name {
-  position: absolute;
-  top: 110px;
-  left: 32px;
-  font-size: 30px;
-  font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
-  color: #191919;
-  letter-spacing: -0.5px;
-  white-space: nowrap;
-}
-
-/* ── 차량가격 ── */
-.slide-car-price {
-  position: absolute;
-  top: 152px;
-  left: 32px;
-  font-size: 30px;
-  font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
-  color: #191919;
-  white-space: nowrap;
-}
-
-/* ── 리스/현금 박스 ── */
-.slide-finance-box {
-  position: absolute;
-  top: 44px;
-  right: 18px;
-  text-align: right;
+  display: block;
+  margin-bottom: 3px;
 }
 .slide-lease-cash {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0px;
   justify-content: flex-end;
-  margin-bottom: 6px;
 }
 .slide-badge {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
   color: #191919;
-  padding: 2px 10px;
+  padding: 3px 8px;
   border-radius: 4px;
+  line-height: 1.1;
 }
 .slide-badge.selected {
-  background: rgba(220, 80, 80, 0.18);
+  background: rgba(255, 0, 0, 0.20);
 }
 .slide-slash {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: bold;
   color: #191919;
-}
-.slide-finance-detail {
-  font-size: 12px;
-  color: #191919;
-  text-align: right;
-  line-height: 1.8;
-}
-.slide-new-price {
-  font-size: 14px;
-  color: #AEB0B2;
-  font-weight: bold;
-  margin-top: 4px;
+  line-height: 1.1;
 }
 
-/* ── 하단 테이블 ── */
+/* 월납입료 id=22: x=51 y=94 w=913 h=123 → 122pt ≈ 163px */
+.slide-monthly {
+  position: absolute;
+  left: 51px; top: 94px;
+  width: 700px;
+  font-size: 104px;
+  font-weight: bold;
+  color: #191919;
+  line-height: 1;
+  letter-spacing: -2px;
+  white-space: nowrap;
+}
+
+/* 차종명 id=27: x=59 y=203 w=798 h=86 → 65pt ≈ 87px */
+.slide-car-name {
+  position: absolute;
+  left: 59px; top: 203px;
+  width: 798px;
+  font-size: 56px;
+  font-weight: bold;
+  color: #191919;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* 차량가격 id=21: x=58 y=270 w=716 h=86 → 60pt ≈ 80px */
+.slide-car-price {
+  position: absolute;
+  left: 58px; top: 270px;
+  width: 716px;
+  font-size: 51px;
+  font-weight: bold;
+  color: #191919;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 금융상세 id=26: x=660 y=188 w=393 h=100 */
+.slide-finance-detail {
+  position: absolute;
+  left: 660px; top: 188px;
+  width: 393px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #191919;
+  text-align: right;
+  line-height: 2.0;
+}
+
+/* 신차가격 id=28: x=766 y=295 → 29pt ≈ 39px */
+.slide-new-price {
+  position: absolute;
+  left: 580px; top: 295px;
+  width: 500px;
+  font-size: 25px;
+  font-weight: bold;
+  color: #AEB0B2;
+  text-align: right;
+}
+
+/* EMF 이미지 테이블: x=68 y=333 w=985 h=369 */
 .slide-table {
   position: absolute;
-  left: 32px;
-  right: 32px;
-  bottom: 20px;
+  left: 68px; top: 333px;
+  width: 985px; height: 369px;
 }
 .slide-table-grid {
   width: 100%;
+  height: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 .slide-table-grid th {
   background: #e0e0e0;
-  padding: 6px 8px 6px;
-  font-size: 11.5px;
+  padding: 6px 10px 4px;
+  font-size: 13px;
   font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
   color: #191919;
   text-align: left;
   border-right: 2px solid white;
+  vertical-align: bottom;
 }
 .slide-table-grid th:last-child { border-right: none; }
 .slide-table-grid th.icon-th {
   text-align: left;
-  padding: 8px 10px 4px;
-  font-size: 11.5px;
+  padding: 8px 10px 6px;
+  height: 110px;
+  vertical-align: bottom;
 }
 .slide-table-grid td {
-  padding: 8px 8px;
-  font-size: 12.5px;
+  padding: 10px 10px;
+  font-size: 13px;
   font-weight: bold;
-  font-family: 'BMWGlobalPro', sans-serif;
   color: #191919;
-  border-right: 1px solid #d8d8d8;
-  border-bottom: 1px solid #d8d8d8;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   vertical-align: top;
-  height: 58px;
+  height: 100px;
 }
 .slide-table-grid td:last-child { border-right: none; }
 .slide-table-grid tr:last-child td { border-bottom: none; }
+.slide-table-grid th.spec-th {
+  background: #e0e0e0;
+  height: 38px;
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+.slide-table-grid td.spec-td {
+  height: 60px;
+  vertical-align: top;
+}
 
+/* 면책문구 id=20: x=580 y=711 */
 .slide-disclaimer {
-  font-size: 10px;
+  position: absolute;
+  left: 580px; top: 711px;
+  width: 490px;
+  font-size: 11px;
   color: #555;
   text-align: right;
-  padding-top: 3px;
 }
 
 /* 스케일 조정 래퍼 */
@@ -458,9 +483,9 @@ body {
 }
 
 /* 반응형 슬라이드 */
-@media (max-width: 1200px) {
-  .jeisiyo-slide { transform: scale(0.6); }
-  .slide-scale-wrapper { height: 408px; }
+@media (max-width: 1400px) {
+  .jeisiyo-slide { transform: scale(0.55); }
+  .slide-scale-wrapper { height: 437px; }
 }
 </style>
 </head>
@@ -500,11 +525,12 @@ body {
 <script>
 // ── 차종 데이터 로드 ──
 let vehiclesData = [];
+// vehicles.json은 백그라운드 로드 (초기화와 별개)
 fetch('vehicles.json')
   .then(r => r.json())
   .then(data => {
     vehiclesData = data;
-    renderAll(); // 데이터 로드 후 다시 렌더링
+    renderAll();
   })
   .catch(e => console.log('vehicles.json 로드 실패:', e));
 
@@ -524,6 +550,8 @@ function defaultPageData() {
     warranty: '신차보증',
     warranty_custom: '',
     output_torque: '',
+    output: '',      // 최고출력 (숫자만)
+    torque: '',      // 최대토크 (숫자만)
     fuel_efficiency: '',
     fuel_type: '휘발유',
     displacement: '',
@@ -659,6 +687,13 @@ function vsChange(changed, value) {
   if (changed === 'year') {
     p.sel_year = value;
     p.sel_series = ''; p.sel_trim = '';
+    // 연식 필드 자동 적용 ("2024" → "24")
+    if (value) {
+      const shortYear = String(value).slice(2);
+      p.year = shortYear;
+      const yearInputEl = document.getElementById('field-year');
+      if (yearInputEl) yearInputEl.value = shortYear;
+    }
     seriesEl.innerHTML = '<option value="">시리즈 선택</option>';
     trimEl.innerHTML = '<option value="">트림 선택</option>';
     seriesEl.disabled = !value;
@@ -703,6 +738,13 @@ function vsChange(changed, value) {
       p.car_name = `${v.series} ${v.trim}`.trim();
       const el = document.getElementById('field-car_name');
       if (el) el.value = p.car_name;
+    }
+
+    // 제원 자동완성 시도
+    const spec = matchSpec(p.sel_brand, p.sel_series, v.trim, p.sel_year);
+    if (spec) {
+      applySpec(spec);
+      return; // applySpec이 renderPreview 호출함
     }
   }
 
@@ -837,7 +879,7 @@ function renderInputPanel() {
         </div>
         <div class="field-group">
           <label>연식</label>
-          <input type="text" value="${p.year}" oninput="updateField('year', this.value)" placeholder="예) 25">
+          <input id="field-year" type="text" value="${p.year}" oninput="updateField('year', this.value)" placeholder="예) 25">
         </div>
       </div>
       <div class="field-row">
@@ -851,15 +893,13 @@ function renderInputPanel() {
     <!-- 차량 상태 -->
     <div class="panel-section">
       <h3>차량 상태</h3>
-      <div class="field-row">
-        <div class="field-group">
-          <label>사고내역</label>
-          <input type="text" value="${p.accident}" oninput="updateField('accident', this.value)" placeholder="예) 무사고">
-        </div>
-        <div class="field-group">
-          <label>수리내역</label>
-          <input type="text" value="${p.repair}" oninput="updateField('repair', this.value)" placeholder="예) 없음">
-        </div>
+      <div class="field-group" style="margin-bottom:10px">
+        <label>사고내역</label>
+        <input type="text" value="${p.accident}" oninput="updateField('accident', this.value)" placeholder="예) 무사고">
+      </div>
+      <div class="field-group" style="margin-bottom:10px">
+        <label>수리내역 (줄바꿈 가능)</label>
+        <textarea oninput="updateField('repair', this.value)" placeholder="예) 없음&#10;여러 줄 입력 가능" rows="3">${p.repair}</textarea>
       </div>
       <div class="field-group" style="margin-bottom:8px">
         <label>보증기간</label>
@@ -875,8 +915,8 @@ function renderInputPanel() {
         ` : ''}
       </div>
       <div class="field-group">
-        <label>튜닝내역</label>
-        <input type="text" value="${p.tuning}" oninput="updateField('tuning', this.value)" placeholder="예) 순정">
+        <label>튜닝내역 (줄바꿈 가능)</label>
+        <textarea oninput="updateField('tuning', this.value)" placeholder="예) 순정" rows="2">${p.tuning}</textarea>
       </div>
     </div>
 
@@ -885,22 +925,37 @@ function renderInputPanel() {
       <h3>차량 제원</h3>
       <div class="field-row">
         <div class="field-group">
-          <label>최고출력 / 최대토크</label>
-          <input type="text" value="${p.output_torque}" oninput="updateField('output_torque', this.value)" placeholder="예) 317 hp / 40.8 kg.m">
+          <label>최고출력</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="field-output" value="${p.output}" oninput="updateOutputTorque()" placeholder="예) 184" style="flex:1">
+            <span style="font-size:13px;color:#555;white-space:nowrap;font-weight:bold">hp</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>최대토크</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="field-torque" step="0.1" value="${p.torque}" oninput="updateOutputTorque()" placeholder="예) 29.6" style="flex:1">
+            <span style="font-size:13px;color:#555;white-space:nowrap;font-weight:bold">kg.m</span>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>연료타입</label>
+          <select onchange="updateField('fuel_type', this.value); updateFuelUnit()">
+            ${['휘발유','경유','전기','하이브리드','플러그인하이브리드'].map(f =>
+              `<option value="${f}" ${p.fuel_type===f?'selected':''}>${f}</option>`
+            ).join('')}
+          </select>
         </div>
       </div>
       <div class="field-row">
         <div class="field-group">
           <label>표준연비</label>
-          <input type="text" value="${p.fuel_efficiency}" oninput="updateField('fuel_efficiency', this.value)" placeholder="예) 10.3">
-        </div>
-        <div class="field-group">
-          <label>연료타입</label>
-          <select onchange="updateField('fuel_type', this.value)">
-            ${['휘발유','경유','전기','하이브리드','플러그인하이브리드'].map(f =>
-              `<option value="${f}" ${p.fuel_type===f?'selected':''}>${f}</option>`
-            ).join('')}
-          </select>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="field-efficiency" step="0.1" value="${p.fuel_efficiency}" oninput="updateField('fuel_efficiency', this.value)" placeholder="${p.fuel_type==='전기'?'예) 6.2':'예) 13.4'}" style="flex:1">
+            <span id="fuel-unit-label" style="font-size:13px;color:#555;white-space:nowrap;font-weight:bold">${p.fuel_type==='전기'?'km/kWh':'km/ℓ'}</span>
+          </div>
         </div>
       </div>
       <div class="field-row">
@@ -1027,37 +1082,41 @@ function renderSlide(p) {
   return `
     <div class="jeisiyo-slide" id="slide-${currentPage}">
 
-      <!-- 차량번호 -->
+      <!-- 차량번호 id=24: x=916 y=65 -->
       <div class="slide-car-number">${p.car_number || ''}</div>
-      <div class="slide-finance-label">금융조건</div>
 
-      <!-- 월납입료 -->
-      ${!isCash && p.monthly_payment ? `
-        <div class="slide-monthly">${monthly}</div>
-      ` : '<div style="height:80px"></div>'}
-
-      <!-- 차종명 -->
-      <div class="slide-car-name">${p.car_name || ''}</div>
-
-      <!-- 차량가격 -->
-      <div class="slide-car-price">${carPrice}</div>
-
-      <!-- 리스/현금 박스 -->
-      <div class="slide-finance-box">
+      <!-- 금융조건 + 리스/현금 id=25: x=766 y=91 -->
+      <div class="slide-finance-label">
+        <span class="label-text">금융조건</span>
         <div class="slide-lease-cash">
           <span class="slide-badge ${isLease ? 'selected' : ''}">리스</span>
-          <span class="slide-slash">/</span>
+          <span class="slide-slash"> / </span>
           <span class="slide-badge ${!isLease ? 'selected' : ''}">현금</span>
         </div>
-        <div class="slide-finance-detail">
-          ${p.finance_type !== '현금' ? `
-            <div style="font-size:12px;color:#333;margin-bottom:2px">${p.finance_type}/${p.months || ''}개월</div>
-            <div>${downLabel} ${formatMoney(p.down_payment) || '0'} 원</div>
-            <div>${deferredLabel} ${formatMoney(p.deferred) || ''} 원</div>
-          ` : ''}
-        </div>
-        <div class="slide-new-price" style="margin-top:4px">${newPrice}</div>
       </div>
+
+      <!-- 월납입료 id=22: x=51 y=94 -->
+      ${!isCash && p.monthly_payment ? `
+        <div class="slide-monthly">${monthly}</div>
+      ` : ''}
+
+      <!-- 차종명 id=27: x=59 y=203 -->
+      <div class="slide-car-name">${p.car_name || ''}</div>
+
+      <!-- 차량가격 id=21: x=58 y=270 -->
+      <div class="slide-car-price">${carPrice}</div>
+
+      <!-- 금융상세 id=26: x=660 y=188 -->
+      ${p.finance_type !== '현금' ? `
+        <div class="slide-finance-detail">
+          <div>${p.finance_type}/${p.months || ''}개월</div>
+          <div>${downLabel} ${formatMoney(p.down_payment) || '0'} 원</div>
+          <div>${deferredLabel} ${formatMoney(p.deferred) || ''} 원</div>
+        </div>
+      ` : ''}
+
+      <!-- 신차가격 id=28: x=766 y=295 -->
+      <div class="slide-new-price">${newPrice}</div>
 
       <!-- 하단 테이블 -->
       <div class="slide-table">
@@ -1085,7 +1144,7 @@ function renderSlide(p) {
           </tr>
           <tr>
             <td>${p.output_torque || ''}</td>
-            <td>${p.fuel_efficiency ? p.fuel_efficiency + ' km/ℓ' : ''}</td>
+            <td>${p.fuel_efficiency ? p.fuel_efficiency + (p.fuel_type === '전기' ? ' km/kWh' : ' km/ℓ') : ''}</td>
             <td>${p.fuel_type || ''}</td>
             <td>${p.displacement || ''}</td>
             <td>${p.tuning || ''}</td>
@@ -1104,14 +1163,14 @@ function renderPreview() {
 
   // 슬라이드 스케일 계산
   const availWidth = document.getElementById('previewPanel')?.offsetWidth || 800;
-  const scale = Math.min(1, (availWidth - 40) / 960);
+  const scale = Math.min(1, (availWidth - 40) / 1122);
 
   document.getElementById('previewArea').innerHTML = `
     <div class="jeisiyo-card-wrapper">
       <div class="card-header-row">
         <span class="card-index">페이지 ${currentPage + 1} / ${pages.length}</span>
       </div>
-      <div class="slide-scale-wrapper" style="height:${Math.round(679 * scale)}px">
+      <div class="slide-scale-wrapper" style="height:${Math.round(794 * scale)}px">
         <div style="transform: scale(${scale}); transform-origin: top left;">
           ${slideHtml}
         </div>
@@ -1133,7 +1192,7 @@ async function downloadSingle(pageIdx) {
 
   // 임시 슬라이드를 실제 크기로 렌더링
   const temp = document.createElement('div');
-  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:960px;height:679px;';
+  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:1122px;height:794px;';
   temp.innerHTML = renderSlide(p);
   document.body.appendChild(temp);
 
@@ -1147,8 +1206,8 @@ async function downloadSingle(pageIdx) {
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
-    width: 960,
-    height: 679,
+    width: 1122,
+    height: 794,
   });
 
   document.body.removeChild(temp);
@@ -1184,37 +1243,209 @@ async function downloadAll() {
 }
 
 
+
 // ══════════════════════════════════════════
-// 할부 / 금융리스 계산 로직 (견적서 앱 동일)
+// 차량 제원 DB - 구글 시트에서 로드
 // ══════════════════════════════════════════
+const SPEC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpUKs4FVdRuWtcIsQh2obAGyS-stmiE9Xu1PccyuCAUdNwoUReSyV-7HxCmYT4krufcWqJQjsyiLTF/pub?output=csv';
+let SPEC_DB = [];
 
-// 금융리스 이율표
-const LF_RATES = {
-  0: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.1029}, // Demo/Bidding
-  1: {24:0.1234, 36:0.1141, 48:0.1094, 60:0.0999}, // 고객승계
-  2: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 신규
-  3: {24:0.1204, 36:0.1111, 48:0.1064, 60:0.0999}, // 7시리즈 Demo/Bidding
-  4: {24:0.0899, 36:0.0799, 48:0.0749, 60:0.0729}, // 트레이드인(신규)
-};
-
-// 할부 이율표
-const INST_RATES = {
-  0: {24:0.117,  36:0.122,  48:0.127,  60:0.138},  // Demo/Bidding
-  1: {24:0.1025, 36:0.108,  48:0.113,  60:0.124},  // 고객승계
-  2: {24:0.0919, 36:0.0819, 48:0.0769, 60:0.0749}, // 신규
-};
-
-// 최대 유예금(RV) 테이블
-const LF_RV = {
-  under12: {
-    BMW: { UKL:{24:0.66,36:0.60,48:0.53,60:0.47}, KKL:{24:0.65,36:0.60,48:0.52,60:0.47}, MKL:{24:0.66,36:0.59,48:0.50,60:0.43}, GKL:{24:0.64,36:0.55,48:0.50,60:0.40} },
-    MINI: { MINI:{24:0.60,36:0.45,48:0.37,60:0.30} }
-  },
-  over12: {
-    BMW: { UKL:{24:0.64,36:0.53,48:0.42,60:0.30}, KKL:{24:0.67,36:0.57,48:0.47,60:0.36}, MKL:{24:0.62,36:0.53,48:0.43,60:0.35}, GKL:{24:0.59,36:0.48,48:0.38,60:0.30} },
-    MINI: { MINI:{24:0.41,36:0.24,48:0.18,60:0.16} }
+async function loadSpecDB() {
+  try {
+    const res = await fetch(SPEC_SHEET_URL);
+    const csv = await res.text();
+    const lines = csv.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    SPEC_DB = lines.slice(1).map(line => {
+      // CSV 파싱 (쉼표 분리)
+      const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = vals[i] || '');
+      return obj;
+    });
+    console.log(`제원 DB 로드 완료: ${SPEC_DB.length}개`);
+  } catch(e) {
+    console.warn('제원 DB 로드 실패:', e);
   }
-};
+}
+
+// 차종 선택 → 제원 자동 매칭
+function matchSpec(brand, series, trim, year) {
+  if (!SPEC_DB.length || !trim) return null;
+
+  // 연식 숫자 추출 (예: "24" → 2024, "2024" → 2024)
+  let yearNum = parseInt(year);
+  if (yearNum < 100) yearNum += 2000;
+
+  // 시리즈명 정규화
+  const seriesNorm = (series || '').replace('시리즈', ' Series').trim();
+
+  // trim에서 엔진코드 추출 (예: "520i M Sport" → "520i")
+  const engineMatch = trim.match(/([A-Z]?\d+[eid][\w]*|[A-Z]\d+[PHEV]*|JCW|Cooper\s*[SE]*|eDrive\d+|xDrive\d+[ei]?|sDrive\d+[ei]?)/i);
+  const engineCode = engineMatch ? engineMatch[0].toLowerCase() : '';
+
+  // SPEC_DB에서 매칭 찾기
+  let best = null;
+  let bestScore = 0;
+
+  for (const spec of SPEC_DB) {
+    let score = 0;
+    const keyword = (spec['트림키워드'] || '').toLowerCase();
+    const specSeries = (spec['시리즈'] || '').toLowerCase();
+    const yearRange = spec['연식범위'] || '';
+
+    // 시리즈 매칭
+    const brandSeries = (series || '').toLowerCase();
+    if (brandSeries.includes(specSeries) || specSeries.includes(brandSeries.replace('시리즈',''))) {
+      score += 2;
+    }
+
+    // 트림 키워드 매칭
+    if (engineCode && engineCode.includes(keyword.replace(/\s/g,''))) {
+      score += 3;
+    } else if (keyword && trim.toLowerCase().includes(keyword.toLowerCase())) {
+      score += 3;
+    }
+
+    // 연식범위 매칭
+    if (yearRange && yearNum) {
+      const rangeParts = yearRange.split('-');
+      const startYear = parseInt(rangeParts[0]);
+      const endYear = rangeParts[1] === '현재' ? 9999 : parseInt(rangeParts[1]);
+      if (yearNum >= startYear && yearNum <= endYear) {
+        score += 2;
+      } else {
+        score -= 1; // 연식 범위 밖이면 감점
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = spec;
+    }
+  }
+
+  return bestScore >= 3 ? best : null;
+}
+
+// 제원 자동완성 적용
+function applySpec(spec) {
+  if (!spec) return;
+  const p = pages[currentPage];
+
+  // 배기량
+  if (spec['배기량(cc)'] && spec['배기량(cc)'] !== '0') {
+    p.displacement = spec['배기량(cc)'] + ' cc';
+    const el = document.getElementById('field-displacement');
+    if (el) el.value = p.displacement;
+  }
+
+  // 최고출력
+  if (spec['최고출력(hp)'] && spec['최고출력(hp)'] !== '0') {
+    p.output = spec['최고출력(hp)'];
+    const el = document.getElementById('field-output');
+    if (el) el.value = p.output;
+  }
+
+  // 최대토크
+  if (spec['최대토크(kg.m)'] && spec['최대토크(kg.m)'] !== '0') {
+    p.torque = spec['최대토크(kg.m)'];
+    const el = document.getElementById('field-torque');
+    if (el) el.value = p.torque;
+  }
+
+  // output_torque 조합
+  if (p.output && p.torque) {
+    p.output_torque = `${p.output} hp / ${p.torque} kg.m`;
+  }
+
+  // 연료타입
+  if (spec['연료타입']) {
+    p.fuel_type = spec['연료타입'];
+  }
+
+  // 표준연비
+  if (spec['복합연비(km/L)'] && spec['복합연비(km/L)'] !== '0') {
+    p.fuel_efficiency = spec['복합연비(km/L)'];
+    const el = document.getElementById('field-efficiency');
+    if (el) el.value = p.fuel_efficiency;
+  }
+
+  // 연비 단위 업데이트
+  updateFuelUnit();
+  renderInputPanel();
+  renderPreview();
+
+  console.log('제원 자동완성:', spec['트림키워드'], spec['연식범위']);
+}
+// ══════════════════════════════════════════
+// 이율표 - rates.json에서 동적 로드
+// ══════════════════════════════════════════
+let RATES = null; // rates.json 로드 후 채워짐
+
+
+// 출력/토크 분리 입력 → output_torque 조합
+function updateOutputTorque() {
+  const p = pages[currentPage];
+  const output = document.getElementById('field-output')?.value || '';
+  const torque = document.getElementById('field-torque')?.value || '';
+  p.output = output;
+  p.torque = torque;
+  if (output && torque) {
+    p.output_torque = `${output} hp / ${torque} kg.m`;
+  } else if (output) {
+    p.output_torque = `${output} hp`;
+  } else {
+    p.output_torque = '';
+  }
+  renderPreview();
+}
+
+// 연료타입 변경 시 단위 라벨 업데이트
+function updateFuelUnit() {
+  const p = pages[currentPage];
+  const label = document.getElementById('fuel-unit-label');
+  const input = document.getElementById('field-efficiency');
+  if (!label) return;
+  const isElectric = p.fuel_type === '전기';
+  label.textContent = isElectric ? 'km/kWh' : 'km/ℓ';
+  if (input) input.placeholder = isElectric ? '예) 6.2' : '예) 13.4';
+}
+
+async function loadRates() {
+  try {
+    const res = await fetch('rates.json');
+    RATES = await res.json();
+    console.log('rates.json 로드 완료:', RATES.version);
+  } catch(e) {
+    console.warn('rates.json 로드 실패, 기본값 사용:', e);
+    // 폴백: 하드코딩 기본값
+    RATES = {
+      lf_rates: {
+        0:{24:0.1254,36:0.1161,48:0.1114,60:0.1049},
+        1:{24:0.1254,36:0.1161,48:0.1114,60:0.1019},
+        2:{24:0.0899,36:0.0799,48:0.0749,60:0.0729},
+        3:{24:0.1224,36:0.1131,48:0.1084,60:0.1019},
+        4:{24:0.0899,36:0.0799,48:0.0749,60:0.0729}
+      },
+      inst_rates: {
+        0:{24:0.117, 36:0.122, 48:0.127, 60:0.138},
+        1:{24:0.1025,36:0.108, 48:0.113, 60:0.124},
+        2:{24:0.0919,36:0.0819,48:0.0769,60:0.0749}
+      },
+      rv_table: {
+        under1: {
+          BMW: { UKL:{24:0.66,36:0.60,48:0.53,60:0.47}, KKL:{24:0.65,36:0.60,48:0.52,60:0.47}, MKL:{24:0.66,36:0.59,48:0.50,60:0.43}, GKL:{24:0.64,36:0.55,48:0.50,60:0.40} },
+          MINI: {24:0.60,36:0.45,48:0.37,60:0.30}
+        },
+        over1: {
+          BMW: { UKL:{24:0.64,36:0.53,48:0.42,60:0.30}, KKL:{24:0.67,36:0.57,48:0.47,60:0.36}, MKL:{24:0.62,36:0.53,48:0.43,60:0.35}, GKL:{24:0.59,36:0.48,48:0.38,60:0.30} },
+          MINI: {24:0.41,36:0.24,48:0.18,60:0.16}
+        }
+      }
+    };
+  }
+}
 
 function getSegment(brand, series) {
   if (brand === 'MINI') return 'MINI';
@@ -1227,14 +1458,18 @@ function getSegment(brand, series) {
 }
 
 function getMaxRV(brand, series, regDate, period) {
-  if (!regDate || !brand) return null;
+  if (!regDate || !brand || !RATES) return null;
   const reg = new Date(regDate);
   const now = new Date();
   const days = Math.floor((now - reg) / (1000 * 60 * 60 * 24));
-  const ageGroup = days <= 365 ? 'under12' : 'over12';
+  const ageGroup = days <= 365 ? 'under1' : 'over1';
   const seg = getSegment(brand, series);
   const brandKey = brand === 'MINI' ? 'MINI' : 'BMW';
-  try { return LF_RV[ageGroup][brandKey][seg][period] || null; } catch(e) { return null; }
+  try {
+    const rv = RATES.rv_table[ageGroup];
+    if (brandKey === 'MINI') return rv.MINI[String(period)] || null;
+    return rv.BMW[seg][String(period)] || null;
+  } catch(e) { return null; }
 }
 
 function pmtCalc(rate, nper, pv, fv) {
@@ -1243,10 +1478,12 @@ function pmtCalc(rate, nper, pv, fv) {
   return rate * (pv * pvif + fv) / (pvif - 1);
 }
 
-// 금융리스 월납입료 계산
+// 금융리스 월납입료 계산 (rates.json 사용)
 function calcLFMonthly(orig, discount, deposit, residualPct, period, product) {
+  if (!RATES) return { monthly:0, rate:0, residual:0, finalPrice:orig-discount, loanAmt:0 };
   const finalPrice = orig - discount;
-  const rate = LF_RATES[product] ? (LF_RATES[product][period] || 0) : 0;
+  const rateTable = RATES.lf_rates[String(product)];
+  const rate = rateTable ? (rateTable[String(period)] || 0) : 0;
   const residual = Math.round(finalPrice * residualPct / 100);
   const loanAmt = finalPrice - deposit;
   let monthly = 0;
@@ -1259,11 +1496,13 @@ function calcLFMonthly(orig, discount, deposit, residualPct, period, product) {
   return { monthly, rate, residual, finalPrice, loanAmt };
 }
 
-// 할부 월납입료 계산
+// 할부 월납입료 계산 (rates.json 사용)
 function calcInstMonthly(orig, discount, down, residualPct, period) {
+  if (!RATES) return { monthly:0, rate:0, residual:0, finalPrice:orig-discount, loanAmt:0 };
   const finalPrice = orig - discount;
   const product = 2; // 신규 고정
-  const rate = INST_RATES[product] ? (INST_RATES[product][period] || 0) : 0;
+  const rateTable = RATES.inst_rates[String(product)];
+  const rate = rateTable ? (rateTable[String(period)] || 0) : 0;
   const residual = Math.round(finalPrice * residualPct / 100);
   const loanAmt = Math.max(0, finalPrice - down);
   let monthly = 0;
@@ -1337,7 +1576,13 @@ function updateCalc() {
 }
 
 // ── 초기화 ──
-addPage();
+(async () => {
+  await Promise.all([
+    loadRates(),    // rates.json 로드
+    loadSpecDB(),   // 제원 DB 로드
+  ]);
+  addPage();
+})();
 </script>
 </body>
 </html>

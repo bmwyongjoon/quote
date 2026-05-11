@@ -1227,35 +1227,46 @@ function calcLO() {
   // 표준형: dp9=price, dp16=deposit, fv=잔존-보증금, DP42 PV=-price
   // 선납형: dp9=price-선납금, dp16=0, fv=잔존(감소없음), DP42 PV=-(price-선납금)
   const scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
-  const dp9 = product === 'prepaid' ? (finalPrice - deposit) : finalPrice;
-  const dp30 = Math.round(scRate * dp9);
-  const dp31 = Math.round(LO_FNI_RATE * (finalPrice - deposit));
-  const pv37 = (finalPrice - deposit) + dp30 + dp31;
-  const fv37 = product === 'prepaid' ? residual : (residual - deposit);
 
   let monthly = 0;
   let ee40 = 0;
   if (dp33 > 0 && finalPrice > 0) {
     const r = dp33 / 12;
     const pvif_r = Math.pow(1+r, -period);
-    // DP37
-    const dp37 = Math.floor(r * (pv37 - fv37 * pvif_r) / (1 - pvif_r));
-    // DP38: 순조달금액(dp9-dp16)으로 내부 이율 역산
-    const pv38 = finalPrice - deposit;  // = dp9 - dp16 (표준형/선납형 공통)
-    const fv38 = product === 'prepaid' ? residual : (residual - deposit);
-    const dp38_raw = rateCalcLO(period, dp37, -pv38, fv38) * 12;
-    const dp38 = Math.ceil(Math.round(dp38_raw * 1e8) / 1e4) / 1e4;
-    // DP39
-    const r38 = dp38 / 12;
-    const pvif_r38 = Math.pow(1+r38, -period);
-    const dp39 = Math.floor(r38 * (pv38 - fv38 * pvif_r38) / (1 - pvif_r38));
-    // DP40 (고객공지 이자율): 표준형은 full price, 선납형은 dp9(=price-선납금) 기준
-    const pv40 = product === 'prepaid' ? dp9 : finalPrice;
-    const dp40_raw = rateCalcLO(period, dp39, -pv40, residual) * 12;
-    ee40 = Math.ceil(Math.round(dp40_raw * 1e8) / 1e4) / 1e4;
-    // DP42 (월 납입료): pv40 기준
-    const r40 = ee40 / 12;
-    monthly = Math.floor(r40 * (pv40 - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
+
+    if (product === 'prepaid') {
+      // 선납형: EE38 = finalPrice + 취득세
+      const ee38 = finalPrice + loTax;
+      const sc38 = Math.round(scRate * ee38);
+      const fni38 = Math.round(LO_FNI_RATE * ee38);
+      const pvPrepaid = ee38 + sc38 + fni38;
+      // EE39 = PMT(dp33/12, period, -PV, residual)
+      const ee39 = Math.floor(r * (pvPrepaid - residual * pvif_r) / (1 - pvif_r));
+      // EE40 = ROUNDUP(RATE(period, EE39, -EE38, residual)*12, 4)
+      const dp40_raw = rateCalcLO(period, ee39, -ee38, residual) * 12;
+      ee40 = Math.ceil(Math.round(dp40_raw * 1e8) / 1e4) / 1e4;
+      // EE42 = PMT(EE40/12, period, -EE38, residual)
+      const r40 = ee40 / 12;
+      monthly = Math.floor(r40 * (ee38 - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
+    } else {
+      // 표준형: DP37→DP38→DP39→DP40→DP42 체인
+      const dp30 = Math.round(scRate * finalPrice);
+      const dp31 = Math.round(LO_FNI_RATE * (finalPrice - deposit));
+      const pv37 = (finalPrice - deposit) + dp30 + dp31;
+      const fv37 = residual - deposit;
+      const dp37 = Math.floor(r * (pv37 - fv37 * pvif_r) / (1 - pvif_r));
+      const pv38 = finalPrice - deposit;
+      const fv38 = residual - deposit;
+      const dp38_raw = rateCalcLO(period, dp37, -pv38, fv38) * 12;
+      const dp38 = Math.ceil(Math.round(dp38_raw * 1e8) / 1e4) / 1e4;
+      const r38 = dp38 / 12;
+      const pvif_r38 = Math.pow(1+r38, -period);
+      const dp39 = Math.floor(r38 * (pv38 - fv38 * pvif_r38) / (1 - pvif_r38));
+      const dp40_raw = rateCalcLO(period, dp39, -finalPrice, residual) * 12;
+      ee40 = Math.ceil(Math.round(dp40_raw * 1e8) / 1e4) / 1e4;
+      const r40 = ee40 / 12;
+      monthly = Math.floor(r40 * (finalPrice - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
+    }
     if (monthly < 0) monthly = 0;
   }
 
