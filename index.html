@@ -1235,8 +1235,8 @@ function calcLO() {
     const pvif_r = Math.pow(1+r, -period);
 
     if (product === 'prepaid') {
-      // 선납형: EE38 = finalPrice + 취득세
-      const ee38 = finalPrice + loTax;
+      // 선납형: 선납금 있을 때 EE38에서 선납금 차감
+      const ee38 = deposit > 0 ? finalPrice + loTax - deposit : finalPrice + loTax;
       const sc38 = Math.round(scRate * ee38);
       const fni38 = Math.round(LO_FNI_RATE * ee38);
       const pvPrepaid = ee38 + sc38 + fni38;
