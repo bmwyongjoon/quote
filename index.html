@@ -1102,13 +1102,13 @@ function rateCalcLO(nper, pmt, pv, fv) {
   // Excel RATE 함수 구현 (Newton-Raphson)
   // 초기 추정값: PMT/PV 기반으로 더 나은 시작점 설정
   let r = Math.max(0.001, Math.abs(pmt / pv) * 0.8);
-  for (let i = 0; i < 300; i++) {
+  for (let i = 0; i < 500; i++) {
     const pvif = Math.pow(1+r, nper);
     const f  = pv*pvif + pmt*(pvif-1)/r + fv;
     const df = nper*pv*Math.pow(1+r,nper-1) + pmt*(nper*Math.pow(1+r,nper-1)*r - (pvif-1))/(r*r);
-    if (Math.abs(df) < 1e-12) break;
+    if (Math.abs(df) < 1e-15) break;
     const rn = r - f/df;
-    if (Math.abs(rn-r) < 1e-12) break;
+    if (Math.abs(rn-r) < 1e-15) break;
     r = rn;
   }
   return r;
