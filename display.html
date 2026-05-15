@@ -1272,15 +1272,34 @@ async function downloadAll() {
 const SPEC_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRpUKs4FVdRuWtcIsQh2obAGyS-stmiE9Xu1PccyuCAUdNwoUReSyV-7HxCmYT4krufcWqJQjsyiLTF/pub?output=csv';
 let SPEC_DB = [];
 
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
+      else { inQuotes = !inQuotes; }
+    } else if (ch === ',' && !inQuotes) {
+      result.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
 async function loadSpecDB() {
   try {
     const res = await fetch(SPEC_SHEET_URL);
     const csv = await res.text();
     const lines = csv.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const headers = parseCSVLine(lines[0]);
     SPEC_DB = lines.slice(1).map(line => {
-      // CSV 파싱 (쉼표 분리)
-      const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const vals = parseCSVLine(line);
       const obj = {};
       headers.forEach((h, i) => obj[h] = vals[i] || '');
       return obj;
@@ -1355,9 +1374,9 @@ function applySpec(spec) {
   if (!spec) return;
   const p = pages[currentPage];
 
-  // 배기량
+  // 배기량 (구글시트 천 단위 콤마 제거)
   if (spec['배기량(cc)'] && spec['배기량(cc)'] !== '0') {
-    p.displacement = spec['배기량(cc)'] + ' cc';
+    p.displacement = spec['배기량(cc)'].replace(/,/g, '') + ' cc';
     const el = document.getElementById('field-displacement');
     if (el) el.value = p.displacement;
   }
