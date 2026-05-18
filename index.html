@@ -1274,9 +1274,19 @@ function calcLO() {
   const initPayment = deposit + bond + misc + delivery;
   document.getElementById('lo-init-disp').value = initPayment.toLocaleString();
 
-  // 자동차세
-  const annualCarTax = calcCarTax(cc);
-  const monthlyCarTax = taxInclude === 1 ? Math.floor(annualCarTax / 12) : 0;
+  // 자동차세 (엑셀 DA48/DE48 방식: 반기세액을 이율로 할인해서 월환산)
+  let monthlyCarTax = 0;
+  if (taxInclude === 1 && cc > 0 && ee40 > 0 && period > 0) {
+    const annualCarTax = calcCarTax(cc);
+    const semiTax = Math.floor(annualCarTax / 2);
+    const halfYears = Math.floor(period / 6);
+    let da48 = 0;
+    for (let n = 1; n <= halfYears; n++) {
+      da48 += Math.floor(semiTax / Math.pow(1 + ee40/2, n));
+    }
+    const r = ee40 / 12;
+    monthlyCarTax = Math.floor(r * da48 / (1 - Math.pow(1+r, -period)));
+  }
   document.getElementById('lo-carmtax-disp').value = taxInclude === 1 ? monthlyCarTax.toLocaleString() : '미포함';
 
   const monthlyTotal = monthly + monthlyCarTax;
