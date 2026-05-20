@@ -1497,7 +1497,7 @@ function showPreview(type) {
       ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
       <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">(포함)</span></div>
-      ${lfBond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(lfBond)}</span></div>` : ''}
+      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
       <div class="pv-row"><span class="pv-key">탁송료</span><span class="pv-val">${delivery}</span></div>
       <div class="pv-row"><span class="pv-key">기타 등록비용</span><span class="pv-val">${misc}</span></div>
     </div>
