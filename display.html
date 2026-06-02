@@ -519,10 +519,14 @@ fetch('vehicles.json')
   })
   .catch(e => console.log('vehicles.json 로드 실패:', e));
 
+// ── 구글 시트 연동 URL ──
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzkG2BB5f6ttWkVwaVGuAwArjK9LXaxlSVch1Cd31vbpGxWKwysoR7n3lSmJcE7CgkJQA/exec';
+
 // ── 상태 관리 ──
 let pages = [];
 let currentPage = 0;
 let lastImportStatus = '';
+let lastSheetStatus = '';
 
 function defaultPageData() {
   return {
@@ -844,6 +848,121 @@ function importFromIndex(type) {
   }
 }
 
+// ── 구글 시트 저장/불러오기 ──
+async function saveToSheet() {
+  const p = pages[currentPage];
+  if (!p.car_number) {
+    alert('차량번호를 먼저 입력해주세요.');
+    return;
+  }
+  const warrantyDisplay = p.warranty === '직접입력' ? (p.warranty_custom || '') : p.warranty;
+  const params = new URLSearchParams({
+    action: 'save',
+    car_number: p.car_number,
+    brand:           p.sel_brand        || '',
+    year:            p.year             || '',
+    series:          p.sel_series       || '',
+    car_name:        p.car_name         || '',
+    mileage:         p.mileage          || '',
+    reg_date:        p.reg_date         || '',
+    accident:        p.accident         || '',
+    repair:          p.repair           || '',
+    warranty:        warrantyDisplay,
+    tuning:          p.tuning           || '',
+    output:          p.output           || '',
+    torque:          p.torque           || '',
+    fuel_type:       p.fuel_type        || '',
+    fuel_efficiency: p.fuel_efficiency  || '',
+    displacement:    p.displacement     || '',
+    car_price:       p.car_price        || '',
+    finance_type:    p.finance_type     || '',
+    down_payment:    p.down_payment     || '',
+    deferred:        p.deferred         || '',
+    monthly_payment: p.monthly_payment  || '',
+    months:          p.months           || '',
+  });
+  lastSheetStatus = '저장 중...';
+  renderInputPanel();
+  try {
+    const res = await fetch(GAS_URL + '?' + params.toString());
+    const result = await res.json();
+    if (result.success) {
+      lastSheetStatus = '✓ 저장되었습니다.';
+      alert('저장되었습니다.');
+    } else {
+      lastSheetStatus = '저장 실패: ' + (result.error || result.message || '알 수 없는 오류');
+      alert(lastSheetStatus);
+    }
+  } catch(e) {
+    lastSheetStatus = '오류: ' + e.message;
+    alert('저장 중 오류: ' + e.message);
+  }
+  renderInputPanel();
+}
+
+async function loadFromSheet() {
+  const inputEl = document.getElementById('sheet-car-number');
+  const carNumber = inputEl ? inputEl.value.trim() : '';
+  if (!carNumber) {
+    alert('차량번호를 입력해주세요.');
+    return;
+  }
+  lastSheetStatus = '불러오는 중...';
+  renderInputPanel();
+  try {
+    const params = new URLSearchParams({ action: 'load', car_number: carNumber });
+    const res = await fetch(GAS_URL + '?' + params.toString());
+    const result = await res.json();
+    if (result.success && result.data) {
+      const d = result.data;
+      const p = pages[currentPage];
+      if (d.car_number !== undefined) p.car_number     = String(d.car_number);
+      if (d.brand)           p.sel_brand        = String(d.brand);
+      if (d.year) {
+        const y = String(d.year);
+        p.year     = y.length === 4 ? y.slice(2) : y;
+        p.sel_year = y.length === 4 ? y : (y.length === 2 ? '20' + y : y);
+      }
+      if (d.series)          p.sel_series       = String(d.series);
+      if (d.car_name)        p.car_name         = String(d.car_name);
+      if (d.mileage)         p.mileage          = String(d.mileage);
+      if (d.reg_date)        p.reg_date         = String(d.reg_date);
+      if (d.accident)        p.accident         = String(d.accident);
+      if (d.repair)          p.repair           = String(d.repair);
+      if (d.warranty) {
+        const w = String(d.warranty);
+        if (['신차보증','EW보증'].includes(w)) {
+          p.warranty = w; p.warranty_custom = '';
+        } else {
+          p.warranty = '직접입력'; p.warranty_custom = w;
+        }
+      }
+      if (d.tuning)          p.tuning           = String(d.tuning);
+      if (d.output !== undefined)        p.output           = String(d.output);
+      if (d.torque !== undefined)        p.torque           = String(d.torque);
+      if (d.fuel_type)       p.fuel_type        = String(d.fuel_type);
+      if (d.fuel_efficiency !== undefined) p.fuel_efficiency = String(d.fuel_efficiency);
+      if (d.displacement)    p.displacement     = String(d.displacement);
+      if (d.car_price)       p.car_price        = String(d.car_price);
+      if (d.finance_type)    p.finance_type     = String(d.finance_type);
+      if (d.down_payment !== undefined) p.down_payment = String(d.down_payment);
+      if (d.deferred !== undefined)     p.deferred     = String(d.deferred);
+      if (d.monthly_payment) p.monthly_payment  = String(d.monthly_payment);
+      if (d.months)          p.months           = String(d.months);
+      lastSheetStatus = '✓ 제시표를 불러왔습니다.';
+      renderAll();
+    } else {
+      lastSheetStatus = result.message || '저장된 제시표가 없습니다.';
+      alert(lastSheetStatus);
+      renderInputPanel();
+    }
+  } catch(e) {
+    lastSheetStatus = '오류: ' + e.message;
+    alert('불러오기 오류: ' + e.message);
+    renderInputPanel();
+  }
+}
+
 // ── 금액 포맷 ──
 function formatMoney(val) {
   if (!val) return '';
@@ -874,6 +993,19 @@ function renderInputPanel() {
   const isOperating = p.finance_type === '운용리스';
 
   document.getElementById('inputPanel').innerHTML = `
+    <!-- 구글 시트 저장/불러오기 -->
+    <div class="panel-section">
+      <h3>시트 저장 / 불러오기</h3>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <input type="text" id="sheet-car-number" value="${p.car_number || ''}"
+          placeholder="차량번호 입력 (예: 295어1443)"
+          style="flex:1;border:1px solid #ddd;border-radius:4px;padding:6px 10px;font-size:13px;outline:none;">
+        <button class="btn btn-secondary btn-sm" onclick="loadFromSheet()">불러오기</button>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="saveToSheet()">💾 저장하기</button>
+      <div style="margin-top:8px;font-size:12px;color:${lastSheetStatus.startsWith('✓') ? '#2a7a2a' : '#888'};min-height:16px;">${lastSheetStatus}</div>
+    </div>
+
     <!-- 견적서 앱 불러오기 -->
     <div class="panel-section">
       <h3>견적서 앱에서 불러오기</h3>
