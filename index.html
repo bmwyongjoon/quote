@@ -1058,6 +1058,28 @@ function calcLF() {
   document.getElementById('lfr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
   document.getElementById('lfr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
 
+  // 제시표 앱 연동용 데이터 저장
+  try {
+    const trimEl = document.getElementById('lf-vs-trim');
+    const trimObj = trimEl?.value ? JSON.parse(trimEl.value) : null;
+    localStorage.setItem('bps_jeisiyo_lf', JSON.stringify({
+      car_name: document.getElementById('lf-model').value || '',
+      car_price: String(finalPrice),
+      finance_type: '금융리스',
+      monthly_payment: String(monthly),
+      months: String(period),
+      down_payment: String(deposit),
+      deferred: String(residual),
+      mileage: document.getElementById('lf-mileage').value || '',
+      year: document.getElementById('lf-year').value || '',
+      reg_date: document.getElementById('lf-regdate').value || '',
+      sel_brand: document.getElementById('lf-vs-brand')?.value || '',
+      sel_year: document.getElementById('lf-vs-year')?.value || '',
+      sel_series: document.getElementById('lf-vs-series')?.value || '',
+      sel_trim: trimObj ? trimObj.trim : '',
+    }));
+  } catch(e) {}
+
   return { bond: lfBond, orig, discount, finalPrice, deposit, residualPct, residual, loanAmt, period, rate, monthly, delivery, misc, maxRVRate };
 }
 
@@ -1307,6 +1329,28 @@ function calcLO() {
   document.getElementById('lor-init').textContent = fmt(initPayment);
   document.getElementById('lor-monthly').textContent = monthlyTotal > 0 ? fmtN(monthlyTotal) + ' 원/월' : '—';
 
+  // 제시표 앱 연동용 데이터 저장
+  try {
+    const trimEl = document.getElementById('lo-vs-trim');
+    const trimObj = trimEl?.value ? JSON.parse(trimEl.value) : null;
+    localStorage.setItem('bps_jeisiyo_lo', JSON.stringify({
+      car_name: document.getElementById('lo-model').value || '',
+      car_price: String(finalPrice),
+      finance_type: '운용리스',
+      monthly_payment: String(monthlyTotal),
+      months: String(period),
+      down_payment: String(deposit),
+      deferred: String(residual),
+      mileage: document.getElementById('lo-mileage').value || '',
+      year: document.getElementById('lo-year').value || '',
+      reg_date: document.getElementById('lo-regdate').value || '',
+      sel_brand: document.getElementById('lo-vs-brand')?.value || '',
+      sel_year: document.getElementById('lo-vs-year')?.value || '',
+      sel_series: document.getElementById('lo-vs-series')?.value || '',
+      sel_trim: trimObj ? trimObj.trim : '',
+    }));
+  } catch(e) {}
+
   return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, residual, residualPct, period, irr: ee40, sc, initPayment, totalCost, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
 }
 
@@ -1409,6 +1453,28 @@ function calcInst() {
   document.getElementById('instr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
   document.getElementById('instr-init-payment').textContent = fmt(initPayment);
   document.getElementById('instr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
+
+  // 제시표 앱 연동용 데이터 저장
+  try {
+    const trimEl = document.getElementById('inst-vs-trim');
+    const trimObj = trimEl?.value ? JSON.parse(trimEl.value) : null;
+    localStorage.setItem('bps_jeisiyo_inst', JSON.stringify({
+      car_name: document.getElementById('inst-model').value || '',
+      car_price: String(finalPrice),
+      finance_type: '할부',
+      monthly_payment: String(monthly),
+      months: String(period),
+      down_payment: String(down),
+      deferred: String(residual),
+      mileage: document.getElementById('inst-mileage').value || '',
+      year: document.getElementById('inst-year').value || '',
+      reg_date: document.getElementById('inst-regdate').value || '',
+      sel_brand: document.getElementById('inst-vs-brand')?.value || '',
+      sel_year: document.getElementById('inst-vs-year')?.value || '',
+      sel_series: document.getElementById('inst-vs-series')?.value || '',
+      sel_trim: trimObj ? trimObj.trim : '',
+    }));
+  } catch(e) {}
 
   return { orig, discount, finalPrice, tax, bond, down, residualPct, residual, loanAmt, initPayment, period, rate, monthly, product };
 }
