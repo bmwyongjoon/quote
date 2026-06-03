@@ -733,7 +733,23 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
         <div class="field"><label>차량 가격 (원가)</label><div class="amt"><input type="number" id="inst-price-orig" oninput="calcInst()"><span>원</span></div></div>
         <div class="field"><label>할인 금액</label><div class="amt"><input type="number" id="inst-discount" placeholder="0" oninput="calcInst()"><span>원</span></div></div>
         <div class="field"><label>최종 구입 가격</label><div class="amt"><input id="inst-price-final" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
-        <div class="field"><label>취득세 (자동)</label><div class="amt"><input id="inst-tax-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field">
+          <label>취득세</label>
+          <select id="inst-tax-mode" onchange="calcInst()">
+            <option value="auto" selected>자동 계산</option>
+            <option value="manual">수기 입력</option>
+            <option value="exempt">면제</option>
+          </select>
+        </div>
+        <div id="inst-tax-auto-row" class="field"><label>취득세 (자동)</label><div class="amt"><input id="inst-tax-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div id="inst-tax-manual-row" class="field" style="display:none;"><label>취득세 (직접 입력)</label><div class="amt"><input type="number" id="inst-tax-input" oninput="calcInst()"><span>원</span></div></div>
+        <div class="field">
+          <label>취득세 납입금 포함</label>
+          <select id="inst-tax-include" onchange="calcInst()">
+            <option value="1" selected>포함</option>
+            <option value="0">미포함</option>
+          </select>
+        </div>
         <div class="field"><label>공채 지역</label>
           <select id="inst-bond-region" onchange="calcInst()">
             <option value="none">선택 안함 (면제)</option>
@@ -1408,9 +1424,20 @@ function calcInst() {
 
   document.getElementById('inst-price-final').value = finalPrice > 0 ? finalPrice.toLocaleString() : '';
 
-  // 취득세: finalPrice / 1.1 * 7%, 10원 단위 내림
-  const tax = finalPrice > 0 ? Math.floor(finalPrice / 1.1 * 0.07 / 10) * 10 : 0;
-  document.getElementById('inst-tax-disp').value = tax > 0 ? tax.toLocaleString() : '';
+  // 취득세 모드
+  const taxMode = document.getElementById('inst-tax-mode').value;
+  document.getElementById('inst-tax-auto-row').style.display   = taxMode === 'auto'   ? 'block' : 'none';
+  document.getElementById('inst-tax-manual-row').style.display = taxMode === 'manual' ? 'block' : 'none';
+  let tax = 0;
+  if (taxMode === 'auto' && finalPrice > 0) {
+    tax = Math.floor(finalPrice / 1.1 * 0.07 / 10) * 10;
+    document.getElementById('inst-tax-disp').value = tax > 0 ? tax.toLocaleString() : '';
+  } else if (taxMode === 'manual') {
+    tax = parseFloat(document.getElementById('inst-tax-input').value) || 0;
+  } else {
+    document.getElementById('inst-tax-disp').value = '';
+  }
+  const taxInclude = parseInt(document.getElementById('inst-tax-include').value);
 
   const bond = getBondAmount('inst', finalPrice);
 
@@ -1442,10 +1469,10 @@ function calcInst() {
   const residual = Math.round(finalPrice * residualPct / 100);
   document.getElementById('inst-residual-disp').value = residual > 0 ? residual.toLocaleString() : '';
 
-  // 대출 신청금액 = 최종구입가격 - 선납금 (취득세/공채는 계약 발생 납입금에만 포함)
+  // 대출 신청금액 = 최종구입가격 - 선납금
   const loanAmt = Math.max(0, finalPrice - down);
-  // 계약 발생 납입금 = 선납금 + 취득세 + 공채
-  const initPayment = down + tax + bond;
+  // 계약 발생 납입금 = 선납금 + 공채 + (취득세 포함 여부에 따라)
+  const initPayment = down + bond + (taxInclude === 1 ? tax : 0);
   document.getElementById('inst-principal-disp').value = loanAmt > 0 ? loanAmt.toLocaleString() : '';
 
   let monthly = 0;
@@ -1459,7 +1486,7 @@ function calcInst() {
   document.getElementById('instr-orig').textContent = fmt(orig);
   document.getElementById('instr-discount').textContent = discount > 0 ? '-' + fmt(discount) : '—';
   document.getElementById('instr-price').textContent = fmt(finalPrice);
-  document.getElementById('instr-tax').textContent = fmt(tax);
+  document.getElementById('instr-tax').textContent = taxMode === 'exempt' ? '(면제)' : fmt(tax);
   document.getElementById('instr-bond').textContent = bond > 0 ? fmt(bond) : '—';
   document.getElementById('instr-down').textContent = down > 0 ? fmt(down) : '—';
   document.getElementById('instr-residual').textContent = residual > 0 ? fmt(residual) + ' (' + residualPct + '%)' : '—';
@@ -1490,13 +1517,18 @@ function calcInst() {
     }));
   } catch(e) {}
 
-  return { orig, discount, finalPrice, tax, bond, down, residualPct, residual, loanAmt, initPayment, period, rate, monthly, product };
+  return { orig, discount, finalPrice, tax, taxMode, taxInclude, bond, down, residualPct, residual, loanAmt, initPayment, period, rate, monthly, product };
 }
 
 function resetInst() {
   ['inst-price-orig','inst-discount','inst-down'].forEach(id => document.getElementById(id).value = '');
   ['inst-customer','inst-model','inst-year','inst-regdate','inst-mileage','inst-fni-phone'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inst-period').value = '60';
+  document.getElementById('inst-tax-mode').value = 'auto';
+  document.getElementById('inst-tax-include').value = '1';
+  document.getElementById('inst-tax-auto-row').style.display = 'block';
+  document.getElementById('inst-tax-manual-row').style.display = 'none';
+  document.getElementById('inst-tax-input').value = '';
   document.getElementById('inst-bond-region').value = 'seoul';
   document.getElementById('inst-bond-mode').value = 'buy';
   document.getElementById('inst-bond-auto-row').style.display='';
@@ -1627,7 +1659,7 @@ function showPreview(type) {
     const brand_inst = document.getElementById('inst-vs-brand')?.value || 'BMW';
     const instPriceRows = [['차량가격', fmt(d.orig)]];
     if (d.discount > 0) instPriceRows.push(['할인', '-'+fmt(d.discount)]);
-    instPriceRows.push(['최종가격', fmt(d.finalPrice)], ['취득세', fmt(d.tax)]);
+    instPriceRows.push(['최종가격', fmt(d.finalPrice)], ['취득세', d.taxMode === 'exempt' ? '(면제)' : fmt(d.tax) + (d.taxInclude === 0 ? ' (미포함)' : '')]);
     if (d.bond > 0) instPriceRows.push(['공채', fmt(d.bond)]);
     if (d.down > 0) instPriceRows.push(['선수금', fmt(d.down)]);
     html = `<div class="pv-wrap">` +
