@@ -815,9 +815,10 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">최종 구입 가격</span><span class="rvalue" id="instr-price">—</span></div>
       <div class="rrow"><span class="rlabel">취득세</span><span class="rvalue" id="instr-tax">—</span></div>
       <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="instr-bond">—</span></div>
+      <div class="rrow total" style="border-top:1px solid #555;"><span class="rlabel">총 구입 비용</span><span class="rvalue" id="instr-total">—</span></div>
       <div class="rrow"><span class="rlabel">선수금</span><span class="rvalue" id="instr-down">—</span></div>
-      <div class="rrow"><span class="rlabel">상환 유예금</span><span class="rvalue" id="instr-residual">—</span></div>
       <div class="rrow"><span class="rlabel">대출 신청금액</span><span class="rvalue" id="instr-principal">—</span></div>
+      <div class="rrow"><span class="rlabel">상환 유예금</span><span class="rvalue" id="instr-residual">—</span></div>
       <div class="rrow"><span class="rlabel">할부 기간 / 이자율</span><span class="rvalue" id="instr-period">—</span></div>
       <div class="rrow"><span class="rlabel">계약 발생 납입금</span><span class="rvalue" id="instr-init-payment">—</span></div>
       <div class="rrow total"><span class="rlabel">예상 월 납입금</span><span class="rvalue" id="instr-monthly">—</span></div>
@@ -1483,14 +1484,17 @@ function calcInst() {
     monthly = Math.floor((loanAmt - residual) / period);
   }
 
+  const totalCost = finalPrice + (taxInclude === 1 ? tax : 0) + bond;
+
   document.getElementById('instr-orig').textContent = fmt(orig);
   document.getElementById('instr-discount').textContent = discount > 0 ? '-' + fmt(discount) : '—';
   document.getElementById('instr-price').textContent = fmt(finalPrice);
-  document.getElementById('instr-tax').textContent = taxMode === 'exempt' ? '(면제)' : fmt(tax);
+  document.getElementById('instr-tax').textContent = taxMode === 'exempt' ? '(면제)' : fmt(tax) + (taxInclude === 0 ? ' (미포함)' : '');
   document.getElementById('instr-bond').textContent = bond > 0 ? fmt(bond) : '—';
+  document.getElementById('instr-total').textContent = fmt(totalCost);
   document.getElementById('instr-down').textContent = down > 0 ? fmt(down) : '—';
-  document.getElementById('instr-residual').textContent = residual > 0 ? fmt(residual) + ' (' + residualPct + '%)' : '—';
   document.getElementById('instr-principal').textContent = fmt(loanAmt);
+  document.getElementById('instr-residual').textContent = residual > 0 ? fmt(residual) + ' (' + residualPct + '%)' : '—';
   document.getElementById('instr-period').textContent = period + '개월 / ' + (rate * 100).toFixed(2) + '%';
   document.getElementById('instr-init-payment').textContent = fmt(initPayment);
   document.getElementById('instr-monthly').textContent = monthly > 0 ? fmtN(monthly) + ' 원/월' : '—';
@@ -1517,7 +1521,7 @@ function calcInst() {
     }));
   } catch(e) {}
 
-  return { orig, discount, finalPrice, tax, taxMode, taxInclude, bond, down, residualPct, residual, loanAmt, initPayment, period, rate, monthly, product };
+  return { orig, discount, finalPrice, tax, taxMode, taxInclude, bond, down, residualPct, residual, loanAmt, initPayment, totalCost, period, rate, monthly, product };
 }
 
 function resetInst() {
@@ -1537,7 +1541,7 @@ function resetInst() {
   document.getElementById('inst-residual-max-label').textContent = '';
   ['inst-price-final','inst-tax-disp','inst-rate-disp','inst-residual-disp','inst-principal-disp','inst-bond-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-inst').style.display = 'none';
-  ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-down','instr-residual','instr-principal','instr-period','instr-init-payment','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
+  ['instr-orig','instr-discount','instr-price','instr-tax','instr-bond','instr-total','instr-down','instr-residual','instr-principal','instr-period','instr-init-payment','instr-monthly'].forEach(id => document.getElementById(id).textContent = '—');
 }
 
 // ── 견적서 미리보기 생성 ──
@@ -1661,6 +1665,7 @@ function showPreview(type) {
     if (d.discount > 0) instPriceRows.push(['할인', '-'+fmt(d.discount)]);
     instPriceRows.push(['최종가격', fmt(d.finalPrice)], ['취득세', d.taxMode === 'exempt' ? '(면제)' : fmt(d.tax) + (d.taxInclude === 0 ? ' (미포함)' : '')]);
     if (d.bond > 0) instPriceRows.push(['공채', fmt(d.bond)]);
+    instPriceRows.push(['총 구입 비용', fmt(d.totalCost)]);
     if (d.down > 0) instPriceRows.push(['선수금', fmt(d.down)]);
     html = `<div class="pv-wrap">` +
       pvHeader(branch, staff, phone, customer, td, '할부금융 견적서', brand_inst) +
