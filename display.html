@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BPS 가양 제시표 제작</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 @font-face {
   font-family: 'BMWGlobalPro';
@@ -480,15 +481,29 @@ body {
   <div class="loading-box">⏳ 이미지 생성 중...</div>
 </div>
 
-<div id="downloadModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:12px;padding:24px;min-width:280px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+<!-- 다운로드 모달 -->
+<div id="downloadModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:24px;min-width:280px;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
     <h3 style="margin:0 0 16px;font-size:16px;color:#191919;">📥 다운로드할 페이지 선택</h3>
     <div id="downloadModalList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:300px;overflow-y:auto;"></div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="toggleAllDownloadPages()">전체 선택</button>
-      <button class="btn btn-primary btn-sm" style="flex:2" onclick="downloadSelected()">📥 선택 다운로드</button>
-      <button class="btn btn-secondary btn-sm" onclick="closeDownloadModal()">취소</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm" style="flex:1;min-width:80px" onclick="toggleAllDownloadPages()">전체 선택</button>
+      <button class="btn btn-primary btn-sm" style="flex:2;min-width:110px" onclick="downloadSelected('jpg')">🖼 JPG 다운로드</button>
+      <button class="btn btn-primary btn-sm" style="flex:2;min-width:110px;background:#c0392b" onclick="downloadSelected('pdf')">📄 PDF 다운로드</button>
+      <button class="btn btn-secondary btn-sm" style="min-width:50px" onclick="closeDownloadModal()">취소</button>
     </div>
+  </div>
+</div>
+
+<!-- 불러오기 목록 모달 -->
+<div id="loadListModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:20px;width:90%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <h3 style="margin:0 0 12px;font-size:16px;color:#191919;">📋 저장된 제시표 목록</h3>
+    <input type="text" id="loadListSearch" placeholder="차량번호 또는 차종명 검색..."
+      oninput="filterLoadList()"
+      style="border:1px solid #ddd;border-radius:6px;padding:8px 12px;font-size:13px;margin-bottom:10px;outline:none;">
+    <div id="loadListItems" style="flex:1;overflow-y:auto;border:1px solid #eee;border-radius:6px;"></div>
+    <button class="btn btn-secondary" style="margin-top:12px;" onclick="closeLoadListModal()">닫기</button>
   </div>
 </div>
 
@@ -900,7 +915,12 @@ async function loadFromSheet() {
       if (d['차종'])                   p.sel_series       = String(d['차종']);
       if (d['차종명'])                 p.car_name         = String(d['차종명']);
       if (d['주행거리'])               p.mileage          = String(d['주행거리']);
-      if (d['등록일'])                 p.reg_date         = String(d['등록일']);
+      if (d['등록일']) {
+        let rd = String(d['등록일']);
+        if (rd.includes('T')) rd = rd.split('T')[0];       // ISO 타임스탬프 → YYYY-MM-DD
+        rd = rd.replace(/\./g, '-');                        // YYYY.MM.DD → YYYY-MM-DD
+        p.reg_date = rd;
+      }
       if (d['사고내역'])               p.accident         = String(d['사고내역']);
       if (d['수리내역'])               p.repair           = String(d['수리내역']);
       if (d['보증기간']) {
@@ -975,6 +995,7 @@ function renderInputPanel() {
           placeholder="차량번호 입력 (예: 295어1443)"
           style="flex:1;border:1px solid #ddd;border-radius:4px;padding:6px 10px;font-size:13px;outline:none;">
         <button class="btn btn-secondary btn-sm" onclick="loadFromSheet()">불러오기</button>
+        <button class="btn btn-secondary btn-sm" onclick="showLoadListModal()">📋 목록</button>
       </div>
       <button class="btn btn-primary" style="width:100%;" onclick="saveToSheet()">💾 저장하기</button>
       <div style="margin-top:8px;font-size:12px;color:${lastSheetStatus.startsWith('✓') ? '#2a7a2a' : '#888'};min-height:16px;">${lastSheetStatus}</div>
@@ -1354,19 +1375,14 @@ function renderAll() {
 }
 
 // ── 다운로드 ──
-async function downloadSingle(pageIdx) {
+async function getPageCanvas(pageIdx) {
   const p = pages[pageIdx];
-
-  // 임시 슬라이드를 실제 크기로 렌더링
   const temp = document.createElement('div');
   temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:1122px;height:794px;';
   temp.innerHTML = renderSlide(p);
   document.body.appendChild(temp);
-
-  // 폰트 로딩 대기
   await document.fonts.ready;
   await new Promise(r => setTimeout(r, 300));
-
   const slide = temp.querySelector('.jeisiyo-slide');
   const canvas = await html2canvas(slide, {
     scale: 2,
@@ -1376,13 +1392,17 @@ async function downloadSingle(pageIdx) {
     width: 1122,
     height: 794,
   });
-
   document.body.removeChild(temp);
+  return canvas;
+}
 
+async function downloadSingle(pageIdx) {
+  const p = pages[pageIdx];
+  const canvas = await getPageCanvas(pageIdx);
   const link = document.createElement('a');
   const filename = p.car_number || p.car_name || `제시표_${pageIdx + 1}`;
-  link.download = `${filename}.png`;
-  link.href = canvas.toDataURL('image/png');
+  link.download = `${filename}.jpg`;
+  link.href = canvas.toDataURL('image/jpeg', 0.95);
   link.click();
 }
 
@@ -1431,7 +1451,7 @@ function toggleAllDownloadPages() {
   checks.forEach(c => c.checked = !allChecked);
 }
 
-async function downloadSelected() {
+async function downloadSelected(format = 'jpg') {
   const checks = document.querySelectorAll('.dl-page-check');
   const selected = Array.from(checks).filter(c => c.checked).map(c => parseInt(c.dataset.idx));
   if (selected.length === 0) { alert('페이지를 하나 이상 선택해주세요.'); return; }
@@ -1439,13 +1459,131 @@ async function downloadSelected() {
   const overlay = document.getElementById('loadingOverlay');
   overlay.style.display = 'flex';
   try {
-    for (const i of selected) {
-      await downloadSingle(i);
-      await new Promise(r => setTimeout(r, 500));
+    if (format === 'pdf') {
+      const { jsPDF } = window.jspdf;
+      let pdf = null;
+      for (const i of selected) {
+        const canvas = await getPageCanvas(i);
+        const w = canvas.width;
+        const h = canvas.height;
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        if (!pdf) {
+          pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [w, h], hotfixes: ['px_scaling'] });
+        } else {
+          pdf.addPage([w, h], 'landscape');
+        }
+        pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
+        await new Promise(r => setTimeout(r, 400));
+      }
+      const date = new Date().toLocaleDateString('ko-KR').replace(/\. /g,'-').replace('.','');
+      pdf.save(`제시표_${date}.pdf`);
+    } else {
+      for (const i of selected) {
+        await downloadSingle(i);
+        await new Promise(r => setTimeout(r, 500));
+      }
     }
   } finally {
     overlay.style.display = 'none';
   }
+}
+
+// ── 불러오기 목록 모달 ──
+let loadListData = [];
+
+async function showLoadListModal() {
+  const modal = document.getElementById('loadListModal');
+  const itemsEl = document.getElementById('loadListItems');
+  document.getElementById('loadListSearch').value = '';
+  itemsEl.innerHTML = '<div style="text-align:center;padding:24px;color:#888;">불러오는 중...</div>';
+  modal.style.display = 'flex';
+  try {
+    const res = await fetch(GAS_URL + '?action=list');
+    const result = await res.json();
+    if (result.result === 'success') {
+      loadListData = result.data || [];
+      renderLoadList(loadListData);
+    } else {
+      itemsEl.innerHTML = '<div style="color:#c00;padding:20px;text-align:center;">목록을 불러오지 못했습니다.</div>';
+    }
+  } catch(e) {
+    itemsEl.innerHTML = `<div style="color:#c00;padding:20px;text-align:center;">오류: ${e.message}</div>`;
+  }
+}
+
+function closeLoadListModal() {
+  document.getElementById('loadListModal').style.display = 'none';
+}
+
+function renderLoadList(data) {
+  const el = document.getElementById('loadListItems');
+  if (!data.length) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:#888;">저장된 제시표가 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = data.map((d, i) => `
+    <div onclick="loadFromListItem(${i})"
+      style="padding:12px 14px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background 0.15s;"
+      onmouseover="this.style.background='#f5f8ff'" onmouseout="this.style.background=''">
+      <div style="font-weight:600;font-size:14px;color:#191919;">${d['차량번호'] || '-'}</div>
+      <div style="font-size:12px;color:#666;margin-top:2px;">
+        ${[d['차종명'], d['년식'] ? d['년식']+'년식' : '', d['저장일자']].filter(Boolean).join(' · ')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterLoadList() {
+  const q = document.getElementById('loadListSearch').value.toLowerCase();
+  if (!q) { renderLoadList(loadListData); return; }
+  renderLoadList(loadListData.filter(d =>
+    (d['차량번호'] || '').toLowerCase().includes(q) ||
+    (d['차종명'] || '').toLowerCase().includes(q) ||
+    (d['차종'] || '').toLowerCase().includes(q)
+  ));
+}
+
+function loadFromListItem(idx) {
+  const d = loadListData[idx];
+  if (!d) return;
+  const p = pages[currentPage];
+  if (d['차량번호'] !== undefined) p.car_number      = String(d['차량번호']);
+  if (d['브랜드'])                 p.sel_brand        = String(d['브랜드']);
+  if (d['년식']) {
+    const y = String(d['년식']);
+    p.year     = y.length === 4 ? y.slice(2) : y;
+    p.sel_year = y.length === 4 ? y : (y.length === 2 ? '20' + y : y);
+  }
+  if (d['차종'])                   p.sel_series       = String(d['차종']);
+  if (d['차종명'])                 p.car_name         = String(d['차종명']);
+  if (d['주행거리'])               p.mileage          = String(d['주행거리']);
+  if (d['등록일']) {
+    let rd = String(d['등록일']);
+    if (rd.includes('T')) rd = rd.split('T')[0];
+    p.reg_date = rd.replace(/\./g, '-');
+  }
+  if (d['사고내역'])               p.accident         = String(d['사고내역']);
+  if (d['수리내역'])               p.repair           = String(d['수리내역']);
+  if (d['보증기간']) {
+    const w = String(d['보증기간']);
+    p.warranty = ['신차보증','EW보증'].includes(w) ? w : '직접입력';
+    p.warranty_custom = ['신차보증','EW보증'].includes(w) ? '' : w;
+  }
+  if (d['튜닝내역'])               p.tuning           = String(d['튜닝내역']);
+  if (d['최고출력'] !== undefined) p.output           = String(d['최고출력']);
+  if (d['최대토크'] !== undefined) p.torque           = String(d['최대토크']);
+  if (d['연료타입'])               p.fuel_type        = String(d['연료타입']);
+  if (d['표준연비'] !== undefined) p.fuel_efficiency  = String(d['표준연비']);
+  if (d['배기량'])                 p.displacement     = String(d['배기량']);
+  if (d['차량가격'])               p.car_price        = String(d['차량가격']);
+  if (d['금융조건'])               p.finance_type     = String(d['금융조건']);
+  if (d['선납금'] !== undefined)   p.down_payment     = String(d['선납금']);
+  if (d['유예금'] !== undefined)   p.deferred         = String(d['유예금']);
+  if (d['월납입금'])               p.monthly_payment  = String(d['월납입금']);
+  if (d['기간'])                   p.months           = String(d['기간']);
+  lastSheetStatus = `✓ ${d['차량번호']} 불러왔습니다.`;
+  closeLoadListModal();
+  renderAll();
 }
 
 
@@ -1757,16 +1895,28 @@ function updateCalc() {
   if (ft === '금융리스') {
     const product = parseInt(document.getElementById('calc-lf-product')?.value || '2');
     const deposit = parseFloat(String(p.down_payment).replace(/,/g,'')) || 0;
-    const residualPct = parseFloat(document.getElementById('calc-residual-pct')?.value || '0');
-    const result = calcLFMonthly(orig, 0, deposit, residualPct, period, product);
-    
-    // 최대 유예금 표시
+    const residualPctEl = document.getElementById('calc-residual-pct');
+
+    // 최대 유예금 계산 (엑셀: ROUNDDOWN(RV * 110%, 2))
     const brand = p.sel_brand || '';
     const series = p.sel_series || '';
     const regDate = document.getElementById('calc-regdate')?.value || '';
     const maxRV = getMaxRV(brand, series, regDate, period);
     const maxLabel = document.getElementById('calc-max-rv');
-    if (maxLabel) maxLabel.textContent = maxRV ? `최대 ${Math.round(maxRV * 110)}%` : '';
+    let maxPct = null;
+    if (maxRV) {
+      maxPct = Math.round(Math.floor(maxRV * 1.1 * 100) / 100 * 100);
+      if (maxLabel) maxLabel.textContent = `최대 ${maxPct}%`;
+      if (residualPctEl) {
+        residualPctEl.max = maxPct;
+        if (parseFloat(residualPctEl.value) > maxPct) residualPctEl.value = maxPct;
+      }
+    } else {
+      if (maxLabel) maxLabel.textContent = '';
+    }
+
+    const residualPct = parseFloat(residualPctEl?.value || '0');
+    const result = calcLFMonthly(orig, 0, deposit, residualPct, period, product);
 
     const rateEl = document.getElementById('calc-rate-disp');
     if (rateEl) rateEl.textContent = result.rate ? (result.rate * 100).toFixed(2) + '%' : '-';
@@ -1788,7 +1938,23 @@ function updateCalc() {
     }
   } else if (ft === '할부') {
     const down = parseFloat(String(p.down_payment).replace(/,/g,'')) || 0;
-    const residualPct = parseFloat(document.getElementById('calc-residual-pct')?.value || '0');
+    const residualPctEl = document.getElementById('calc-residual-pct');
+
+    // 최대 유예금 계산 (엑셀: ROUNDDOWN(RV * 110%, 2))
+    const maxRVInst = getMaxRV(p.sel_brand || '', p.sel_series || '', p.reg_date ? p.reg_date.replace(/\./g,'-') : '', period);
+    const maxLabelInst = document.getElementById('calc-max-rv');
+    if (maxRVInst) {
+      const maxPctInst = Math.round(Math.floor(maxRVInst * 1.1 * 100) / 100 * 100);
+      if (maxLabelInst) maxLabelInst.textContent = `최대 ${maxPctInst}%`;
+      if (residualPctEl) {
+        residualPctEl.max = maxPctInst;
+        if (parseFloat(residualPctEl.value) > maxPctInst) residualPctEl.value = maxPctInst;
+      }
+    } else {
+      if (maxLabelInst) maxLabelInst.textContent = '';
+    }
+
+    const residualPct = parseFloat(residualPctEl?.value || '0');
     const result = calcInstMonthly(orig, 0, down, residualPct, period);
 
     const rateEl = document.getElementById('calc-rate-disp');
@@ -1820,6 +1986,9 @@ function updateCalc() {
   addPage();
   document.getElementById('downloadModal').addEventListener('click', function(e) {
     if (e.target === this) closeDownloadModal();
+  });
+  document.getElementById('loadListModal').addEventListener('click', function(e) {
+    if (e.target === this) closeLoadListModal();
   });
 })();
 </script>
