@@ -85,21 +85,33 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 #preview-wrap{display:none;background:white;border-radius:0 0 12px 12px;overflow:hidden;}
 #preview-wrap.show{display:block;}
 #preview-inner{padding:28px 28px 20px;}
-.pv-header{text-align:center;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid #eee;}
-.pv-header h1{font-size:13px;font-weight:400;letter-spacing:3px;color:#1a1a1a;margin-bottom:3px;}
-.pv-header p{font-size:9px;color:#aaa;letter-spacing:2px;}
-.pv-header .pv-date{font-size:9px;color:#bbb;margin-top:6px;}
-.pv-section{margin-bottom:16px;}
-.pv-section-title{font-size:8px;font-weight:700;letter-spacing:2px;color:#1a1a1a;border-bottom:1.5px solid #1a1a1a;padding-bottom:4px;margin-bottom:8px;}
-.pv-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #f5f5f5;}
+.pv-wrap{background:white;overflow:hidden;}
+.pv-header{background:#1a1a1a;padding:20px 20px 18px;}
+.pv-logo-row{display:flex;align-items:flex-start;justify-content:space-between;}
+.pv-brand-label{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:3px;}
+.pv-doc-title{font-size:13px;color:white;letter-spacing:2px;}
+.pv-doc-date{font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;}
+.pv-customer-row{margin-top:16px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,0.12);display:flex;justify-content:space-between;align-items:flex-end;}
+.pv-customer-label{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-bottom:3px;}
+.pv-customer-name{font-size:18px;color:white;font-weight:400;}
+.pv-staff-info{font-size:12px;color:rgba(255,255,255,0.65);text-align:right;line-height:1.6;}
+.pv-body{padding:18px 18px 14px;}
+.pv-section-title{font-size:10px;font-weight:700;letter-spacing:2px;color:#1a1a1a;border-bottom:1.5px solid #1a1a1a;padding-bottom:6px;margin-bottom:11px;}
+.pv-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid #f0f0f0;}
 .pv-row:last-child{border-bottom:none;}
-.pv-key{font-size:10px;color:#999;}
-.pv-val{font-size:10px;color:#1a1a1a;font-weight:500;text-align:right;max-width:62%;}
-.pv-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-top:1.5px solid #1a1a1a;margin-top:8px;}
-.pv-total-key{font-size:12px;font-weight:700;color:#1a1a1a;}
-.pv-total-val{font-size:17px;font-weight:300;color:#1a1a1a;}
-.pv-footer{margin-top:18px;padding-top:12px;border-top:1px solid #eee;text-align:center;font-size:9px;color:#bbb;line-height:1.9;}
-.pv-notice{margin-top:12px;padding:9px 11px;background:#f9f9f9;border-radius:6px;font-size:8px;color:#aaa;line-height:1.7;}
+.pv-key{font-size:13px;color:#888;}
+.pv-val{font-size:13px;color:#1a1a1a;font-weight:500;text-align:right;max-width:60%;}
+.pv-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin-bottom:16px;}
+.pv-total-wrap{padding:12px 0 14px;border-top:1.5px solid #1a1a1a;margin-top:6px;}
+.pv-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;}
+.pv-total-key{font-size:14px;color:#888;}
+.pv-total-val{font-size:14px;color:#888;}
+.pv-monthly-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 0;border-top:0.5px solid #eee;margin-top:4px;}
+.pv-monthly-key{font-size:15px;font-weight:500;color:#1a1a1a;}
+.pv-monthly-val{font-size:24px;font-weight:300;color:#1a1a1a;}
+.pv-notice{margin-top:14px;padding:11px 13px;background:#f9f9f9;border-radius:8px;font-size:11px;color:#aaa;line-height:1.7;}
+.pv-footer{padding:13px 18px;border-top:0.5px solid #eee;text-align:center;font-size:11px;color:#bbb;line-height:1.9;}
+.pv-logo{width:48px;height:48px;object-fit:contain;}
 .preview-actions{display:flex;gap:8px;padding:14px 20px;background:#f5f5f5;}
 
 /* ── 금융리스/운용리스/할부 미리보기 전용 래퍼 ── */
@@ -1510,10 +1522,21 @@ function showPreview(type) {
     const year = document.getElementById('c-year').value||'—';
     const reg = document.getElementById('c-regdate').value||'—';
     const mile = document.getElementById('c-mileage').value;
-    html = pvHeader(branch,staff,phone,customer,td,'현금 구매') +
-      pvSection('VEHICLE INFO', [['차량 모델',model],['연식',year+'년형'],['최초등록일',reg],['주행거리',mile?Number(mile).toLocaleString()+' km':'—']]) +
-      pvSection('PRICE INFO', [['차량 가격',fmt(d.price)],['취득세',fmt(d.tax)],['공채비용',d.bond?fmt(d.bond):'—'],['기타 등록비용',d.misc!==0?fmt(d.misc):'—'],['탁송료',d.delivery?fmt(d.delivery):'—']]) +
-      pvTotal('총 구입 비용', fmt(d.total)) + pvNotice() + pvFooter(branch,staff,phone);
+    const brand_c = document.getElementById('c-vs-brand')?.value || 'BMW';
+    html = `<div class="pv-wrap">` +
+      pvHeader(branch, staff, phone, customer, td, '현금 구매 견적서', brand_c) +
+      `<div class="pv-body">` +
+      pvSection2col(
+        'VEHICLE',
+        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']],
+        'PRICE',
+        [['차량가격', fmt(d.price)], ['취득세', fmt(d.tax)], ['공채', d.bond ? fmt(d.bond) : '—'], ['기타', d.misc !== 0 ? fmt(d.misc) : '—'], ['탁송료', d.delivery ? fmt(d.delivery) : '—']]
+      ) +
+      pvTotal('총 구입 비용', fmt(d.total), fmt(d.total) + '원') +
+      pvNotice() +
+      `</div>` +
+      pvFooter(branch, staff, phone) +
+      `</div>`;
     wrapId = 'preview-wrap'; innerId = 'preview-inner';
   } else if (type === 'lease_fin') {
     const d = calcLF();
@@ -1534,61 +1557,30 @@ function showPreview(type) {
     const delivery = d.delivery > 0 ? fmt(d.delivery) : '(불포함)';
     const misc = d.misc !== 0 ? fmt(d.misc) : '(불포함)';
 
-    html = `<div class="pv-header">
-      <h1>BMW Financial Services Korea</h1>
-      <p style="font-size:13px;font-weight:400;letter-spacing:2px;margin-top:4px;">BPS 금융리스 견적서</p>
-      <div class="pv-date">${td}</div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">견적 정보</div>
-      <div class="pv-row"><span class="pv-key">딜러</span><span class="pv-val">도이치모터스</span></div>
-      <div class="pv-row"><span class="pv-key">전시장</span><span class="pv-val">${branch}</span></div>
-      <div class="pv-row"><span class="pv-key">담당자</span><span class="pv-val">${staff}</span></div>
-      <div class="pv-row"><span class="pv-key">담당자 연락처</span><span class="pv-val">${phone}</span></div>
-      <div class="pv-row"><span class="pv-key">F&I 담당자</span><span class="pv-val">${fni}</span></div>
-      ${fniPhone ? `<div class="pv-row"><span class="pv-key">F&I 연락처</span><span class="pv-val">${fniPhone}</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">차량 정보</div>
-      <div class="pv-row"><span class="pv-key">차량 모델명</span><span class="pv-val">${model}</span></div>
-      <div class="pv-row"><span class="pv-key">연식</span><span class="pv-val">${year}년형</span></div>
-      <div class="pv-row"><span class="pv-key">차량 등록일</span><span class="pv-val">${reg}</span></div>
-      <div class="pv-row"><span class="pv-key">배기량</span><span class="pv-val">${cc} cc</span></div>
-      <div class="pv-row"><span class="pv-key">차량 운행거리</span><span class="pv-val">${mile ? Number(mile).toLocaleString() + ' km' : '—'}</span></div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">가격 정보</div>
-      <div class="pv-row"><span class="pv-key">차량 가격</span><span class="pv-val">${fmt(d.orig)}</span></div>
-      ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
-      <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">(포함)</span></div>
-      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">탁송료</span><span class="pv-val">${delivery}</span></div>
-      <div class="pv-row"><span class="pv-key">기타 등록비용</span><span class="pv-val">${misc}</span></div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">금융 정보</div>
-      <div class="pv-row"><span class="pv-key">금융사</span><span class="pv-val">BMW Financial Services Korea</span></div>
-      <div class="pv-row"><span class="pv-key">금융 상품명</span><span class="pv-val">${productName}</span></div>
-      <div class="pv-row"><span class="pv-key">대출 신청금액</span><span class="pv-val">${fmt(d.loanAmt)}</span></div>
-      <div class="pv-row"><span class="pv-key">선납금</span><span class="pv-val">${d.deposit > 0 ? fmt(d.deposit) : '없음'}</span></div>
-      <div class="pv-row"><span class="pv-key">유예금</span><span class="pv-val">${fmt(d.residual)} (${d.residualPct}%)</span></div>
-      <div class="pv-row"><span class="pv-key">계약 기간</span><span class="pv-val">${d.period}개월</span></div>
-      <div class="pv-row"><span class="pv-key">이자율</span><span class="pv-val">${(d.rate * 100).toFixed(2)}%</span></div>
-    </div>
-    <div class="pv-total-row">
-      <span class="pv-total-key">월 납입금</span>
-      <span class="pv-total-val">${d.monthly > 0 ? fmtN(d.monthly) + ' 원/월' : '—'}</span>
-    </div>
-    <div class="pv-notice">
-      ※ 중도해지시 위약금: 미회수원금 × 규정손해배상금율<br>
-      ※ 자기차량 손해 보험 가입 및 질권설정 필수<br>
-      ※ 보험료, 과태료, 정비료 및 환경개선부담금 등은 고객 부담<br>
-      ※ 해당 금융 상품은 별도 공지 없이 변경될 수 있습니다<br>
-      ※ 본 견적서는 견적일로부터 5일간 유효합니다
-    </div>
-    <div class="pv-footer">도이치모터스 ${branch}<br>${staff} · ${phone}${fni ? '<br>F&I ' + fni + (fniPhone ? ' · ' + fniPhone : '') : ''}</div>`;
+    const brand_lf = document.getElementById('lf-vs-brand')?.value || 'BMW';
+    html = `<div class="pv-wrap">` +
+      pvHeader(branch, staff, phone, customer, td, '금융리스 견적서', brand_lf) +
+      `<div class="pv-body">` +
+      pvSection2col(
+        'VEHICLE',
+        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['배기량', cc+' cc'], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']],
+        'PRICE',
+        [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', '(포함)'], ['공채', d.bond > 0 ? fmt(d.bond) : '—'], ['탁송료', delivery], ['기타', misc]]
+      ) +
+      pvSection('FINANCE', [
+        ['금융사', 'BMW Financial Services Korea'],
+        ['상품', productName],
+        ['대출금액', fmt(d.loanAmt)],
+        ['선납금', d.deposit > 0 ? fmt(d.deposit) : '없음'],
+        ['유예금', fmt(d.residual)+' ('+d.residualPct+'%)'],
+        ['계약기간', d.period+'개월'],
+        ['이자율', (d.rate * 100).toFixed(2)+'%'],
+      ]) +
+      pvTotal('계약 발생 납입금', fmt(d.deposit)+'원', fmtN(d.monthly)+'원/월') +
+      pvNotice(true) +
+      `</div>` +
+      pvFooter(branch, staff, phone, fni ? 'F&I '+fni+(fniPhone ? ' · '+fniPhone : '') : '') +
+      `</div>`;
     wrapId = 'preview-wrap-lf'; innerId = 'preview-inner-lf';
   
   } else if (type === 'lease_op') {
@@ -1608,64 +1600,33 @@ function showPreview(type) {
     const demoLabel = document.getElementById('lo-demo').options[document.getElementById('lo-demo').selectedIndex].text;
     const depositLabel = d.product === 'prepaid' ? '선납금' : '보증금';
 
-    html = `<div class="pv-header">
-      <h1>BMW Financial Services Korea</h1>
-      <p style="font-size:13px;font-weight:400;letter-spacing:2px;margin-top:4px;">BPS 운용리스 견적서</p>
-      <div class="pv-date">${td}</div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">견적 정보</div>
-      <div class="pv-row"><span class="pv-key">딜러</span><span class="pv-val">도이치모터스</span></div>
-      <div class="pv-row"><span class="pv-key">전시장</span><span class="pv-val">${branch}</span></div>
-      <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
-      <div class="pv-row"><span class="pv-key">담당자</span><span class="pv-val">${staff}</span></div>
-      <div class="pv-row"><span class="pv-key">담당자 연락처</span><span class="pv-val">${phone}</span></div>
-      <div class="pv-row"><span class="pv-key">F&I 담당자</span><span class="pv-val">${fni}</span></div>
-      ${fniPhone ? `<div class="pv-row"><span class="pv-key">F&I 연락처</span><span class="pv-val">${fniPhone}</span></div>` : ''}
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">차량 정보</div>
-      <div class="pv-row"><span class="pv-key">차량 모델명</span><span class="pv-val">${model}</span></div>
-      <div class="pv-row"><span class="pv-key">연식</span><span class="pv-val">${year}년형</span></div>
-      <div class="pv-row"><span class="pv-key">차량 등록일</span><span class="pv-val">${reg}</span></div>
-      <div class="pv-row"><span class="pv-key">차량 운행거리</span><span class="pv-val">${mile ? Number(mile).toLocaleString() + ' km' : '—'}</span></div>
-      <div class="pv-row"><span class="pv-key">계약 주행거리</span><span class="pv-val">20,000 km</span></div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">가격 정보</div>
-      <div class="pv-row"><span class="pv-key">차량 가격</span><span class="pv-val">${fmt(d.orig)}</span></div>
-      ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
-      <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">${d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)}</span></div>
-      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
-      ${(d.misc + d.delivery) !== 0 ? `<div class="pv-row"><span class="pv-key">기타/탁송비용</span><span class="pv-val">${fmt(d.misc + d.delivery)}</span></div>` : ''}
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">금융 정보</div>
-      <div class="pv-row"><span class="pv-key">금융사</span><span class="pv-val">BMW Financial Services Korea</span></div>
-      <div class="pv-row"><span class="pv-key">Demo 여부</span><span class="pv-val">${demoLabel}</span></div>
-      <div class="pv-row"><span class="pv-key">금융 상품명</span><span class="pv-val">${productName}</span></div>
-      <div class="pv-row"><span class="pv-key">대출 신청금액</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
-      <div class="pv-row"><span class="pv-key">${depositLabel}</span><span class="pv-val">${fmt(d.deposit)} (${d.depositPct}%)</span></div>
-      <div class="pv-row"><span class="pv-key">잔존가치</span><span class="pv-val">${fmt(d.residual)} (${d.residualPct}%)</span></div>
-      <div class="pv-row"><span class="pv-key">계약 기간</span><span class="pv-val">${d.period}개월</span></div>
-      <div class="pv-row"><span class="pv-key">고객공지이자율</span><span class="pv-val">${(d.irr * 100).toFixed(2)}%</span></div>
-      <div class="pv-row"><span class="pv-key">계약 발생 납입금</span><span class="pv-val">${fmt(d.initPayment)}</span></div>
-      ${d.taxInclude === 1 ? `<div class="pv-row"><span class="pv-key">자동차세 (월)</span><span class="pv-val">${fmtN(d.monthlyCarTax)} 원/월</span></div>` : ''}
-    </div>
-    <div class="pv-total-row">
-      <span class="pv-total-key">월 납입금</span>
-      <span class="pv-total-val">${d.monthly > 0 ? fmtN(d.monthly) + ' 원/월' : '—'}</span>
-    </div>
-    <div class="pv-notice">
-      ※ 중도해지손해배상금 (차량반납 시): 미회수원금 × 40% × (잔여/계약 개월수)<br>
-      ※ 규정손해배상금 (차량매입 시): 미회수원금 × 15% × (잔여/계약 개월수)<br>
-      ※ 자기차량 손해 보험 가입 및 질권설정 필수<br>
-      ※ 보험료, 과태료, 정비료 등은 고객 부담<br>
-      ※ 계약 운행거리 초과 시 km당 300원 초과수수료 부과<br>
-      ※ 본 견적서는 견적일로부터 5일간 유효합니다
-    </div>
-    <div class="pv-footer">도이치모터스 ${branch}<br>${staff} · ${phone}${fni ? '<br>F&I ' + fni + (fniPhone ? ' · ' + fniPhone : '') : ''}</div>`;
+    const brand_lo = document.getElementById('lo-vs-brand')?.value || 'BMW';
+    const loFinanceRows = [
+      ['금융사', 'BMW Financial Services Korea'],
+      ['Demo 여부', demoLabel],
+      ['상품', productName],
+      ['대출금액', fmt(d.finalPrice)],
+      [depositLabel, fmt(d.deposit)+' ('+d.depositPct+'%)'],
+      ['잔존가치', fmt(d.residual)+' ('+d.residualPct+'%)'],
+      ['계약기간', d.period+'개월'],
+      ['이자율', (d.irr * 100).toFixed(2)+'%'],
+    ];
+    if (d.taxInclude === 1) loFinanceRows.push(['자동차세(월)', fmtN(d.monthlyCarTax)+'원/월']);
+    html = `<div class="pv-wrap">` +
+      pvHeader(branch, staff, phone, customer, td, '운용리스 견적서', brand_lo) +
+      `<div class="pv-body">` +
+      pvSection2col(
+        'VEHICLE',
+        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—'], ['계약주행', '20,000 km']],
+        'PRICE',
+        [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)], ...(d.bond > 0 ? [['공채', fmt(d.bond)]] : []), ...((d.misc + d.delivery) !== 0 ? [['기타/탁송', fmt(d.misc + d.delivery)]] : [])]
+      ) +
+      pvSection('FINANCE', loFinanceRows) +
+      pvTotal('계약 발생 납입금', fmt(d.initPayment)+'원', fmtN(d.monthly)+'원/월') +
+      pvNotice(true) +
+      `</div>` +
+      pvFooter(branch, staff, phone, fni ? 'F&I '+fni+(fniPhone ? ' · '+fniPhone : '') : '') +
+      `</div>`;
     wrapId = 'preview-wrap-lo'; innerId = 'preview-inner-lo';
   } else {
     const d = calcInst();
@@ -1682,59 +1643,34 @@ function showPreview(type) {
     const mile = document.getElementById('inst-mileage').value;
     const productName = '2026 BPS 할부금융 표준형 (신규)';
 
-    html = `<div class="pv-header">
-      <h1>BMW Financial Services Korea</h1>
-      <p style="font-size:13px;font-weight:400;letter-spacing:2px;margin-top:4px;">BPS 할부금융 견적서</p>
-      <div class="pv-date">${td}</div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">견적 정보</div>
-      <div class="pv-row"><span class="pv-key">딜러</span><span class="pv-val">도이치모터스</span></div>
-      <div class="pv-row"><span class="pv-key">전시장</span><span class="pv-val">${branch}</span></div>
-      <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
-      <div class="pv-row"><span class="pv-key">담당자</span><span class="pv-val">${staff}</span></div>
-      <div class="pv-row"><span class="pv-key">담당자 연락처</span><span class="pv-val">${phone}</span></div>
-      <div class="pv-row"><span class="pv-key">F&I 담당자</span><span class="pv-val">${fni}</span></div>
-      ${fniPhone ? `<div class="pv-row"><span class="pv-key">F&I 연락처</span><span class="pv-val">${fniPhone}</span></div>` : ''}
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">차량 정보</div>
-      <div class="pv-row"><span class="pv-key">차량 모델명</span><span class="pv-val">${model}</span></div>
-      <div class="pv-row"><span class="pv-key">연식</span><span class="pv-val">${year}년형</span></div>
-      <div class="pv-row"><span class="pv-key">차량 등록일</span><span class="pv-val">${reg}</span></div>
-      <div class="pv-row"><span class="pv-key">차량 운행거리</span><span class="pv-val">${mile ? Number(mile).toLocaleString() + ' km' : '—'}</span></div>
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">가격 정보</div>
-      <div class="pv-row"><span class="pv-key">차량 가격</span><span class="pv-val">${fmt(d.orig)}</span></div>
-      ${d.discount > 0 ? `<div class="pv-row"><span class="pv-key">할인 금액</span><span class="pv-val">-${fmt(d.discount)}</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">최종 구입 가격</span><span class="pv-val">${fmt(d.finalPrice)}</span></div>
-      <div class="pv-row"><span class="pv-key">취득세</span><span class="pv-val">${fmt(d.tax)}</span></div>
-      ${d.bond > 0 ? `<div class="pv-row"><span class="pv-key">공채비용</span><span class="pv-val">${fmt(d.bond)}</span></div>` : ''}
-      ${d.down > 0 ? `<div class="pv-row"><span class="pv-key">선수금</span><span class="pv-val">${fmt(d.down)}</span></div>` : ''}
-    </div>
-    <div class="pv-section">
-      <div class="pv-section-title">금융 정보</div>
-      <div class="pv-row"><span class="pv-key">금융사</span><span class="pv-val">BMW Financial Services Korea</span></div>
-      <div class="pv-row"><span class="pv-key">금융 상품명</span><span class="pv-val">${productName}</span></div>
-      <div class="pv-row"><span class="pv-key">대출 신청금액</span><span class="pv-val">${fmt(d.loanAmt)}</span></div>
-      ${d.residual > 0 ? `<div class="pv-row"><span class="pv-key">상환 유예금</span><span class="pv-val">${fmt(d.residual)} (${d.residualPct}%)</span></div>` : ''}
-      <div class="pv-row"><span class="pv-key">계약 기간</span><span class="pv-val">${d.period}개월</span></div>
-      <div class="pv-row"><span class="pv-key">이자율</span><span class="pv-val">${(d.rate * 100).toFixed(2)}%</span></div>
-      <div class="pv-row"><span class="pv-key">계약 발생 납입금</span><span class="pv-val">${fmt(d.initPayment)}</span></div>
-    </div>
-    <div class="pv-total-row">
-      <span class="pv-total-key">월 납입금</span>
-      <span class="pv-total-val">${d.monthly > 0 ? fmtN(d.monthly) + ' 원/월' : '—'}</span>
-    </div>
-    <div class="pv-notice">
-      ※ 중도상환 수수료: ${d.period}개월 이내 중도상환 원금 × 중도상환수수료율<br>
-      ※ 자기차량 손해 보험 가입 필수<br>
-      ※ 보험료, 과태료, 정비료 등은 고객 부담<br>
-      ※ 해당 금융 상품은 별도 공지 없이 변경될 수 있습니다<br>
-      ※ 본 견적서는 견적일로부터 5일간 유효합니다
-    </div>
-    <div class="pv-footer">도이치모터스 ${branch}<br>${staff} · ${phone}${fni ? '<br>F&I ' + fni + (fniPhone ? ' · ' + fniPhone : '') : ''}</div>`;
+    const brand_inst = document.getElementById('inst-vs-brand')?.value || 'BMW';
+    const instPriceRows = [['차량가격', fmt(d.orig)]];
+    if (d.discount > 0) instPriceRows.push(['할인', '-'+fmt(d.discount)]);
+    instPriceRows.push(['최종가격', fmt(d.finalPrice)], ['취득세', fmt(d.tax)]);
+    if (d.bond > 0) instPriceRows.push(['공채', fmt(d.bond)]);
+    if (d.down > 0) instPriceRows.push(['선수금', fmt(d.down)]);
+    const instFinanceRows = [
+      ['금융사', 'BMW Financial Services Korea'],
+      ['상품', productName],
+      ['대출금액', fmt(d.loanAmt)],
+      ...(d.residual > 0 ? [['유예금', fmt(d.residual)+' ('+d.residualPct+'%)']] : []),
+      ['계약기간', d.period+'개월'],
+      ['이자율', (d.rate * 100).toFixed(2)+'%'],
+    ];
+    html = `<div class="pv-wrap">` +
+      pvHeader(branch, staff, phone, customer, td, '할부금융 견적서', brand_inst) +
+      `<div class="pv-body">` +
+      pvSection2col(
+        'VEHICLE',
+        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']],
+        'PRICE', instPriceRows
+      ) +
+      pvSection('FINANCE', instFinanceRows) +
+      pvTotal('계약 발생 납입금', fmt(d.initPayment)+'원', fmtN(d.monthly)+'원/월') +
+      pvNotice(true) +
+      `</div>` +
+      pvFooter(branch, staff, phone, fni ? 'F&I '+fni+(fniPhone ? ' · '+fniPhone : '') : '') +
+      `</div>`;
     wrapId = 'preview-wrap-inst'; innerId = 'preview-inner-inst';
   }
 
@@ -1914,35 +1850,65 @@ async function saveImage(tab) {
 }
 
 // ── 견적서 HTML 헬퍼 ──
-function pvHeader(branch,staff,phone,customer,date,type) {
-  return `<div class="pv-header">
-    <h1>BMW / MINI 인증중고차</h1>
-    <p>${type} 견적서 · ${type.toUpperCase()} QUOTE</p>
-    <div class="pv-date">${date}</div>
-  </div>
-  <div class="pv-section">
-    <div class="pv-section-title">DEALER INFO</div>
-    <div class="pv-row"><span class="pv-key">딜러</span><span class="pv-val">도이치모터스 ${branch}</span></div>
-    <div class="pv-row"><span class="pv-key">고객명</span><span class="pv-val">${customer}</span></div>
-    <div class="pv-row"><span class="pv-key">담당자</span><span class="pv-val">${staff}</span></div>
-    <div class="pv-row"><span class="pv-key">연락처</span><span class="pv-val">${phone}</span></div>
+function pvHeader(branch, staff, phone, customer, date, docType, brand) {
+  const logo = (brand === 'MINI')
+    ? '<img src="mini-logo.png" class="pv-logo" alt="MINI">'
+    : '<img src="bmw-logo.png" class="pv-logo" alt="BMW">';
+  return `
+  <div class="pv-header">
+    <div class="pv-logo-row">
+      ${logo}
+      <div style="text-align:right;">
+        <div class="pv-brand-label">DEUTSCHE MOTORS · BPS</div>
+        <div class="pv-doc-title">${docType}</div>
+        <div class="pv-doc-date">${date}</div>
+      </div>
+    </div>
+    <div class="pv-customer-row">
+      <div>
+        <div class="pv-customer-label">CUSTOMER</div>
+        <div class="pv-customer-name">${customer} 고객님</div>
+      </div>
+      <div class="pv-staff-info">${staff}${phone ? '<br>' + phone : ''}</div>
+    </div>
   </div>`;
 }
 function pvSection(title, rows) {
-  return `<div class="pv-section"><div class="pv-section-title">${title}</div>
-    ${rows.map(([k,v])=>`<div class="pv-row"><span class="pv-key">${k}</span><span class="pv-val">${v}</span></div>`).join('')}
+  const rowsHtml = rows.map(([k, v]) =>
+    `<div class="pv-row"><span class="pv-key">${k}</span><span class="pv-val">${v}</span></div>`
+  ).join('');
+  return `<div style="margin-bottom:16px;"><div class="pv-section-title">${title}</div>${rowsHtml}</div>`;
+}
+function pvSection2col(title1, rows1, title2, rows2) {
+  const col1 = rows1.map(([k, v]) =>
+    `<div class="pv-row"><span class="pv-key">${k}</span><span class="pv-val">${v}</span></div>`
+  ).join('');
+  const col2 = rows2.map(([k, v]) =>
+    `<div class="pv-row"><span class="pv-key">${k}</span><span class="pv-val">${v}</span></div>`
+  ).join('');
+  return `
+  <div class="pv-2col">
+    <div><div class="pv-section-title">${title1}</div>${col1}</div>
+    <div><div class="pv-section-title">${title2}</div>${col2}</div>
   </div>`;
 }
-function pvTotal(label, val) {
-  return `<div class="pv-total-row"><span class="pv-total-key">${label}</span><span class="pv-total-val">${val}</span></div>`;
+function pvTotal(initLabel, initVal, monthlyVal) {
+  return `
+  <div class="pv-total-wrap">
+    ${initLabel ? `<div class="pv-total-row"><span class="pv-total-key">${initLabel}</span><span class="pv-total-val">${initVal}</span></div>` : ''}
+    <div class="pv-monthly-row">
+      <span class="pv-monthly-key">월 납입금</span>
+      <span class="pv-monthly-val">${monthlyVal}</span>
+    </div>
+  </div>`;
 }
 function pvNotice(isFinance) {
   return `<div class="pv-notice">${isFinance
     ? '본 견적은 예상 납입금이며, 실제 금액은 금융사 심사 결과에 따라 변동될 수 있습니다.<br>금리, 잔존가치 등 세부 조건은 담당자에게 문의해주세요.'
     : '본 견적은 발행일 기준이며, 시세에 따라 변동될 수 있습니다.<br>취득세·공채비용은 등록 지역 및 차량에 따라 달라질 수 있습니다.'}</div>`;
 }
-function pvFooter(branch,staff,phone) {
-  return `<div class="pv-footer">도이치모터스 ${branch}<br>${staff} · ${phone}</div>`;
+function pvFooter(branch, staff, phone, extra) {
+  return `<div class="pv-footer">도이치모터스 · ${branch}<br>${staff}${phone ? ' · ' + phone : ''}${extra ? '<br>' + extra : ''}</div>`;
 }
 
 // ── 설정 (MY INFO) ──────────────────────────────────

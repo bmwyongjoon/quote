@@ -1,5 +1,5 @@
 // ─── 버전 관리 ───────────────────────────────────────
-const VERSION = 'bps-quote-v22';
+const VERSION = 'bps-quote-v23';
 // ─────────────────────────────────────────────────────
 
 const FILES = [
@@ -9,6 +9,8 @@ const FILES = [
   '/quote/rates.json',
   '/quote/icon-192.png',
   '/quote/icon-512.png',
+  '/quote/bmw-logo.png',
+  '/quote/mini-logo.png',
 ];
 
 // 설치: 캐시 저장
