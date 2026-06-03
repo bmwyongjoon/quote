@@ -525,7 +525,6 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzkG2BB5f6ttWkVwaVGuAwA
 // ── 상태 관리 ──
 let pages = [];
 let currentPage = 0;
-let lastImportStatus = '';
 let lastSheetStatus = '';
 
 function defaultPageData() {
@@ -810,55 +809,17 @@ function setFinanceType(val) {
   renderPreview();
 }
 
-// ── 견적서 앱 불러오기 ──
-function importFromIndex(type) {
-  const keyMap = { lf: 'bps_jeisiyo_lf', inst: 'bps_jeisiyo_inst', lo: 'bps_jeisiyo_lo' };
-  const raw = localStorage.getItem(keyMap[type]);
-  if (!raw) {
-    lastImportStatus = '저장된 견적이 없습니다. 견적서 앱에서 먼저 계산 후 다시 시도해주세요.';
-    renderInputPanel();
-    return;
-  }
-  try {
-    const data = JSON.parse(raw);
-    const p = pages[currentPage];
-    if (data.car_name)      p.car_name        = data.car_name;
-    if (data.car_price)     p.car_price       = data.car_price;
-    if (data.finance_type)  p.finance_type    = data.finance_type;
-    p.monthly_payment = data.monthly_payment  || '';
-    p.months          = data.months           || '60';
-    p.down_payment    = data.down_payment     || '0';
-    p.deferred        = data.deferred         || '';
-    if (data.mileage)   p.mileage   = data.mileage;
-    if (data.year) {
-      const y = String(data.year);
-      p.year = y.length === 4 ? y.slice(2) : y;
-    }
-    if (data.reg_date)  p.reg_date  = data.reg_date;
-    if (data.sel_brand) p.sel_brand = data.sel_brand;
-    if (data.sel_year)  p.sel_year  = String(data.sel_year);
-    if (data.sel_series)p.sel_series= data.sel_series;
-    if (data.sel_trim)  p.sel_trim  = data.sel_trim;
-    const typeLabel = { lf:'금융리스', inst:'할부', lo:'운용리스' }[type];
-    lastImportStatus = `✓ ${typeLabel} 견적을 불러왔습니다.`;
-    renderAll();
-  } catch(e) {
-    lastImportStatus = '불러오기 오류: ' + e.message;
-    renderInputPanel();
-  }
-}
-
 // ── 구글 시트 저장/불러오기 ──
-async function saveToSheet() {
+function saveToSheet() {
   const p = pages[currentPage];
   if (!p.car_number) {
     alert('차량번호를 먼저 입력해주세요.');
     return;
   }
   const warrantyDisplay = p.warranty === '직접입력' ? (p.warranty_custom || '') : p.warranty;
-  const params = new URLSearchParams({
+  const saveData = {
     action: 'save',
-    car_number: p.car_number,
+    car_number:      p.car_number,
     brand:           p.sel_brand        || '',
     year:            p.year             || '',
     series:          p.sel_series       || '',
@@ -880,24 +841,25 @@ async function saveToSheet() {
     deferred:        p.deferred         || '',
     monthly_payment: p.monthly_payment  || '',
     months:          p.months           || '',
-  });
+  };
   lastSheetStatus = '저장 중...';
   renderInputPanel();
-  try {
-    const res = await fetch(GAS_URL + '?' + params.toString());
-    const result = await res.json();
-    if (result.success) {
-      lastSheetStatus = '✓ 저장되었습니다.';
-      alert('저장되었습니다.');
-    } else {
-      lastSheetStatus = '저장 실패: ' + (result.error || result.message || '알 수 없는 오류');
-      alert(lastSheetStatus);
-    }
-  } catch(e) {
-    lastSheetStatus = '오류: ' + e.message;
-    alert('저장 중 오류: ' + e.message);
-  }
-  renderInputPanel();
+  fetch(GAS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(saveData)
+  })
+  .then(() => {
+    lastSheetStatus = '✓ 저장되었습니다.';
+    renderInputPanel();
+    alert('저장되었습니다.');
+  })
+  .catch((err) => {
+    lastSheetStatus = '저장 실패: ' + err.message;
+    renderInputPanel();
+    alert('저장 실패: ' + err.message);
+  });
 }
 
 async function loadFromSheet() {
@@ -1006,17 +968,6 @@ function renderInputPanel() {
       <div style="margin-top:8px;font-size:12px;color:${lastSheetStatus.startsWith('✓') ? '#2a7a2a' : '#888'};min-height:16px;">${lastSheetStatus}</div>
     </div>
 
-    <!-- 견적서 앱 불러오기 -->
-    <div class="panel-section">
-      <h3>견적서 앱에서 불러오기</h3>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn btn-secondary btn-sm" onclick="importFromIndex('lf')">금융리스</button>
-        <button class="btn btn-secondary btn-sm" onclick="importFromIndex('inst')">할부</button>
-        <button class="btn btn-secondary btn-sm" onclick="importFromIndex('lo')">운용리스</button>
-      </div>
-      <div id="import-status" style="margin-top:8px;font-size:12px;color:${lastImportStatus.startsWith('✓') ? '#2a7a2a' : '#888'};min-height:16px;">${lastImportStatus}</div>
-    </div>
-
     <!-- 차량 기본 정보 -->
     <div class="panel-section">
       <h3>차량 정보</h3>
@@ -1050,7 +1001,7 @@ function renderInputPanel() {
       <div class="field-row">
         <div class="field-group">
           <label>등록일</label>
-          <input type="text" value="${p.reg_date}" oninput="updateField('reg_date', this.value)" placeholder="예) 2025.06.27">
+          <input type="date" value="${p.reg_date ? p.reg_date.replace(/\./g,'-') : ''}" onchange="updateField('reg_date', this.value)">
         </div>
       </div>
     </div>
@@ -1334,7 +1285,7 @@ function renderSlide(p) {
           </tr>
           <tr>
             <td>${p.mileage ? p.mileage + ' km' : ''}</td>
-            <td>${p.year ? p.year + '년식' : ''}<br>${p.reg_date ? p.reg_date + ' 등록' : ''}</td>
+            <td>${p.year ? p.year + '년식' : ''}<br>${p.reg_date ? p.reg_date.replace(/-/g,'.') + ' 등록' : ''}</td>
             <td>- ${p.repair || ''}</td>
             <td>- ${p.accident || ''}</td>
             <td>- ${p.warranty !== '직접입력' ? (p.warranty || '') : (p.warranty_custom || '')}</td>
