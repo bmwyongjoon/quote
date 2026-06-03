@@ -1469,8 +1469,8 @@ function calcInst() {
   const residual = Math.round(finalPrice * residualPct / 100);
   document.getElementById('inst-residual-disp').value = residual > 0 ? residual.toLocaleString() : '';
 
-  // 대출 신청금액 = 최종구입가격 - 선납금
-  const loanAmt = Math.max(0, finalPrice - down);
+  // 대출 신청금액 = 최종구입가격 - 선납금 + (취득세 포함 시 취득세 추가)
+  const loanAmt = Math.max(0, finalPrice - down + (taxInclude === 1 ? tax : 0));
   // 계약 발생 납입금 = 선납금 + 공채 + (취득세 포함 여부에 따라)
   const initPayment = down + bond + (taxInclude === 1 ? tax : 0);
   document.getElementById('inst-principal-disp').value = loanAmt > 0 ? loanAmt.toLocaleString() : '';
