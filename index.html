@@ -86,32 +86,34 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 #preview-wrap.show{display:block;}
 #preview-inner{padding:28px 28px 20px;}
 .pv-wrap{background:white;overflow:hidden;}
-.pv-header{background:#1a1a1a;padding:20px 20px 18px;}
-.pv-logo-row{display:flex;align-items:flex-start;justify-content:space-between;}
-.pv-brand-label{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:3px;}
-.pv-doc-title{font-size:13px;color:white;letter-spacing:2px;}
-.pv-doc-date{font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;}
-.pv-customer-row{margin-top:16px;padding-top:16px;border-top:0.5px solid rgba(255,255,255,0.12);display:flex;justify-content:space-between;align-items:flex-end;}
-.pv-customer-label{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-bottom:3px;}
-.pv-customer-name{font-size:18px;color:white;font-weight:400;}
-.pv-staff-info{font-size:12px;color:rgba(255,255,255,0.65);text-align:right;line-height:1.6;}
-.pv-body{padding:18px 18px 14px;}
-.pv-section-title{font-size:10px;font-weight:700;letter-spacing:2px;color:#1a1a1a;border-bottom:1.5px solid #1a1a1a;padding-bottom:6px;margin-bottom:11px;}
-.pv-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid #f0f0f0;}
+.pv-header{background:white;padding:20px 20px 16px;border-bottom:2px solid #0066CC;}
+.pv-logo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.pv-logo{width:52px;height:52px;object-fit:contain;}
+.pv-title-group{text-align:right;}
+.pv-brand-label{font-size:10px;color:#999;letter-spacing:2px;margin-bottom:3px;}
+.pv-doc-title{font-size:15px;color:#0066CC;font-weight:500;letter-spacing:1px;}
+.pv-doc-date{font-size:10px;color:#bbb;margin-top:3px;}
+.pv-customer-row{display:flex;justify-content:space-between;align-items:flex-end;padding-top:12px;border-top:0.5px solid #eee;}
+.pv-customer-label{font-size:10px;color:#0066CC;letter-spacing:1px;font-weight:600;margin-bottom:2px;}
+.pv-customer-name{font-size:17px;color:#1a1a1a;font-weight:400;}
+.pv-staff-info{font-size:11px;color:#888;text-align:right;line-height:1.7;}
+.pv-body{padding:16px 18px 14px;}
+.pv-section{margin-bottom:16px;}
+.pv-section-title{font-size:10px;font-weight:700;letter-spacing:2px;color:#1a1a1a;border-bottom:1.5px solid #0066CC;padding-bottom:5px;margin-bottom:10px;}
+.pv-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid #f2f2f2;}
 .pv-row:last-child{border-bottom:none;}
-.pv-key{font-size:13px;color:#888;}
-.pv-val{font-size:13px;color:#1a1a1a;font-weight:500;text-align:right;max-width:60%;}
-.pv-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin-bottom:16px;}
-.pv-total-wrap{padding:12px 0 14px;border-top:1.5px solid #1a1a1a;margin-top:6px;}
-.pv-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;}
-.pv-total-key{font-size:14px;color:#888;}
-.pv-total-val{font-size:14px;color:#888;}
-.pv-monthly-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 0;border-top:0.5px solid #eee;margin-top:4px;}
+.pv-key{font-size:13px;color:#999;flex-shrink:0;}
+.pv-val{font-size:13px;color:#1a1a1a;font-weight:500;text-align:right;}
+.pv-fin-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;margin-bottom:16px;}
+.pv-divider{border:none;border-top:1.5px solid #1a1a1a;margin:8px 0 0;}
+.pv-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:0.5px solid #f2f2f2;}
+.pv-total-key{font-size:13px;color:#999;}
+.pv-total-val{font-size:13px;color:#1a1a1a;}
+.pv-monthly-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 2px;}
 .pv-monthly-key{font-size:15px;font-weight:500;color:#1a1a1a;}
-.pv-monthly-val{font-size:24px;font-weight:300;color:#1a1a1a;}
+.pv-monthly-val{font-size:24px;font-weight:300;color:#0066CC;}
 .pv-notice{margin-top:14px;padding:11px 13px;background:#f9f9f9;border-radius:8px;font-size:11px;color:#aaa;line-height:1.7;}
-.pv-footer{padding:13px 18px;border-top:0.5px solid #eee;text-align:center;font-size:11px;color:#bbb;line-height:1.9;}
-.pv-logo{width:48px;height:48px;object-fit:contain;}
+.pv-footer{padding:12px 18px;border-top:0.5px solid #eee;text-align:center;font-size:11px;color:#bbb;line-height:1.9;}
 .preview-actions{display:flex;gap:8px;padding:14px 20px;background:#f5f5f5;}
 
 /* ── 금융리스/운용리스/할부 미리보기 전용 래퍼 ── */
@@ -1526,13 +1528,13 @@ function showPreview(type) {
     html = `<div class="pv-wrap">` +
       pvHeader(branch, staff, phone, customer, td, '현금 구매 견적서', brand_c) +
       `<div class="pv-body">` +
-      pvSection2col(
-        'VEHICLE',
-        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']],
-        'PRICE',
-        [['차량가격', fmt(d.price)], ['취득세', fmt(d.tax)], ['공채', d.bond ? fmt(d.bond) : '—'], ['기타', d.misc !== 0 ? fmt(d.misc) : '—'], ['탁송료', d.delivery ? fmt(d.delivery) : '—']]
-      ) +
-      pvTotal('총 구입 비용', fmt(d.total), fmt(d.total) + '원') +
+      pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']]) +
+      pvSection('PRICE INFO', [['차량가격', fmt(d.price)], ['취득세', fmt(d.tax)], ['공채', d.bond ? fmt(d.bond) : '—'], ['기타', d.misc !== 0 ? fmt(d.misc) : '—'], ['탁송료', d.delivery ? fmt(d.delivery) : '—']]) +
+      `<hr class="pv-divider">
+      <div class="pv-monthly-row">
+        <span class="pv-monthly-key">총 구입 비용</span>
+        <span class="pv-monthly-val">${fmt(d.total)}원</span>
+      </div>` +
       pvNotice() +
       `</div>` +
       pvFooter(branch, staff, phone) +
@@ -1561,25 +1563,16 @@ function showPreview(type) {
     html = `<div class="pv-wrap">` +
       pvHeader(branch, staff, phone, customer, td, '금융리스 견적서', brand_lf) +
       `<div class="pv-body">` +
-      pvSection2col(
-        'VEHICLE',
-        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['배기량', cc+' cc'], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']],
-        'PRICE',
-        [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', '(포함)'], ['공채', d.bond > 0 ? fmt(d.bond) : '—'], ['탁송료', delivery], ['기타', misc]]
+      pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['배기량', cc+' cc'], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']]) +
+      pvSection('PRICE INFO', [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', '(포함)'], ['공채', d.bond > 0 ? fmt(d.bond) : '—'], ['탁송료', delivery], ['기타', misc]]) +
+      pvFinSection('FINANCIAL INFO',
+        [['금융사', 'BMW FS Korea'], ['계약기간', d.period+'개월'], ['선납금', d.deposit ? fmt(d.deposit)+'원' : '0원'], ['인지대', '지원 50%']],
+        [['상품', productName], ['이자율', d.rate ? (d.rate*100).toFixed(2)+'%' : '—'], ['유예금', d.residual ? fmt(d.residual)+'원' : '—'], ['근저당', '135,000원']]
       ) +
-      pvSection('FINANCE', [
-        ['금융사', 'BMW Financial Services Korea'],
-        ['상품', productName],
-        ['대출금액', fmt(d.loanAmt)],
-        ['선납금', d.deposit > 0 ? fmt(d.deposit) : '없음'],
-        ['유예금', fmt(d.residual)+' ('+d.residualPct+'%)'],
-        ['계약기간', d.period+'개월'],
-        ['이자율', (d.rate * 100).toFixed(2)+'%'],
-      ]) +
-      pvTotal('계약 발생 납입금', fmt(d.deposit)+'원', fmtN(d.monthly)+'원/월') +
+      pvTotal('계약 발생 납입금', fmt(d.deposit||0)+'원', fmtN(d.monthly)+'원/월') +
       pvNotice(true) +
       `</div>` +
-      pvFooter(branch, staff, phone, fni ? 'F&I '+fni+(fniPhone ? ' · '+fniPhone : '') : '') +
+      pvFooter(branch, staff, phone) +
       `</div>`;
     wrapId = 'preview-wrap-lf'; innerId = 'preview-inner-lf';
   
@@ -1601,31 +1594,19 @@ function showPreview(type) {
     const depositLabel = d.product === 'prepaid' ? '선납금' : '보증금';
 
     const brand_lo = document.getElementById('lo-vs-brand')?.value || 'BMW';
-    const loFinanceRows = [
-      ['금융사', 'BMW Financial Services Korea'],
-      ['Demo 여부', demoLabel],
-      ['상품', productName],
-      ['대출금액', fmt(d.finalPrice)],
-      [depositLabel, fmt(d.deposit)+' ('+d.depositPct+'%)'],
-      ['잔존가치', fmt(d.residual)+' ('+d.residualPct+'%)'],
-      ['계약기간', d.period+'개월'],
-      ['이자율', (d.irr * 100).toFixed(2)+'%'],
-    ];
-    if (d.taxInclude === 1) loFinanceRows.push(['자동차세(월)', fmtN(d.monthlyCarTax)+'원/월']);
     html = `<div class="pv-wrap">` +
       pvHeader(branch, staff, phone, customer, td, '운용리스 견적서', brand_lo) +
       `<div class="pv-body">` +
-      pvSection2col(
-        'VEHICLE',
-        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—'], ['계약주행', '20,000 km']],
-        'PRICE',
-        [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)], ...(d.bond > 0 ? [['공채', fmt(d.bond)]] : []), ...((d.misc + d.delivery) !== 0 ? [['기타/탁송', fmt(d.misc + d.delivery)]] : [])]
+      pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—'], ['계약주행', '20,000 km']]) +
+      pvSection('PRICE INFO', [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)], ...(d.bond > 0 ? [['공채', fmt(d.bond)]] : []), ...((d.misc + d.delivery) !== 0 ? [['기타/탁송', fmt(d.misc + d.delivery)]] : [])]) +
+      pvFinSection('FINANCIAL INFO',
+        [['상품', d.product === 'prepaid' ? '선납형' : '표준형'], ['계약기간', d.period+'개월'], [depositLabel, d.deposit ? fmt(d.deposit)+'원' : '0원'], ['고객공지이율', d.irr ? (d.irr*100).toFixed(2)+'%' : '—']],
+        [['잔존가치', d.residual ? fmt(d.residual)+'원' : '—'], ['SC커미션', d.sc ? fmt(d.sc)+'원' : '—'], ['자동차세', d.taxInclude === 1 ? fmtN(d.monthlyCarTax)+'원/월' : '미포함'], ['', '']]
       ) +
-      pvSection('FINANCE', loFinanceRows) +
       pvTotal('계약 발생 납입금', fmt(d.initPayment)+'원', fmtN(d.monthly)+'원/월') +
       pvNotice(true) +
       `</div>` +
-      pvFooter(branch, staff, phone, fni ? 'F&I '+fni+(fniPhone ? ' · '+fniPhone : '') : '') +
+      pvFooter(branch, staff, phone) +
       `</div>`;
     wrapId = 'preview-wrap-lo'; innerId = 'preview-inner-lo';
   } else {
@@ -1649,27 +1630,19 @@ function showPreview(type) {
     instPriceRows.push(['최종가격', fmt(d.finalPrice)], ['취득세', fmt(d.tax)]);
     if (d.bond > 0) instPriceRows.push(['공채', fmt(d.bond)]);
     if (d.down > 0) instPriceRows.push(['선수금', fmt(d.down)]);
-    const instFinanceRows = [
-      ['금융사', 'BMW Financial Services Korea'],
-      ['상품', productName],
-      ['대출금액', fmt(d.loanAmt)],
-      ...(d.residual > 0 ? [['유예금', fmt(d.residual)+' ('+d.residualPct+'%)']] : []),
-      ['계약기간', d.period+'개월'],
-      ['이자율', (d.rate * 100).toFixed(2)+'%'],
-    ];
     html = `<div class="pv-wrap">` +
       pvHeader(branch, staff, phone, customer, td, '할부금융 견적서', brand_inst) +
       `<div class="pv-body">` +
-      pvSection2col(
-        'VEHICLE',
-        [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']],
-        'PRICE', instPriceRows
+      pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']]) +
+      pvSection('PRICE INFO', instPriceRows) +
+      pvFinSection('FINANCIAL INFO',
+        [['상품', productName], ['계약기간', d.period+'개월'], ['선수금', d.down ? fmt(d.down)+'원' : '0원'], ['이자율', d.rate ? (d.rate*100).toFixed(2)+'%' : '—']],
+        [['할부원금', d.loanAmt ? fmt(d.loanAmt)+'원' : '—'], ['유예금', d.residual ? fmt(d.residual)+'원' : '0원'], ['', ''], ['', '']]
       ) +
-      pvSection('FINANCE', instFinanceRows) +
-      pvTotal('계약 발생 납입금', fmt(d.initPayment)+'원', fmtN(d.monthly)+'원/월') +
+      pvTotal('계약 발생 납입금', fmt(d.initPayment||0)+'원', fmtN(d.monthly)+'원/월') +
       pvNotice(true) +
       `</div>` +
-      pvFooter(branch, staff, phone, fni ? 'F&I '+fni+(fniPhone ? ' · '+fniPhone : '') : '') +
+      pvFooter(branch, staff, phone) +
       `</div>`;
     wrapId = 'preview-wrap-inst'; innerId = 'preview-inner-inst';
   }
@@ -1851,14 +1824,13 @@ async function saveImage(tab) {
 
 // ── 견적서 HTML 헬퍼 ──
 function pvHeader(branch, staff, phone, customer, date, docType, brand) {
-  const logo = (brand === 'MINI')
-    ? '<img src="mini-logo.png" class="pv-logo" alt="MINI">'
-    : '<img src="bmw-logo.png" class="pv-logo" alt="BMW">';
+  const logoSrc = (brand === 'MINI') ? 'mini-logo.png' : 'bmw-logo.png';
+  const logoAlt = (brand === 'MINI') ? 'MINI' : 'BMW';
   return `
   <div class="pv-header">
     <div class="pv-logo-row">
-      ${logo}
-      <div style="text-align:right;">
+      <img src="${logoSrc}" class="pv-logo" alt="${logoAlt}">
+      <div class="pv-title-group">
         <div class="pv-brand-label">DEUTSCHE MOTORS · BPS</div>
         <div class="pv-doc-title">${docType}</div>
         <div class="pv-doc-date">${date}</div>
@@ -1877,29 +1849,31 @@ function pvSection(title, rows) {
   const rowsHtml = rows.map(([k, v]) =>
     `<div class="pv-row"><span class="pv-key">${k}</span><span class="pv-val">${v}</span></div>`
   ).join('');
-  return `<div style="margin-bottom:16px;"><div class="pv-section-title">${title}</div>${rowsHtml}</div>`;
+  return `<div class="pv-section"><div class="pv-section-title">${title}</div>${rowsHtml}</div>`;
 }
-function pvSection2col(title1, rows1, title2, rows2) {
-  const col1 = rows1.map(([k, v]) =>
+function pvFinSection(title, leftRows, rightRows) {
+  const left = leftRows.map(([k, v]) =>
     `<div class="pv-row"><span class="pv-key">${k}</span><span class="pv-val">${v}</span></div>`
   ).join('');
-  const col2 = rows2.map(([k, v]) =>
+  const right = rightRows.map(([k, v]) =>
     `<div class="pv-row"><span class="pv-key">${k}</span><span class="pv-val">${v}</span></div>`
   ).join('');
   return `
-  <div class="pv-2col">
-    <div><div class="pv-section-title">${title1}</div>${col1}</div>
-    <div><div class="pv-section-title">${title2}</div>${col2}</div>
+  <div style="margin-bottom:16px;">
+    <div class="pv-section-title">${title}</div>
+    <div class="pv-fin-2col">
+      <div>${left}</div>
+      <div>${right}</div>
+    </div>
   </div>`;
 }
 function pvTotal(initLabel, initVal, monthlyVal) {
   return `
-  <div class="pv-total-wrap">
-    ${initLabel ? `<div class="pv-total-row"><span class="pv-total-key">${initLabel}</span><span class="pv-total-val">${initVal}</span></div>` : ''}
-    <div class="pv-monthly-row">
-      <span class="pv-monthly-key">월 납입금</span>
-      <span class="pv-monthly-val">${monthlyVal}</span>
-    </div>
+  <hr class="pv-divider">
+  ${initLabel ? `<div class="pv-total-row"><span class="pv-total-key">${initLabel}</span><span class="pv-total-val">${initVal}</span></div>` : ''}
+  <div class="pv-monthly-row">
+    <span class="pv-monthly-key">월 납입금</span>
+    <span class="pv-monthly-val">${monthlyVal}</span>
   </div>`;
 }
 function pvNotice(isFinance) {
@@ -1907,8 +1881,8 @@ function pvNotice(isFinance) {
     ? '본 견적은 예상 납입금이며, 실제 금액은 금융사 심사 결과에 따라 변동될 수 있습니다.<br>금리, 잔존가치 등 세부 조건은 담당자에게 문의해주세요.'
     : '본 견적은 발행일 기준이며, 시세에 따라 변동될 수 있습니다.<br>취득세·공채비용은 등록 지역 및 차량에 따라 달라질 수 있습니다.'}</div>`;
 }
-function pvFooter(branch, staff, phone, extra) {
-  return `<div class="pv-footer">도이치모터스 · ${branch}<br>${staff}${phone ? ' · ' + phone : ''}${extra ? '<br>' + extra : ''}</div>`;
+function pvFooter(branch, staff, phone) {
+  return `<div class="pv-footer">도이치모터스 · ${branch}<br>${staff}${phone ? ' · ' + phone : ''}</div>`;
 }
 
 // ── 설정 (MY INFO) ──────────────────────────────────
