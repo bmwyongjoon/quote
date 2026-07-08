@@ -1327,9 +1327,10 @@ function calcLO() {
     } else {
       // 표준형: EE38→EE39→EE40→EE42
       const ee38 = finalPrice + loTax;
-      const dp31 = Math.round(scRate * ee38);
-      const dp32 = Math.round(LO_FNI_RATE * (ee38 - deposit));
-      const pvEE39 = ee38 - deposit + dp31 + dp32;
+      const dp10 = ee38 - deposit;
+      const dp31 = Math.round(scRate * dp10);
+      const dp32 = Math.round(LO_FNI_RATE * (dp10 - deposit));
+      const pvEE39 = (ee38 - deposit) + dp31 + dp32;
       const fvEE39 = residual - deposit;
       const ee39 = Math.ceil(r * (pvEE39 - fvEE39 * pvif_r) / (1 - pvif_r));
       const dp40_raw = rateCalcLO(period, ee39, -finalPrice, residual) * 12;
