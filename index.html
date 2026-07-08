@@ -999,15 +999,38 @@ let LF_RV = {
   }
 };
 
-// 세그먼트 판별 (series 기준)
+// 세그먼트 판별 (엑셀 Model 시트 SEGMENT 기준)
 function getSegment(brand, series) {
   if (brand === 'MINI') return 'MINI';
-  const s = (series||'').toUpperCase();
-  if (s.includes('1') || s.includes('2') || s === 'Z4' || s.includes('Z시리즈')) return 'UKL';
-  if (s.includes('3') || s.includes('4') || s.includes('X1') || s.includes('X2') || s.includes('X3') || s.includes('X4')) return 'KKL';
-  if (s.includes('5') || s.includes('6') || s.includes('X5') || s.includes('X6')) return 'MKL';
-  if (s.includes('7') || s.includes('8') || s.includes('X7') || s.includes('XM') || s.includes('I')) return 'GKL';
-  return 'KKL'; // 기본값
+  const s = (series || '').toUpperCase().replace(/\s/g, '');
+
+  // X시리즈 전체 → UKL (엑셀 XSERIES=UKL)
+  if (s.includes('X시리즈'.toUpperCase()) || s === 'XSERIES' ||
+      s.includes('X1') || s.includes('X2') || s.includes('X3') ||
+      s.includes('X4') || s.includes('X5') || s.includes('X6') ||
+      s.includes('X7') || s.includes('XM')) return 'UKL';
+
+  // 1~2시리즈 → UKL
+  if (s.includes('1시리즈'.toUpperCase()) || s.includes('1SERIES') ||
+      s.includes('2시리즈'.toUpperCase()) || s.includes('2SERIES')) return 'UKL';
+
+  // 3~4시리즈, Z시리즈, i시리즈 → KKL (엑셀 ZSERIES=KKL, ISERIES=KKL)
+  if (s.includes('3시리즈'.toUpperCase()) || s.includes('3SERIES') ||
+      s.includes('4시리즈'.toUpperCase()) || s.includes('4SERIES') ||
+      s.includes('Z시리즈'.toUpperCase()) || s.includes('ZSERIES') ||
+      s.includes('I시리즈'.toUpperCase()) || s.includes('ISERIES')) return 'KKL';
+
+  // 5~6시리즈, iX(iNEXT) → MKL (엑셀 iNEXT SERIES=MKL)
+  if (s.includes('5시리즈'.toUpperCase()) || s.includes('5SERIES') ||
+      s.includes('6시리즈'.toUpperCase()) || s.includes('6SERIES') ||
+      s.includes('INEXT') || s === 'IX') return 'MKL';
+
+  // 7~8시리즈 → GKL
+  if (s.includes('7시리즈'.toUpperCase()) || s.includes('7SERIES') ||
+      s.includes('8시리즈'.toUpperCase()) || s.includes('8SERIES')) return 'GKL';
+
+  // 기본값: KKL (알 수 없는 시리즈)
+  return 'KKL';
 }
 
 function getMaxRV(brand, series, regDate, period) {
