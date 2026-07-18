@@ -476,7 +476,7 @@ body {
 
 /* 인쇄: 제시표(현재 페이지)만 A4 전체에 꽉 차게 출력, UI는 display:none으로 완전히 제거 */
 @media print {
-  @page { size: A4; margin: 10mm; }
+  @page { size: A4 landscape; margin: 10mm; }
 
   html, body {
     margin: 0 !important;
