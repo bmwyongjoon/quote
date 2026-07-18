@@ -473,6 +473,22 @@ body {
   .jeisiyo-slide { transform: scale(0.55); }
   .slide-scale-wrapper { height: 437px; }
 }
+
+/* 인쇄: 제시표(현재 페이지)만 출력, UI는 모두 숨김 */
+@media print {
+  @page { size: landscape; margin: 5mm; }
+  body * { visibility: hidden; }
+  .slide-scale-wrapper, .slide-scale-wrapper * { visibility: visible; }
+  .slide-scale-wrapper {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: none !important;
+  }
+  .slide-scale-wrapper > div { transform: none !important; }
+}
 </style>
 </head>
 <body>
@@ -526,6 +542,7 @@ body {
     <div class="preview-controls">
       <span class="preview-label">미리보기</span>
       <button class="btn btn-secondary btn-sm" onclick="downloadCurrent()">📥 현재 페이지 다운로드</button>
+      <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ 인쇄</button>
     </div>
     <div id="previewArea"></div>
     <div class="add-page-area" onclick="addPage()">
@@ -754,7 +771,14 @@ function vsChange(changed, value) {
     const carNameEl = document.getElementById('field-car_name');
     if (carNameEl) carNameEl.value = p.car_name;
 
-    // 제원 자동완성 시도
+    // 배기량: vehicles.json의 cc 필드로 기본값 설정 (전기차는 cc:0 → '전기')
+    if (v.cc !== undefined && v.cc !== null && v.cc !== '') {
+      p.displacement = Number(v.cc) === 0 ? '전기' : `${Number(v.cc).toLocaleString()}cc`;
+      const dispEl = document.getElementById('field-displacement');
+      if (dispEl) dispEl.value = p.displacement;
+    }
+
+    // 제원 자동완성 시도 (구글시트에 매칭 데이터가 있으면 위 값을 덮어씀)
     const spec = matchSpec(p.sel_brand, p.sel_series, v.trim, p.sel_year);
     if (spec) {
       applySpec(spec);
@@ -1380,7 +1404,7 @@ function renderAll() {
 async function getPageCanvas(pageIdx) {
   const p = pages[pageIdx];
   const temp = document.createElement('div');
-  temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:1122px;height:794px;';
+  temp.style.cssText = 'position:absolute;left:-9999px;top:0;width:1122px;height:794px;overflow:hidden;';
   temp.innerHTML = renderSlide(p);
   document.body.appendChild(temp);
   await document.fonts.ready;
@@ -1393,6 +1417,10 @@ async function getPageCanvas(pageIdx) {
     backgroundColor: '#ffffff',
     width: 1122,
     height: 794,
+    scrollX: 0,
+    scrollY: 0,
+    x: 0,
+    y: 0,
   });
   document.body.removeChild(temp);
   return canvas;
