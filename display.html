@@ -632,7 +632,7 @@ fetch('vehicles.json')
   .catch(e => console.log('vehicles.json 로드 실패:', e));
 
 // ── 구글 시트 연동 URL ──
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzkG2BB5f6ttWkVwaVGuAwArjK9LXaxlSVch1Cd31vbpGxWKwysoR7n3lSmJcE7CgkJQA/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxRwqXXj1deKqVzcFNJvI7RyFKZ-pvdFktgLWfN3jMPRSbLR90D9vOQjB3SarYel4YikA/exec';
 
 // ── 상태 관리 ──
 let pages = [];
@@ -1006,8 +1006,8 @@ async function loadFromSheet() {
         p.sel_year = y.length === 4 ? y : (y.length === 2 ? '20' + y : y);
       }
       if (d['차종'])                   p.sel_series       = String(d['차종']);
-      if (d['트림'])                   p.sel_trim         = String(d['트림']);
       if (d['차종명'])                 p.car_name         = String(d['차종명']);
+      if (d['트림'])                   p.sel_trim         = String(d['트림']);
       if (d['주행거리'])               p.mileage          = String(d['주행거리']);
       if (d['등록일']) {
         let rd = String(d['등록일']);
@@ -1702,8 +1702,8 @@ function loadFromListItem(carNumber) {
     p.sel_year = y.length === 4 ? y : (y.length === 2 ? '20' + y : y);
   }
   if (d['차종'])                   p.sel_series       = String(d['차종']);
-  if (d['트림'])                   p.sel_trim         = String(d['트림']);
   if (d['차종명'])                 p.car_name         = String(d['차종명']);
+  if (d['트림'])                   p.sel_trim         = String(d['트림']);
   if (d['주행거리'])               p.mileage          = String(d['주행거리']);
   if (d['등록일']) {
     let rd = String(d['등록일']);
