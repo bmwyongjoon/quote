@@ -478,6 +478,11 @@ body {
 @media print {
   @page { size: A4 landscape; margin: 10mm; }
 
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -605,7 +610,7 @@ body {
     <div class="preview-controls">
       <span class="preview-label">미리보기</span>
       <button class="btn btn-secondary btn-sm" onclick="downloadCurrent()">📥 현재 페이지 다운로드</button>
-      <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ 인쇄</button>
+      <button class="btn btn-secondary btn-sm" onclick="printPage()">🖨️ 인쇄</button>
     </div>
     <div id="previewArea"></div>
     <div class="add-page-area" onclick="addPage()">
@@ -937,6 +942,7 @@ function saveToSheet() {
     '브랜드':   p.sel_brand        || '',
     '년식':     p.year             || '',
     '차종':     p.sel_series       || '',
+    '트림':     p.sel_trim         || '',
     '차종명':   p.car_name         || '',
     '주행거리': p.mileage          || '',
     '등록일':   p.reg_date         || '',
@@ -1000,6 +1006,7 @@ async function loadFromSheet() {
         p.sel_year = y.length === 4 ? y : (y.length === 2 ? '20' + y : y);
       }
       if (d['차종'])                   p.sel_series       = String(d['차종']);
+      if (d['트림'])                   p.sel_trim         = String(d['트림']);
       if (d['차종명'])                 p.car_name         = String(d['차종명']);
       if (d['주행거리'])               p.mileage          = String(d['주행거리']);
       if (d['등록일']) {
@@ -1470,23 +1477,26 @@ async function getPageCanvas(pageIdx) {
   temp.style.cssText = 'position:absolute;left:-9999px;top:0;width:1122px;height:794px;overflow:hidden;';
   temp.innerHTML = renderSlide(p);
   document.body.appendChild(temp);
-  await document.fonts.ready;
-  await new Promise(r => setTimeout(r, 300));
-  const slide = temp.querySelector('.jeisiyo-slide');
-  const canvas = await html2canvas(slide, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    width: 1122,
-    height: 794,
-    scrollX: 0,
-    scrollY: 0,
-    x: 0,
-    y: 0,
-  });
-  document.body.removeChild(temp);
-  return canvas;
+  try {
+    await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 300));
+    const slide = temp.querySelector('.jeisiyo-slide');
+    const canvas = await html2canvas(slide, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 1122,
+      height: 794,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+    });
+    return canvas;
+  } finally {
+    document.body.removeChild(temp);
+  }
 }
 
 async function downloadSingle(pageIdx) {
@@ -1504,6 +1514,50 @@ async function downloadCurrent() {
   overlay.style.display = 'flex';
   try {
     await downloadSingle(currentPage);
+  } finally {
+    overlay.style.display = 'none';
+  }
+}
+
+async function printPage() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.style.display = 'flex';
+  try {
+    const canvas = await getPageCanvas(currentPage);
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const printWin = window.open('', '_blank');
+    if (!printWin) {
+      alert('팝업이 차단되어 인쇄할 수 없습니다. 팝업 차단을 해제해주세요.');
+      return;
+    }
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>인쇄</title>
+        <style>
+          @page { size: A4 landscape; margin: 0; }
+          html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+          img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            display: block;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+        </style>
+      </head>
+      <body>
+        <img id="printImg" src="${imgData}">
+      </body>
+      </html>
+    `);
+    printWin.document.close();
+    printWin.onafterprint = () => printWin.close();
+    const img = printWin.document.getElementById('printImg');
+    const triggerPrint = () => { printWin.focus(); printWin.print(); };
+    if (img.complete) triggerPrint();
+    else img.onload = triggerPrint;
   } finally {
     overlay.style.display = 'none';
   }
@@ -1615,7 +1669,7 @@ function renderLoadList(data) {
     return;
   }
   el.innerHTML = data.map((d, i) => `
-    <div onclick="loadFromListItem(${i})"
+    <div data-carnum="${String(d['차량번호'] || '').replace(/"/g, '&quot;')}" onclick="loadFromListItem(this.dataset.carnum)"
       style="padding:12px 14px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background 0.15s;"
       onmouseover="this.style.background='#f5f8ff'" onmouseout="this.style.background=''">
       <div style="font-weight:600;font-size:14px;color:#191919;">${d['차량번호'] || '-'}</div>
@@ -1636,8 +1690,8 @@ function filterLoadList() {
   ));
 }
 
-function loadFromListItem(idx) {
-  const d = loadListData[idx];
+function loadFromListItem(carNumber) {
+  const d = loadListData.find(x => String(x['차량번호']) === String(carNumber));
   if (!d) return;
   const p = pages[currentPage];
   if (d['차량번호'] !== undefined) p.car_number      = String(d['차량번호']);
@@ -1648,6 +1702,7 @@ function loadFromListItem(idx) {
     p.sel_year = y.length === 4 ? y : (y.length === 2 ? '20' + y : y);
   }
   if (d['차종'])                   p.sel_series       = String(d['차종']);
+  if (d['트림'])                   p.sel_trim         = String(d['트림']);
   if (d['차종명'])                 p.car_name         = String(d['차종명']);
   if (d['주행거리'])               p.mileage          = String(d['주행거리']);
   if (d['등록일']) {
