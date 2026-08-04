@@ -110,7 +110,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
 .pv-total-key{font-size:13px;color:#999;}
 .pv-total-val{font-size:13px;color:#1a1a1a;}
 .pv-monthly-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 2px;}
-.pv-monthly-key{font-size:15px;font-weight:500;color:#1a1a1a;}
+.pv-monthly-key{font-size:15px;font-weight:500;color:#1a1a1a;white-space:nowrap;}
 .pv-monthly-val{font-size:24px;font-weight:300;color:#0066CC;}
 .pv-notice{margin-top:14px;padding:11px 13px;background:#f9f9f9;border-radius:8px;font-size:11px;color:#aaa;line-height:1.7;}
 .pv-footer{padding:12px 18px;border-top:0.5px solid #eee;text-align:center;font-size:11px;color:#bbb;line-height:1.9;}
@@ -1290,54 +1290,39 @@ function calcLO() {
   // CI45: 보증금구간 <20%→1, <30%→2, <40%→3, ≥40%→4
   const ci45 = depositPct < 20 ? 1 : depositPct < 30 ? 2 : depositPct < 40 ? 3 : 4;
   const demoN = demo === 'demo' ? '1' : '2';
-  let key, dp33;
+  let key, dp34;
   if (product === 'standard') {
     key = `${demoN}11${ci45}`;
   } else {
     key = `${demoN}220`;
   }
-  dp33 = LO_IRR_AMAM[key] || 0;
+  dp34 = LO_IRR_AMAM[key] || 0;
 
-  // ── 월납입금 계산 ──
-  // SC커미션: 사용자 선택 SC율 사용 (사용자SC%)
-  // 표준형: EE38=price+취득세, EE39=CEIL(PMT), EE40=ROUNDUP(RATE), EE42=FLOOR(PMT)
-  // 선납형: EE38=price+취득세, EE39=CEIL(PMT), EE40=ROUNDUP(RATE), EE42=FLOOR(PMT)
-  const scRate = parseInt(document.getElementById('lo-sc-pct').value) / 100;
+  // ── 월납입금 계산 (엑셀 수식 완전 재현) ──
+  const scPctInt = parseInt(document.getElementById('lo-sc-pct').value) || 0;
+  const scRate = scPctInt / 100;
+
+  // 보증금/선납금 분리: 표준형→dp16, 선납형→dp17 (둘 중 하나는 항상 0)
+  const dp16 = product === 'standard' ? deposit : 0;
+  const dp17 = product === 'prepaid' ? deposit : 0;
 
   let monthly = 0;
-  let ee40 = 0;
-  if (dp33 > 0 && finalPrice > 0) {
-    const r = dp33 / 12;
-    const pvif_r = Math.pow(1+r, -period);
+  let ee40 = 0; // 고객공지이율 (연, 소수)
+  if (dp34 > 0 && finalPrice > 0) {
+    const dp10 = finalPrice - dp16 + loTax;                    // FA
+    const dp31 = Math.round(scRate * dp10);                    // SC커미션
+    const dp32 = Math.round(LO_FNI_RATE * (dp10 - dp17));      // F&I커미션
+    const ee39 = finalPrice + loTax;                            // 차량가격+취득세
 
-    if (product === 'prepaid') {
-      // 선납형: 선납금 있을 때 EE38에서 선납금 차감
-      const ee38 = deposit > 0 ? finalPrice + loTax - deposit : finalPrice + loTax;
-      const sc38 = Math.round(scRate * ee38);
-      const fni38 = Math.round(LO_FNI_RATE * ee38);
-      const pvPrepaid = ee38 + sc38 + fni38;
-      // EE39 = PMT(dp33/12, period, -PV, residual)
-      const ee39 = Math.floor(r * (pvPrepaid - residual * pvif_r) / (1 - pvif_r));
-      // EE40 = ROUNDUP(RATE(period, EE39, -EE38, residual)*12, 4)
-      const dp40_raw = rateCalcLO(period, ee39, -ee38, residual) * 12;
-      ee40 = Math.ceil(Math.round(dp40_raw * 1e8) / 1e4) / 1e4;
-      // EE42 = PMT(EE40/12, period, -EE38, residual)
-      const r40 = ee40 / 12;
-      monthly = Math.floor(r40 * (ee38 - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
-    } else {
-      // 표준형: EE38→EE39→EE40→EE42
-      const ee38 = finalPrice + loTax;
-      const dp10 = ee38 - deposit;
-      const dp31 = Math.round(scRate * dp10);
-      const dp32 = Math.round(LO_FNI_RATE * (dp10 - deposit));
-      const pvEE39 = (ee38 - deposit) + dp31 + dp32;
-      const fvEE39 = residual - deposit;
-      const ee39 = Math.ceil(r * (pvEE39 - fvEE39 * pvif_r) / (1 - pvif_r));
-      const dp40_raw = rateCalcLO(period, ee39, -finalPrice, residual) * 12;
-      ee40 = Math.ceil(Math.round(dp40_raw * 1e8) / 1e4) / 1e4;
-      const r40 = ee40 / 12;
-      monthly = Math.floor(r40 * (finalPrice - residual * Math.pow(1+r40, -period)) / (1 - Math.pow(1+r40, -period)));
-    }
+    const r = dp34 / 12;
+    const pvif_r = Math.pow(1+r, -period);
+    const ee40pmt = Math.floor(r * (ee39 + dp31 + dp32 - residual * pvif_r) / (1 - pvif_r));
+
+    const rate_raw = rateCalcLO(period, ee40pmt, -ee39, residual) * 12;
+    ee40 = Math.ceil(Math.round(rate_raw * 1e8) / 1e4) / 1e4; // ROUNDUP(rate, 4)
+
+    const r41 = ee40 / 12;
+    monthly = Math.floor(r41 * (ee39 - residual * Math.pow(1+r41, -period)) / (1 - Math.pow(1+r41, -period)));
     if (monthly < 0) monthly = 0;
   }
 
@@ -1593,7 +1578,7 @@ function showPreview(type) {
       `<hr class="pv-divider">
       <div class="pv-monthly-row">
         <span class="pv-monthly-key">총 구입 비용</span>
-        <span class="pv-monthly-val">${fmt(d.total)}원</span>
+        <span class="pv-monthly-val">${fmt(d.total)}</span>
       </div>` +
       pvNotice() +
       `</div>` +
