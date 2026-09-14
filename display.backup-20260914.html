@@ -1793,74 +1793,33 @@ function matchSpec(brand, series, trim, year) {
   let yearNum = parseInt(year);
   if (yearNum < 100) yearNum += 2000;
 
-  // 문자열을 단어 단위로 토큰화 (괄호/언더바/공백 모두 구분자로 취급) 하면서,
-  // "xdrive"/"sdrive"/"edrive" 단어 바로 다음에 숫자로 시작하는 단어가 오면
-  // 하나로 합쳐 "xdrive40i" 형태로 정규화한다.
-  // 트림 데이터는 "xDrive 40i"처럼 띄어쓰는 경우가 많고, 시트 트림키워드도
-  // 드물게 "xDrive 45"처럼 띄어쓴 오타가 있어(예: iX 행) 양쪽 다 이 정규화를 적용한다.
-  function toWords(s) {
-    const words = (s || '').toLowerCase().replace(/[_()]/g, ' ').split(/\s+/).filter(Boolean);
-    for (let i = 0; i < words.length - 1; i++) {
-      if (/^[xse]drive$/.test(words[i]) && /^\d/.test(words[i + 1])) {
-        words[i] += words[i + 1];
-        words.splice(i + 1, 1);
-      }
-    }
-    return words;
-  }
+  // 시리즈명 정규화
+  const seriesNorm = (series || '').replace('시리즈', ' Series').trim();
 
-  // 예: "(T)_X5 xDrive 40i M Spt LCI" → ["t","x5","xdrive40i","m","spt","lci"]
-  const trimWords = toWords(trim);
-
-  // trim에서 실제 모델명 토큰 추출 (예: "(T)_X5 xDrive 40i M Spt LCI" → "X5")
-  // "X시리즈"/"X기타"/"Z시리즈"/"i시리즈" 같은 뭉뚱그려진 차종선택칸 값으로는
-  // 시리즈를 좁힐 수 없으므로, trim 문자열의 단어들 중 "X5","iX3","X6M","XM",
-  // "Z4","i4" 같은 구체적인 모델 토큰을 찾아 사용한다.
-  const modelToken = trimWords.find(t => /^(ix[0-9]?|x[0-9]m?|xm|z[0-9]|i[0-9])$/.test(t)) || '';
+  // trim에서 엔진코드 추출 (예: "520i M Sport" → "520i")
+  const engineMatch = trim.match(/([A-Z]?\d+[eid][\w]*|[A-Z]\d+[PHEV]*|JCW|Cooper\s*[SE]*|eDrive\d+|xDrive\d+[ei]?|sDrive\d+[ei]?)/i);
+  const engineCode = engineMatch ? engineMatch[0].toLowerCase() : '';
 
   // SPEC_DB에서 매칭 찾기
   let best = null;
   let bestScore = 0;
 
-  // arr 안에 sub가 (순서를 지키는) 연속된 부분수열로 정확히 존재하는지 확인.
-  // 단어 단위 정확 비교라서 "xDrive40"(키워드)가 "xDrive40d"/"xDrive40i" 같은
-  // 다른 트림의 단어에 부분(prefix)일치로 잘못 매칭되는 것을 막아준다.
-  function containsSeq(arr, sub) {
-    if (!sub.length) return false;
-    for (let i = 0; i <= arr.length - sub.length; i++) {
-      let ok = true;
-      for (let j = 0; j < sub.length; j++) {
-        if (arr[i + j] !== sub[j]) { ok = false; break; }
-      }
-      if (ok) return true;
-    }
-    return false;
-  }
-
   for (const spec of SPEC_DB) {
     let score = 0;
-    const keyword = spec['트림키워드'] || '';
-    const specSeries = spec['시리즈'] || '';
-    const keywordWords = toWords(keyword);
-    const specSeriesN = specSeries.toLowerCase().replace(/\s/g, '');
+    const keyword = (spec['트림키워드'] || '').toLowerCase();
+    const specSeries = (spec['시리즈'] || '').toLowerCase();
     const yearRange = spec['연식범위'] || '';
 
-    // 시리즈 매칭: 트림에서 뽑은 구체적 모델 토큰이 시트 시리즈와 정확히 일치할 때만 가점.
-    // "X시리즈".replace('시리즈','')="X" 같은 1글자 부분일치로는 절대 점수를 주지 않는다.
-    // trim에서 modelToken이 뽑혔다면(=실제 시리즈를 알 수 있다면) 이 후보의 시리즈와
-    // 반드시 일치해야만 채택 대상으로 인정한다. 그렇지 않으면 시트에 해당 시리즈의
-    // 정확한 트림이 없을 때 엉뚱한 다른 시리즈(예: X3 M50 → i4 M50)로 새어버린다.
-    if (modelToken) {
-      if (modelToken !== specSeriesN) continue;
-      score += 4;
+    // 시리즈 매칭
+    const brandSeries = (series || '').toLowerCase();
+    if (brandSeries.includes(specSeries) || specSeries.includes(brandSeries.replace('시리즈',''))) {
+      score += 2;
     }
 
-    // 트림 키워드 매칭: 시트의 트림키워드 단어열이 trim의 단어열에 그대로
-    // (단어 단위로 정확히) 포함되는지로 판정.
-    // 기존의 "정규식 1개 추출" 방식은 "X5 xDrive 40i"에서 [A-Z]\d+ 패턴이 X5를
-    // 먼저 잡아버려 xDrive40i를 놓치는 문제가 있었음.
-    const keywordHit = containsSeq(trimWords, keywordWords);
-    if (keywordHit) {
+    // 트림 키워드 매칭
+    if (engineCode && engineCode.includes(keyword.replace(/\s/g,''))) {
+      score += 3;
+    } else if (keyword && trim.toLowerCase().includes(keyword.toLowerCase())) {
       score += 3;
     }
 
@@ -1876,16 +1835,13 @@ function matchSpec(brand, series, trim, year) {
       }
     }
 
-    // 트림키워드 매칭(keywordHit)이 없는 후보는 시리즈/연식 점수만으로는 절대 채택하지 않는다.
-    if (keywordHit && score > bestScore) {
+    if (score > bestScore) {
       bestScore = score;
       best = spec;
     }
   }
 
-  // 트림키워드 매칭(3점)은 위에서 이미 필수 조건으로 강제됐으므로,
-  // 기준점은 "트림키워드 + 시리즈 정확 일치" 또는 "트림키워드 + 연식" 조합이 되도록 5로 유지.
-  return bestScore >= 5 ? best : null;
+  return bestScore >= 3 ? best : null;
 }
 
 // 제원 자동완성 적용
