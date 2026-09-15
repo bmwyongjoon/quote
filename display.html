@@ -1799,7 +1799,7 @@ function matchSpec(brand, series, trim, year) {
   // 트림 데이터는 "xDrive 40i"처럼 띄어쓰는 경우가 많고, 시트 트림키워드도
   // 드물게 "xDrive 45"처럼 띄어쓴 오타가 있어(예: iX 행) 양쪽 다 이 정규화를 적용한다.
   function toWords(s) {
-    const words = (s || '').toLowerCase().replace(/[_()]/g, ' ').split(/\s+/).filter(Boolean);
+    const words = (s || '').toLowerCase().replace(/[_()*.]/g, ' ').split(/\s+/).filter(Boolean);
     for (let i = 0; i < words.length - 1; i++) {
       // 정순: xdrive + 40i → xdrive40i
       if (/^[xse]drive$/.test(words[i]) && /^\d/.test(words[i + 1])) {
