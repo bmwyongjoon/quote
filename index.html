@@ -1000,47 +1000,51 @@ let LF_RV = {
 };
 
 // 세그먼트 판별 (엑셀 Model 시트 SEGMENT 기준)
-function getSegment(brand, series) {
+// 엑셀은 시리즈가 아니라 모델 코드(Model!D21:E56)로 세그먼트를 정함 — X3=KKL, X5/X6=MKL, X7/XM=GKL, iX=MKL 등
+// vehicles.json의 series가 "X시리즈"/"X기타"/"i시리즈"처럼 뭉뚱그려진 경우가 있어 trim에서 모델 코드를 먼저 추출
+const SEG_BY_DIGIT = {1:'UKL',2:'UKL',3:'KKL',4:'KKL',5:'MKL',6:'MKL',7:'GKL',8:'GKL'};
+function segFromModelCode(text) {
+  const t = ' ' + (text || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ') + ' ';
+  if (/ IX[12] /.test(t)) return 'UKL';
+  if (/ IX3 /.test(t)) return 'KKL';
+  if (/ IX /.test(t)) return 'MKL';
+  const i = t.match(/ I([3-8]) /);
+  if (i) return SEG_BY_DIGIT[i[1]];
+  if (/ XM /.test(t)) return 'GKL';
+  const x = t.match(/ X([1-7])M? /);
+  if (x) return SEG_BY_DIGIT[x[1]];
+  if (/ Z4? /.test(t)) return 'KKL';
+  return null;
+}
+function getSegment(brand, series, trim) {
   if (brand === 'MINI') return 'MINI';
-  const s = (series || '').toUpperCase().replace(/\s/g, '');
-
-  // X시리즈 전체 → UKL (엑셀 XSERIES=UKL)
-  if (s.includes('X시리즈'.toUpperCase()) || s === 'XSERIES' ||
-      s.includes('X1') || s.includes('X2') || s.includes('X3') ||
-      s.includes('X4') || s.includes('X5') || s.includes('X6') ||
-      s.includes('X7') || s.includes('XM')) return 'UKL';
-
-  // 1~2시리즈 → UKL
-  if (s.includes('1시리즈'.toUpperCase()) || s.includes('1SERIES') ||
-      s.includes('2시리즈'.toUpperCase()) || s.includes('2SERIES')) return 'UKL';
-
-  // 3~4시리즈, Z시리즈, i시리즈 → KKL (엑셀 ZSERIES=KKL, ISERIES=KKL)
-  if (s.includes('3시리즈'.toUpperCase()) || s.includes('3SERIES') ||
-      s.includes('4시리즈'.toUpperCase()) || s.includes('4SERIES') ||
-      s.includes('Z시리즈'.toUpperCase()) || s.includes('ZSERIES') ||
-      s.includes('I시리즈'.toUpperCase()) || s.includes('ISERIES')) return 'KKL';
-
-  // 5~6시리즈, iX(iNEXT) → MKL (엑셀 iNEXT SERIES=MKL)
-  if (s.includes('5시리즈'.toUpperCase()) || s.includes('5SERIES') ||
-      s.includes('6시리즈'.toUpperCase()) || s.includes('6SERIES') ||
-      s.includes('INEXT') || s === 'IX') return 'MKL';
-
-  // 7~8시리즈 → GKL
-  if (s.includes('7시리즈'.toUpperCase()) || s.includes('7SERIES') ||
-      s.includes('8시리즈'.toUpperCase()) || s.includes('8SERIES')) return 'GKL';
-
+  const seg = segFromModelCode(trim) || segFromModelCode(series);
+  if (seg) return seg;
+  // 1~8시리즈 (M2/M3/M4/M5/M8 포함 — 엑셀 M2=UKL, M3/M4=KKL, M5=MKL, M8=GKL)
+  const sd = (series || '').match(/^\s*([1-8])/);
+  if (sd) return SEG_BY_DIGIT[sd[1]];
+  // series로 판단 불가 시 trim의 엔진 코드(520d, M340i) 또는 M 모델명(M5)으로 추정
+  const td = (trim || '').toUpperCase().match(/(?:^|[^A-Z0-9])(?:M?([1-8])\d{2}[A-Z]*|M([2-8]))(?=[^A-Z0-9]|$)/);
+  if (td) return SEG_BY_DIGIT[td[1] || td[2]];
   // 기본값: KKL (알 수 없는 시리즈)
   return 'KKL';
 }
 
-function getMaxRV(brand, series, regDate, period) {
+function getVsTrim(prefix) {
+  try {
+    const v = document.getElementById(prefix + '-vs-trim')?.value;
+    return v ? (JSON.parse(v).trim || '') : '';
+  } catch(e) { return ''; }
+}
+
+function getMaxRV(brand, series, regDate, period, trim) {
   if (!regDate || !brand) return null;
   const reg = new Date(regDate);
   const now = new Date();
   // 엑셀 기준: 365일 이하 = Under 1year, 초과 = Over 1year
   const days = Math.floor((now - reg) / (1000 * 60 * 60 * 24));
   const ageGroup = days <= 365 ? 'under12' : 'over12';
-  const seg = getSegment(brand, series);
+  const seg = getSegment(brand, series, trim);
   const brandKey = brand === 'MINI' ? 'MINI' : 'BMW';
   try {
     return LF_RV[ageGroup][brandKey][seg][period] || null;
@@ -1066,7 +1070,7 @@ function calcLF() {
   const regDate = document.getElementById('lf-regdate').value;
   const brand = document.getElementById('lf-vs-brand')?.value || '';
   const series = document.getElementById('lf-vs-series')?.value || '';
-  const maxRVRate = getMaxRV(brand, series, regDate, period);
+  const maxRVRate = getMaxRV(brand, series, regDate, period, getVsTrim('lf'));
   const maxLabel = document.getElementById('lf-residual-max-label');
 
   let residualPct = parseFloat(document.getElementById('lf-residual-pct').value)||0;
@@ -1245,7 +1249,7 @@ function calcLO() {
   const regDate = document.getElementById('lo-regdate').value;
   const brand = document.getElementById('lo-vs-brand')?.value || '';
   const series = document.getElementById('lo-vs-series')?.value || '';
-  const maxRVRate = getMaxRV(brand, series, regDate, period);
+  const maxRVRate = getMaxRV(brand, series, regDate, period, getVsTrim('lo'));
   const maxRVWithBuffer = maxRVRate ? maxRVRate : null;  // 운용리스: BO33=CI37 (×110% 없음)
   const minRVRate = maxRVRate ? (maxRVRate >= 0.20 ? 0.20 : maxRVRate) : 0;
 
@@ -1458,7 +1462,7 @@ function calcInst() {
   const regDate = document.getElementById('inst-regdate').value;
   const brand = document.getElementById('inst-vs-brand')?.value || '';
   const series = document.getElementById('inst-vs-series')?.value || '';
-  const maxRVRate = getMaxRV(brand, series, regDate, period);
+  const maxRVRate = getMaxRV(brand, series, regDate, period, getVsTrim('inst'));
   const maxLabel = document.getElementById('inst-residual-max-label');
 
   let residualPct = parseFloat(document.getElementById('inst-residual-pct').value)||0;

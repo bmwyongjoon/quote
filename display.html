@@ -2013,23 +2013,44 @@ async function loadRates() {
   }
 }
 
-function getSegment(brand, series) {
+// 세그먼트 판별 (엑셀 Model 시트 SEGMENT 기준)
+// 엑셀은 시리즈가 아니라 모델 코드(Model!D21:E56)로 세그먼트를 정함 — X3=KKL, X5/X6=MKL, X7/XM=GKL, iX=MKL 등
+// vehicles.json의 series가 "X시리즈"/"X기타"/"i시리즈"처럼 뭉뚱그려진 경우가 있어 trim에서 모델 코드를 먼저 추출
+const SEG_BY_DIGIT = {1:'UKL',2:'UKL',3:'KKL',4:'KKL',5:'MKL',6:'MKL',7:'GKL',8:'GKL'};
+function segFromModelCode(text) {
+  const t = ' ' + (text || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ') + ' ';
+  if (/ IX[12] /.test(t)) return 'UKL';
+  if (/ IX3 /.test(t)) return 'KKL';
+  if (/ IX /.test(t)) return 'MKL';
+  const i = t.match(/ I([3-8]) /);
+  if (i) return SEG_BY_DIGIT[i[1]];
+  if (/ XM /.test(t)) return 'GKL';
+  const x = t.match(/ X([1-7])M? /);
+  if (x) return SEG_BY_DIGIT[x[1]];
+  if (/ Z4? /.test(t)) return 'KKL';
+  return null;
+}
+function getSegment(brand, series, trim) {
   if (brand === 'MINI') return 'MINI';
-  const s = (series||'').toUpperCase();
-  if (s.includes('1') || s.includes('2') || s.includes('Z4')) return 'UKL';
-  if (s.includes('3') || s.includes('4') || s.includes('X1') || s.includes('X2') || s.includes('X3') || s.includes('X4')) return 'KKL';
-  if (s.includes('5') || s.includes('6') || s.includes('X5') || s.includes('X6')) return 'MKL';
-  if (s.includes('7') || s.includes('8') || s.includes('X7') || s.includes('XM')) return 'GKL';
+  const seg = segFromModelCode(trim) || segFromModelCode(series);
+  if (seg) return seg;
+  // 1~8시리즈 (M2/M3/M4/M5/M8 포함 — 엑셀 M2=UKL, M3/M4=KKL, M5=MKL, M8=GKL)
+  const sd = (series || '').match(/^\s*([1-8])/);
+  if (sd) return SEG_BY_DIGIT[sd[1]];
+  // series로 판단 불가 시 trim의 엔진 코드(520d, M340i) 또는 M 모델명(M5)으로 추정
+  const td = (trim || '').toUpperCase().match(/(?:^|[^A-Z0-9])(?:M?([1-8])\d{2}[A-Z]*|M([2-8]))(?=[^A-Z0-9]|$)/);
+  if (td) return SEG_BY_DIGIT[td[1] || td[2]];
+  // 기본값: KKL (알 수 없는 시리즈)
   return 'KKL';
 }
 
-function getMaxRV(brand, series, regDate, period) {
+function getMaxRV(brand, series, regDate, period, trim) {
   if (!regDate || !brand || !RATES) return null;
   const reg = new Date(regDate);
   const now = new Date();
   const days = Math.floor((now - reg) / (1000 * 60 * 60 * 24));
   const ageGroup = days <= 365 ? 'under1' : 'over1';
-  const seg = getSegment(brand, series);
+  const seg = getSegment(brand, series, trim);
   const brandKey = brand === 'MINI' ? 'MINI' : 'BMW';
   try {
     const rv = RATES.rv_table[ageGroup];
@@ -2104,7 +2125,7 @@ function updateCalc() {
     const brand = p.sel_brand || '';
     const series = p.sel_series || '';
     const regDate = document.getElementById('calc-regdate')?.value || '';
-    const maxRV = getMaxRV(brand, series, regDate, period);
+    const maxRV = getMaxRV(brand, series, regDate, period, p.sel_trim || '');
     const maxLabel = document.getElementById('calc-max-rv');
     let maxPct = null;
     if (maxRV) {
@@ -2144,7 +2165,7 @@ function updateCalc() {
     const residualPctEl = document.getElementById('calc-residual-pct');
 
     // 최대 유예금 계산 (엑셀: ROUNDDOWN(RV * 110%, 2))
-    const maxRVInst = getMaxRV(p.sel_brand || '', p.sel_series || '', p.reg_date ? p.reg_date.replace(/\./g,'-') : '', period);
+    const maxRVInst = getMaxRV(p.sel_brand || '', p.sel_series || '', p.reg_date ? p.reg_date.replace(/\./g,'-') : '', period, p.sel_trim || '');
     const maxLabelInst = document.getElementById('calc-max-rv');
     if (maxRVInst) {
       const maxPctInst = Math.round(Math.floor(maxRVInst * 1.1 * 100) / 100 * 100);
