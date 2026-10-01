@@ -1341,7 +1341,7 @@ function calcLO() {
   };
 
   let monthly = 0;
-  let monthlyNoPrepay = 0; // EE43 선납제외 리스료 (리스료 예상 할인금액 산출용)
+  let ee41 = 0; // EE41 선납/보증 미반영 기준 이율 (리스료 예상 할인금액 산출용)
   let ee40 = 0; // DP41 고객공지이율 (연, 소수)
   if (dp34 > 0 && finalPrice > 0) {
     const dp10 = finalPrice - prepay + loTax;                  // FA
@@ -1353,7 +1353,9 @@ function calcLO() {
     const dp40 = pmtFloor(dp39, dp10 - secDep, residual - secDep);
     ee40 = roundUp4(rateCalcLO(period, dp40, -dp10, residual) * 12);
     monthly = Math.max(0, pmtFloor(ee40, dp10, residual));
-    monthlyNoPrepay = Math.max(0, pmtFloor(ee40, dp15, residual));
+    // EE40~EE41: 선납/보증 미반영 시 이율 (SC/F&I는 DP10 기준 그대로)
+    const ee40pmt = pmtFloor(dp34, dp15 + dp31 + dp32, residual);
+    ee41 = roundUp4(rateCalcLO(period, ee40pmt, -dp15, residual) * 12);
   }
 
   document.getElementById('lo-rate-disp').value = ee40 ? (ee40 * 100).toFixed(2) : '';
@@ -1371,20 +1373,20 @@ function calcLO() {
   // 전기차는 엑셀 기준 월 10,833원 고정
   let isEV = false;
   try { isEV = JSON.parse(document.getElementById('lo-vs-trim')?.value || '{}').fuel === '전기'; } catch(e) {}
-  let monthlyCarTax = 0;
-  if (taxInclude === 1 && isEV) {
-    monthlyCarTax = 10833;
-  } else if (taxInclude === 1 && cc > 0 && ee40 > 0 && period > 0) {
-    const annualCarTax = calcCarTax(cc);
-    const semiTax = Math.floor(annualCarTax / 2);
+  const carTaxAt = rate => {
+    if (taxInclude !== 1 || cc <= 0 || rate <= 0 || period <= 0) return 0;
+    const semiTax = Math.floor(calcCarTax(cc) / 2);
     const halfYears = Math.floor(period / 6);
-    let da48 = 0;
-    for (let n = 1; n <= halfYears; n++) {
-      da48 += Math.floor(semiTax / Math.pow(1 + ee40/2, n));
-    }
-    const r = ee40 / 12;
-    monthlyCarTax = Math.floor(r * da48 / (1 - Math.pow(1+r, -period)));
-  }
+    let pv = 0;
+    for (let n = 1; n <= halfYears; n++) pv += Math.floor(semiTax / Math.pow(1 + rate/2, n));
+    const r = rate / 12;
+    return Math.floor(r * pv / (1 - Math.pow(1+r, -period)));
+  };
+  const monthlyCarTax = taxInclude === 1 && isEV ? 10833 : carTaxAt(ee40); // DP42
+  // EE43 = 선납/보증 미반영 월납(+자동차세 DE49) → EE37 할인금액 = EE43 - DP43, EE38 할인율 = ROUNDUP(EE37/EE43, 4)
+  const monthlyNoPrepay = ee41 > 0 ? Math.max(0, pmtFloor(ee41, dp15, residual)) + (isEV ? 0 : carTaxAt(ee41)) : 0;
+  const leaseDiscount = monthlyNoPrepay > 0 ? monthlyNoPrepay - monthly : 0;
+  const leaseDiscountRate = monthlyNoPrepay > 0 ? Math.ceil(Math.round(leaseDiscount / monthlyNoPrepay * 1e8) / 1e4) / 1e4 : 0;
   document.getElementById('lo-carmtax-disp').value = taxInclude === 1 ? monthlyCarTax.toLocaleString() : '미포함';
 
   const monthlyTotal = monthly + monthlyCarTax;
@@ -1427,7 +1429,7 @@ function calcLO() {
     }));
   } catch(e) {}
 
-  return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, prepay, secDep, stampFee, monthlyNoPrepay, residual, residualPct, period, irr: ee40, sc, initPayment, totalCost, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
+  return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, prepay, secDep, stampFee, monthlyNoPrepay, leaseDiscount, leaseDiscountRate, loanAmt: dp15 - prepay, residual, residualPct, period, irr: ee40, sc, initPayment, totalCost, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
 }
 
 function resetLO() {
@@ -1675,19 +1677,34 @@ function showPreview(type) {
     const mile = document.getElementById('lo-mileage').value;
     const productName = document.getElementById('lo-product').options[document.getElementById('lo-product').selectedIndex].text;
     const demoLabel = document.getElementById('lo-demo').options[document.getElementById('lo-demo').selectedIndex].text;
-    const depositLabel = d.product === 'prepaid' ? '선납금' : '보증금';
+
+    // 엑셀 운용리스 견적서 양식 기준 (CU52 정식 상품명, (포함)/(불포함) 표기, SC커미션 미표시)
+    const loProductName = (d.demo === 'new' ? '(N) ' : '') + (d.product === 'prepaid' ? '2026 BPS 운용리스 선납형' : '2026 BPS 표준형 운용리스');
+    const bondModeLabel = {buy: '매입', discount: '할인', exempt: '면제'}[document.getElementById('lo-bond-mode').value];
+    const fmt0 = n => n ? fmt(n) : '0 원'; // 엑셀처럼 0도 '0 원'으로 표기
+    const pctAmt = (ratio, amt, digits) => (ratio * 100).toFixed(digits) + '% / ' + fmt0(amt);
+    const depBase = d.finalPrice + d.loTax;
 
     const brand_lo = document.getElementById('lo-vs-brand')?.value || 'BMW';
     html = `<div class="pv-wrap">` +
       pvHeader(branch, staff, phone, customer, td, '운용리스 견적서', brand_lo) +
       `<div class="pv-body">` +
-      pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—'], ['계약주행', '20,000 km']]) +
-      pvSection('PRICE INFO', [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', d.taxMode === 'exempt' ? '(면제)' : fmt(d.loTax)], ...(d.bond > 0 ? [['공채', fmt(d.bond)]] : []), ...((d.misc + d.delivery) !== 0 ? [['기타/탁송', fmt(d.misc + d.delivery)]] : [])]) +
+      pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']]) +
+      pvSection('PRICE INFO', [
+        ['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)],
+        ['취득세 ' + (d.loTax ? '(포함)' : '(면제)'), fmt0(d.loTax)],
+        ['공채구입비용' + (bondModeLabel ? ' (' + bondModeLabel + ')' : '') + ' (불포함)', fmt0(d.bond)],
+        ['탁송료 (불포함)', fmt0(d.delivery)], ['기타등록비용 (불포함)', fmt0(d.misc)],
+        ['총 구입 비용', fmt(d.totalCost)]]) +
       pvFinSection('FINANCIAL INFO',
-        [['상품', d.product === 'prepaid' ? '선납형' : '표준형'], ['계약기간', d.period+'개월'], [depositLabel, d.deposit ? fmt(d.deposit)+'원' : '0원'], ['고객공지이율', d.irr ? (d.irr*100).toFixed(2)+'%' : '—']],
-        [['잔존가치', d.residual ? fmt(d.residual)+'원' : '—'], ['SC커미션', d.sc ? fmt(d.sc)+'원' : '—'], ['자동차세', d.taxInclude === 1 ? fmtN(d.monthlyCarTax)+'원/월' : '미포함'], ['', '']]
+        [['금융사', 'BMW FS Korea'], ['Demo여부', d.demo === 'new' ? 'New' : 'Demo'], ['금융상품명', loProductName], ['대출 신청금액', fmt(d.loanAmt)],
+         ['리스료 예상 할인율', (d.leaseDiscountRate * 100).toFixed(2) + '%'], ['계약기간', d.period+'개월'], ['계약운행거리', '20,000 km']],
+        [['선납금', pctAmt(depBase ? d.prepay / depBase : 0, d.prepay, 2)], ['보증금', pctAmt(depBase ? d.secDep / depBase : 0, d.secDep, 1)],
+         ['잔존가치', pctAmt(d.residualPct / 100, d.residual, 2)], ['리스료 예상 할인금액', fmt0(d.leaseDiscount)],
+         ['인지대 (금융사 지원 50%)', fmt(5000)], ['고객공지이율', d.irr ? (d.irr*100).toFixed(2)+'%' : '—'],
+         ['월자동차세', d.taxInclude === 1 ? fmtN(d.monthlyCarTax)+'원/월' : '미포함']]
       ) +
-      pvTotal('계약 발생 납입금', fmt(d.initPayment)+'원', fmtN(d.monthly)+'원/월') +
+      pvTotal('계약 발생 납입금', (d.initPayment ? fmt(d.initPayment) : '0 원'), fmtN(d.monthly)+'원/월') +
       pvNotice(true) +
       `</div>` +
       pvFooter(branch, staff, phone) +
