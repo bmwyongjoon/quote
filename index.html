@@ -1652,10 +1652,10 @@ function showPreview(type) {
       pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['배기량', cc+' cc'], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']]) +
       pvSection('PRICE INFO', [['차량가격', fmt(d.orig)], ...(d.discount > 0 ? [['할인', '-'+fmt(d.discount)]] : []), ['최종가격', fmt(d.finalPrice)], ['취득세', '(포함)'], ['공채', d.bond > 0 ? fmt(d.bond) : '—'], ['탁송료', delivery], ['기타', misc]]) +
       pvFinSection('FINANCIAL INFO',
-        [['금융사', 'BMW FS Korea'], ['계약기간', d.period+'개월'], ['선납금', d.deposit ? fmt(d.deposit)+'원' : '0원'], ['인지대', '지원 50%']],
-        [['상품', productName], ['이자율', d.rate ? (d.rate*100).toFixed(2)+'%' : '—'], ['유예금', d.residual ? fmt(d.residual)+'원' : '—'], ['근저당', '135,000원']]
+        [['금융사', 'BMW FS Korea'], ['계약기간', d.period+'개월'], ['선납금', d.deposit ? fmt(d.deposit) : '0 원'], ['인지대', '지원 50%']],
+        [['상품', productName], ['이자율', d.rate ? (d.rate*100).toFixed(2)+'%' : '—'], ['유예금', d.residual ? fmt(d.residual) : '—'], ['근저당', '135,000원']]
       ) +
-      pvTotal('계약 발생 납입금', fmt(d.deposit||0)+'원', fmtN(d.monthly)+'원/월') +
+      pvTotal('계약 발생 납입금', d.deposit ? fmt(d.deposit) : '0 원', fmtN(d.monthly)+'원/월') +
       pvNotice(true) +
       `</div>` +
       pvFooter(branch, staff, phone) +
@@ -1701,7 +1701,7 @@ function showPreview(type) {
          ['리스료 예상 할인율', (d.leaseDiscountRate * 100).toFixed(2) + '%'], ['계약기간', d.period+'개월'], ['계약운행거리', '20,000 km']],
         [['선납금', pctAmt(depBase ? d.prepay / depBase : 0, d.prepay, 2)], ['보증금', pctAmt(depBase ? d.secDep / depBase : 0, d.secDep, 1)],
          ['잔존가치', pctAmt(d.residualPct / 100, d.residual, 2)], ['리스료 예상 할인금액', fmt0(d.leaseDiscount)],
-         ['인지대 (금융사 지원 50%)', fmt(5000)], ['고객공지이율', d.irr ? (d.irr*100).toFixed(2)+'%' : '—'],
+         ['인지대 (금융사 지원 50%)', fmt(5000)],
          ['월자동차세', d.taxInclude === 1 ? fmtN(d.monthlyCarTax)+'원/월' : '미포함']]
       ) +
       pvTotal('계약 발생 납입금', (d.initPayment ? fmt(d.initPayment) : '0 원'), fmtN(d.monthly)+'원/월') +
@@ -1738,10 +1738,10 @@ function showPreview(type) {
       pvSection('VEHICLE INFO', [['모델', model], ['연식', year+'년형'], ['등록일', reg], ['주행', mile ? Number(mile).toLocaleString()+' km' : '—']]) +
       pvSection('PRICE INFO', instPriceRows) +
       pvFinSection('FINANCIAL INFO',
-        [['상품', productName], ['계약기간', d.period+'개월'], ['선수금', d.down ? fmt(d.down)+'원' : '0원'], ['이자율', d.rate ? (d.rate*100).toFixed(2)+'%' : '—']],
-        [['할부원금', d.loanAmt ? fmt(d.loanAmt)+'원' : '—'], ['유예금', d.residual ? fmt(d.residual)+'원' : '0원'], ['', ''], ['', '']]
+        [['상품', productName], ['계약기간', d.period+'개월'], ['선수금', d.down ? fmt(d.down) : '0 원'], ['이자율', d.rate ? (d.rate*100).toFixed(2)+'%' : '—']],
+        [['할부원금', d.loanAmt ? fmt(d.loanAmt) : '—'], ['유예금', d.residual ? fmt(d.residual) : '0 원'], ['', ''], ['', '']]
       ) +
-      pvTotal('계약 발생 납입금', fmt(d.initPayment||0)+'원', fmtN(d.monthly)+'원/월') +
+      pvTotal('계약 발생 납입금', d.initPayment ? fmt(d.initPayment) : '0 원', fmtN(d.monthly)+'원/월') +
       pvNotice(true) +
       `</div>` +
       pvFooter(branch, staff, phone) +
