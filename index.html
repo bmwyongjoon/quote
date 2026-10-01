@@ -616,10 +616,16 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
             <option value="1">포함</option>
           </select>
         </div>
-        <div class="field"><label>보증금 % <span id="lo-deposit-max-label" style="color:#e53e3e;font-size:9px;"></span> <span id="lo-deposit-label" style="color:#888;font-size:9px;">(표준형)</span></label>
-          <div class="amt"><input type="number" id="lo-deposit-pct" value="40" min="0" max="50" step="1" oninput="calcLO()"><span>%</span></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:6px;"><span><span class="lo-deposit-name">보증금</span> <span id="lo-deposit-max-label" style="color:#e53e3e;font-size:9px;"></span></span>
+            <span class="toggle" style="margin-left:auto;">
+              <button type="button" id="lo-dep-btn-pct" class="active" style="padding:2px 8px;font-size:10px;" onclick="setLODepositUnit('pct')">%</button>
+              <button type="button" id="lo-dep-btn-won" style="padding:2px 8px;font-size:10px;" onclick="setLODepositUnit('won')">원</button>
+            </span></label>
+          <input type="hidden" id="lo-deposit-unit" value="pct">
+          <div class="amt" id="lo-deposit-pct-wrap"><input type="number" id="lo-deposit-pct" value="40" min="0" max="50" step="1" oninput="calcLO()"><span>%</span></div>
+          <div class="amt" id="lo-deposit-won-wrap" style="display:none;"><input type="number" id="lo-deposit-won" min="0" step="1000" placeholder="0" oninput="calcLO()"><span>원</span></div>
         </div>
-        <div class="field"><label>보증금 / 선납금 (자동계산)</label><div class="amt"><input id="lo-deposit-disp" readonly style="background:#f9f9f9;color:#888;"><span>원</span></div></div>
+        <div class="field"><label><span class="lo-deposit-name">보증금</span> (자동계산)</label><div class="amt"><input id="lo-deposit-disp" readonly style="background:#f9f9f9;color:#888;"><span id="lo-deposit-disp-unit">원</span></div></div>
         <div class="field"><label>잔존가치 % <span id="lo-residual-range-label" style="color:#e53e3e;font-size:9px;"></span></label>
           <div class="amt"><input type="number" id="lo-residual-pct" value="40" min="0" max="100" step="1" oninput="calcLO()"><span>%</span></div>
         </div>
@@ -654,7 +660,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f0
       <div class="rrow"><span class="rlabel">공채비용</span><span class="rvalue" id="lor-bond">—</span></div>
       <div class="rrow"><span class="rlabel">기타 등록비용</span><span class="rvalue" id="lor-misc">—</span></div>
       <div class="rrow total"><span class="rlabel">총 구입 비용</span><span class="rvalue" id="lor-total">—</span></div>
-      <div class="rrow"><span class="rlabel">보증금 / 선납금</span><span class="rvalue" id="lor-deposit">—</span></div>
+      <div class="rrow"><span class="rlabel lo-deposit-name">보증금</span><span class="rvalue" id="lor-deposit">—</span></div>
       <div class="rrow"><span class="rlabel">잔존가치</span><span class="rvalue" id="lor-residual">—</span></div>
       <div class="rrow"><span class="rlabel">계약 기간</span><span class="rvalue" id="lor-period">—</span></div>
       <div class="rrow"><span class="rlabel">고객공지이자율</span><span class="rvalue" id="lor-rate">—</span></div>
@@ -1210,6 +1216,12 @@ function calcCarTax(cc) {
   return semi * 2; // 연간 자동차세
 }
 
+// 선납금/보증금 입력 단위 전환 (% ↔ 원)
+function setLODepositUnit(unit) {
+  document.getElementById('lo-deposit-unit').value = unit;
+  calcLO();
+}
+
 function calcLO() {
   const orig = parseFloat(document.getElementById('lo-price-orig').value)||0;
   const discount = parseFloat(document.getElementById('lo-discount').value)||0;
@@ -1221,8 +1233,15 @@ function calcLO() {
   const misc = parseFloat(document.getElementById('lo-misc').value)||0;
   const delivery = parseFloat(document.getElementById('lo-delivery').value)||0;
 
-  // 선납형/표준형 레이블
-  document.getElementById('lo-deposit-label').textContent = product === 'prepaid' ? '(선납형: 선납금)' : '(표준형: 보증금)';
+  // 선납형/표준형 레이블 + 입력 단위(%/원) 표시 동기화
+  const depName = product === 'prepaid' ? '선납금' : '보증금';
+  document.querySelectorAll('.lo-deposit-name').forEach(el => el.textContent = depName);
+  const depUnit = document.getElementById('lo-deposit-unit').value === 'won' ? 'won' : 'pct';
+  document.getElementById('lo-dep-btn-pct').classList.toggle('active', depUnit === 'pct');
+  document.getElementById('lo-dep-btn-won').classList.toggle('active', depUnit === 'won');
+  document.getElementById('lo-deposit-pct-wrap').style.display = depUnit === 'pct' ? '' : 'none';
+  document.getElementById('lo-deposit-won-wrap').style.display = depUnit === 'won' ? '' : 'none';
+  document.getElementById('lo-deposit-disp-unit').textContent = depUnit === 'pct' ? '원' : '%';
 
   document.getElementById('lo-price-final').value = finalPrice > 0 ? finalPrice.toLocaleString() : '';
 
@@ -1287,12 +1306,21 @@ function calcLO() {
   // DP15 = 차량가 + 취득세 (선납금/보증금 기준금액)
   const dp15 = finalPrice + loTax;
   // DP16 선납금 = ROUND(%×DP15) (선납형만), DP17 보증금 = ROUNDDOWN(%×DP15, -3) (표준형만)
-  const prepay = product === 'prepaid' ? Math.round(dp15 * depositPct / 100) : 0;
-  const secDep = product === 'standard' ? Math.floor(dp15 * depositPct / 100 / 1000) * 1000 : 0;
+  // 원 입력 시: 입력 금액 그대로 사용(최대 50% 한도), 보증금은 천원 버림
+  let prepay = 0, secDep = 0;
+  if (depUnit === 'won') {
+    const won = Math.max(0, parseFloat(document.getElementById('lo-deposit-won').value) || 0);
+    if (product === 'prepaid') prepay = Math.min(won, Math.round(dp15 * 0.5));
+    else secDep = Math.floor(Math.min(won, dp15 * 0.5) / 1000) * 1000;
+    depositPct = dp15 > 0 ? Math.round((prepay + secDep) / dp15 * 10000) / 100 : 0;
+  } else {
+    if (product === 'prepaid') prepay = Math.round(dp15 * depositPct / 100);
+    else secDep = Math.floor(dp15 * depositPct / 100 / 1000) * 1000;
+  }
   const deposit = prepay + secDep;
   const residual = Math.floor(finalPrice * residualPct / 100 / 1000) * 1000;
 
-  document.getElementById('lo-deposit-disp').value = deposit.toLocaleString();
+  document.getElementById('lo-deposit-disp').value = depUnit === 'pct' ? deposit.toLocaleString() : depositPct.toFixed(2);
   document.getElementById('lo-residual-disp').value = residual.toLocaleString();
 
   // ── IRR 조회 (AM:AN KEY 방식) ──
@@ -1409,6 +1437,8 @@ function resetLO() {
   document.getElementById('lo-product').value = 'standard';
   document.getElementById('lo-period').value = '60';
   document.getElementById('lo-deposit-pct').value = '40';
+  document.getElementById('lo-deposit-won').value = '';
+  document.getElementById('lo-deposit-unit').value = 'pct';
   document.getElementById('lo-residual-pct').value = '40';
   document.getElementById('lo-sc-pct').value = '6';
   document.getElementById('lo-tax-include').value = '0';
@@ -1422,6 +1452,7 @@ function resetLO() {
   ['lo-price-final','lo-deposit-disp','lo-residual-disp','lo-rate-disp','lo-sc-disp','lo-carmtax-disp','lo-init-disp','lo-bond-disp','lo-tax-auto-disp'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('preview-wrap-lo').style.display = 'none';
   ['lor-orig','lor-discount','lor-price','lor-bond','lor-misc','lor-total','lor-deposit','lor-residual','lor-period','lor-rate','lor-carmtax','lor-init','lor-monthly'].forEach(id => document.getElementById(id).textContent = '—');
+  calcLO();
 }
 
 // ── 할부 금리 테이블 (2026 BPS, 엑셀 기준) ──
@@ -1989,7 +2020,7 @@ function applySettings(s) {
 const SAVE_FIELDS = {
   cash: ['c-price','c-bond-region','c-bond-mode','c-bond-input','c-misc','c-delivery','c-model','c-year','c-regdate','c-mileage','c-vs-brand','c-vs-year','c-vs-series','c-vs-trim'],
   lf:   ['lf-price-orig','lf-discount','lf-deposit','lf-residual-pct','lf-period','lf-product','lf-delivery','lf-misc','lf-model','lf-year','lf-regdate','lf-cc','lf-ev','lf-mileage','lf-bond-region','lf-bond-mode','lf-bond-input','lf-vs-brand','lf-vs-year','lf-vs-series','lf-vs-trim'],
-  lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-pct','lo-residual-pct','lo-sc-pct','lo-tax-include','lo-tax-mode','lo-tax-input','lo-bond-region','lo-bond-mode','lo-bond-input','lo-misc','lo-delivery','lo-model','lo-year','lo-regdate','lo-mileage','lo-cc','lo-vs-brand','lo-vs-year','lo-vs-series','lo-vs-trim'],
+  lo:   ['lo-price-orig','lo-discount','lo-demo','lo-product','lo-period','lo-deposit-unit','lo-deposit-pct','lo-deposit-won','lo-residual-pct','lo-sc-pct','lo-tax-include','lo-tax-mode','lo-tax-input','lo-bond-region','lo-bond-mode','lo-bond-input','lo-misc','lo-delivery','lo-model','lo-year','lo-regdate','lo-mileage','lo-cc','lo-vs-brand','lo-vs-year','lo-vs-series','lo-vs-trim'],
   inst: ['inst-price-orig','inst-discount','inst-down','inst-residual-pct','inst-period','inst-bond-region','inst-bond-mode','inst-bond-input','inst-model','inst-year','inst-regdate','inst-mileage','inst-vs-brand','inst-vs-year','inst-vs-series','inst-vs-trim'],
 };
 
@@ -2019,6 +2050,7 @@ function restoreQuote(tab) {
     const el = document.getElementById(id);
     if (el) el.value = val;
   });
+  if (tab === 'lo') calcLO(); // 선납금/보증금 단위 토글 표시 동기화
 
   // 차종 선택 단계별 복원 (VEHICLES 로드 후)
   const restoreVs = () => {
