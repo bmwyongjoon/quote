@@ -1284,50 +1284,48 @@ function calcLO() {
     residualPct = Math.min(maxPctLimit, Math.max(minPctLimit, residualPct));
   }
 
-  const deposit = Math.floor(finalPrice * depositPct / 100 / 1000) * 1000;
+  // DP15 = 차량가 + 취득세 (선납금/보증금 기준금액)
+  const dp15 = finalPrice + loTax;
+  // DP16 선납금 = ROUND(%×DP15) (선납형만), DP17 보증금 = ROUNDDOWN(%×DP15, -3) (표준형만)
+  const prepay = product === 'prepaid' ? Math.round(dp15 * depositPct / 100) : 0;
+  const secDep = product === 'standard' ? Math.floor(dp15 * depositPct / 100 / 1000) * 1000 : 0;
+  const deposit = prepay + secDep;
   const residual = Math.floor(finalPrice * residualPct / 100 / 1000) * 1000;
 
   document.getElementById('lo-deposit-disp').value = deposit.toLocaleString();
   document.getElementById('lo-residual-disp').value = residual.toLocaleString();
 
   // ── IRR 조회 (AM:AN KEY 방식) ──
-  // CI45: 보증금구간 <20%→1, <30%→2, <40%→3, ≥40%→4
-  const ci45 = depositPct < 20 ? 1 : depositPct < 30 ? 2 : depositPct < 40 ? 3 : 4;
+  // CI46: 보증금구간 = ROUNDUP(보증금/DP15, 2) 실제비율 기준 → <20%→1, <30%→2, <40%→3, ≥40%→4
+  const depRatio = dp15 > 0 ? Math.ceil(Math.round(secDep / dp15 * 1e8) / 1e6) / 100 : 0;
+  const ci46 = depRatio < 0.2 ? 1 : depRatio < 0.3 ? 2 : depRatio < 0.4 ? 3 : 4;
   const demoN = demo === 'demo' ? '1' : '2';
-  let key, dp34;
-  if (product === 'standard') {
-    key = `${demoN}11${ci45}`;
-  } else {
-    key = `${demoN}220`;
-  }
-  dp34 = LO_IRR_AMAM[key] || 0;
+  const key = product === 'standard' ? `${demoN}11${ci46}` : `${demoN}220`;
+  const dp34 = LO_IRR_AMAM[key] || 0;
 
-  // ── 월납입금 계산 (엑셀 수식 완전 재현) ──
+  // ── 월납입금 계산 (9월 엑셀 DP38~DP43 체인 재현) ──
   const scPctInt = parseInt(document.getElementById('lo-sc-pct').value) || 0;
   const scRate = scPctInt / 100;
-
-  // 보증금/선납금 분리: 표준형→dp16, 선납형→dp17 (둘 중 하나는 항상 0)
-  const dp16 = product === 'standard' ? deposit : 0;
-  const dp17 = product === 'prepaid' ? deposit : 0;
+  const roundUp4 = x => Math.ceil(Math.round(x * 1e8) / 1e4) / 1e4; // ROUNDUP(x, 4)
+  const pmtFloor = (rate, pv, fv) => {                              // ROUNDDOWN(PMT(rate/12, n, -pv, fv))
+    const r = rate / 12, v = Math.pow(1 + r, -period);
+    return Math.floor(r * (pv - fv * v) / (1 - v));
+  };
 
   let monthly = 0;
-  let ee40 = 0; // 고객공지이율 (연, 소수)
+  let monthlyNoPrepay = 0; // EE43 선납제외 리스료 (리스료 예상 할인금액 산출용)
+  let ee40 = 0; // DP41 고객공지이율 (연, 소수)
   if (dp34 > 0 && finalPrice > 0) {
-    const dp10 = finalPrice - dp16 + loTax;                    // FA
+    const dp10 = finalPrice - prepay + loTax;                  // FA
     const dp31 = Math.round(scRate * dp10);                    // SC커미션
-    const dp32 = Math.round(LO_FNI_RATE * (dp10 - dp17));      // F&I커미션
-    const ee39 = finalPrice + loTax;                            // 차량가격+취득세
+    const dp32 = Math.round(LO_FNI_RATE * (dp10 - secDep));    // F&I커미션
 
-    const r = dp34 / 12;
-    const pvif_r = Math.pow(1+r, -period);
-    const ee40pmt = Math.floor(r * (ee39 + dp31 + dp32 - residual * pvif_r) / (1 - pvif_r));
-
-    const rate_raw = rateCalcLO(period, ee40pmt, -ee39, residual) * 12;
-    ee40 = Math.ceil(Math.round(rate_raw * 1e8) / 1e4) / 1e4; // ROUNDUP(rate, 4)
-
-    const r41 = ee40 / 12;
-    monthly = Math.floor(r41 * (ee39 - residual * Math.pow(1+r41, -period)) / (1 - Math.pow(1+r41, -period)));
-    if (monthly < 0) monthly = 0;
+    const dp38 = pmtFloor(dp34, dp10 + dp31 + dp32 - secDep, residual - secDep);
+    const dp39 = roundUp4(rateCalcLO(period, dp38, -(dp10 - secDep), residual - secDep) * 12);
+    const dp40 = pmtFloor(dp39, dp10 - secDep, residual - secDep);
+    ee40 = roundUp4(rateCalcLO(period, dp40, -dp10, residual) * 12);
+    monthly = Math.max(0, pmtFloor(ee40, dp10, residual));
+    monthlyNoPrepay = Math.max(0, pmtFloor(ee40, dp15, residual));
   }
 
   document.getElementById('lo-rate-disp').value = ee40 ? (ee40 * 100).toFixed(2) : '';
@@ -1336,13 +1334,19 @@ function calcLO() {
   const sc = Math.floor(scRate * finalPrice / 1000) * 1000;
   document.getElementById('lo-sc-disp').value = sc.toLocaleString();
 
-  // 계약 발생 납입금 = 보증금 + 공채 + 탁송료 + 기타비용 (SC/F&I 미포함)
-  const initPayment = deposit + bond + misc + delivery;
+  // 계약 발생 납입금 DP24 = 선납금 + 보증금 + 기타등록비 + 탁송료 (+New면 인지대 5,000). 공채 미포함
+  const stampFee = demo === 'new' ? 5000 : 0;
+  const initPayment = deposit + misc + delivery + stampFee;
   document.getElementById('lo-init-disp').value = initPayment.toLocaleString();
 
   // 자동차세 (엑셀 DA48/DE48 방식: 반기세액을 이율로 할인해서 월환산)
+  // 전기차는 엑셀 기준 월 10,833원 고정
+  let isEV = false;
+  try { isEV = JSON.parse(document.getElementById('lo-vs-trim')?.value || '{}').fuel === '전기'; } catch(e) {}
   let monthlyCarTax = 0;
-  if (taxInclude === 1 && cc > 0 && ee40 > 0 && period > 0) {
+  if (taxInclude === 1 && isEV) {
+    monthlyCarTax = 10833;
+  } else if (taxInclude === 1 && cc > 0 && ee40 > 0 && period > 0) {
     const annualCarTax = calcCarTax(cc);
     const semiTax = Math.floor(annualCarTax / 2);
     const halfYears = Math.floor(period / 6);
@@ -1395,7 +1399,7 @@ function calcLO() {
     }));
   } catch(e) {}
 
-  return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, residual, residualPct, period, irr: ee40, sc, initPayment, totalCost, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
+  return { orig, discount, finalPrice, bond, misc, delivery, loTax, taxMode, deposit, depositPct, prepay, secDep, stampFee, monthlyNoPrepay, residual, residualPct, period, irr: ee40, sc, initPayment, totalCost, monthly: monthlyTotal, monthlyCarTax, taxInclude, product, demo };
 }
 
 function resetLO() {
